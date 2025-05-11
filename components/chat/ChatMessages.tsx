@@ -1,0 +1,48 @@
+import { useRef, useEffect } from "react";
+import Message from "./Message";
+import { Loader2 } from "lucide-react";
+
+type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+};
+
+type ChatMessagesProps = {
+  messages: Message[];
+  isLoading: boolean;
+};
+
+export default function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  return (
+    <div className="space-y-4">
+      {messages.map((message) => (
+        <Message
+          key={message.id}
+          id={message.id}
+          role={message.role}
+          content={message.content}
+        />
+      ))}
+
+      {isLoading && (
+        <Message
+          id="loading"
+          role="assistant"
+          content="Ассистент печатает..."
+          isLoading={true}
+        />
+      )}
+
+      <div ref={messagesEndRef} />
+    </div>
+  );
+}
