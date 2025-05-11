@@ -1,27 +1,30 @@
 # LegalGPT - Юридический AI-ассистент
 
-Проект представляет собой веб-приложение, похожее на ChatGPT, но с фокусом на юридические темы. Приложение состоит из трех основных частей:
-1. Лендинг (Landing Page)
-2. Чат-интерфейс (Chat Interface)
-3. Система оплаты (Payment System)
+Интеллектуальный помощник по юридическим вопросам на базе искусственного интеллекта.
 
-## Технологический стек
+## Описание
 
-### Фронтенд
-- **Основной фреймворк**: Next.js 14 (React)
-- **Язык программирования**: TypeScript
-- **Стилизация**: Tailwind CSS + Shadcn UI
-- **Управление состоянием**: React Context API + Zustand
-- **Формы**: React Hook Form + Zod
-- **API-взаимодействие**: Axios, SWR
-- **Аутентификация**: NextAuth.js
-- **Платежная система**: Stripe
+LegalGPT - это веб-приложение, которое предоставляет юридические консультации с использованием искусственного интеллекта. Приложение позволяет пользователям получать ответы на юридические вопросы, составлять документы и анализировать правовые риски.
 
-### Бэкенд (рекомендуемый)
-- **API**: Next.js API Routes / Отдельный бэкенд на Node.js + Express
-- **База данных**: PostgreSQL
-- **ORM**: Prisma
-- **AI-интеграция**: OpenAI API
+## Функциональность
+
+- Юридические консультации по различным отраслям права
+- Составление юридических документов
+- Анализ правовых рисков
+- Система аутентификации пользователей
+- Различные тарифные планы
+- Адаптивный дизайн для мобильных устройств
+- Темная и светлая темы оформления
+
+## Технологии
+
+- Next.js 14
+- React 18
+- TypeScript
+- Tailwind CSS
+- NextAuth.js для аутентификации
+- SWR для управления состоянием
+- Zustand для глобального состояния
 
 ## Структура проекта
 
@@ -29,85 +32,61 @@
 /
 ├── app/                    # Next.js App Router
 │   ├── api/                # API Routes
-│   ├── (landing)/          # Landing Page Routes
-│   ├── chat/               # Chat Interface Routes
-│   ├── pricing/            # Pricing Page Routes
-│   ├── checkout/           # Checkout Routes
 │   ├── auth/               # Authentication Routes
-│   └── dashboard/          # User Dashboard Routes
+│   ├── chat/               # Chat Interface
+│   ├── checkout/           # Payment System
+│   ├── dashboard/          # User Dashboard
+│   └── pricing/            # Pricing Page
 ├── components/             # React Components
-│   ├── ui/                 # UI Components
+│   ├── auth/               # Authentication Components
+│   ├── chat/               # Chat Components
+│   ├── checkout/           # Checkout Components
+│   ├── dashboard/          # Dashboard Components
 │   ├── landing/            # Landing Page Components
-│   ├── chat/               # Chat Interface Components
-│   └── checkout/           # Checkout Components
+│   ├── layout/             # Layout Components
+│   ├── pricing/            # Pricing Components
+│   ├── theme/              # Theme Components
+│   └── ui/                 # UI Components
 ├── lib/                    # Utility Functions
-├── hooks/                  # Custom React Hooks
-├── store/                  # State Management
-├── styles/                 # Global Styles
-├── types/                  # TypeScript Types
-├── public/                 # Static Assets
-└── prisma/                 # Database Schema
+└── public/                 # Static Assets
 ```
-
-## Основные функциональные требования
-
-### Лендинг
-- Современный, отзывчивый дизайн
-- Информация о возможностях юридического AI-ассистента
-- Примеры использования
-- Тарифные планы
-- Форма регистрации/входа
-- SEO-оптимизация
-
-### Чат-интерфейс
-- Интерфейс, похожий на ChatGPT
-- История чатов
-- Сохранение контекста разговора
-- Возможность экспорта/сохранения чатов
-- Специализированные юридические промпты
-
-### Система оплаты
-- Различные тарифные планы
-- Безопасная обработка платежей
-- Управление подписками
-- Страница биллинга в личном кабинете
-
-## Инструкция по установке и запуску
-
-1. Клонировать репозиторий
-2. Установить зависимости: 
-   ```bash
-   npm install
-   ```
-3. Настроить переменные окружения (опционально):
-   - Создать файл `.env.local` в корне проекта
-   - Добавить необходимые переменные окружения (для продакшн)
-
-4. Запустить проект в режиме разработки:
-   ```bash
-   npm run dev
-   ```
-
-5. Открыть браузер и перейти по адресу:
-   ```
-   http://localhost:3000
-   ```
-
-## Запуск в продакшн режиме
-
-1. Собрать проект:
-   ```bash
-   npm run build
-   ```
-
-2. Запустить собранный проект:
-   ```bash
-   npm run start
-   ```
 
 ## Доступные страницы
 
-- Главная страница (лендинг): `http://localhost:3000/`
-- Чат-интерфейс: `http://localhost:3000/chat`
-- Страница тарифов: `http://localhost:3000/pricing`
-- Страница оформления подписки: `http://localhost:3000/checkout`
+- Главная страница (лендинг): `/`
+- Чат-интерфейс: `/chat`
+- Страница тарифов: `/pricing`
+- Страница оформления подписки: `/checkout`
+- Авторизация: `/auth/login`, `/auth/register`
+- Личный кабинет: `/dashboard`
+
+## Установка и запуск
+
+1. Клонировать репозиторий:
+```bash
+git clone https://github.com/yourusername/legal-gpt.git
+cd legal-gpt
+```
+
+2. Установить зависимости:
+```bash
+npm install
+```
+
+3. Запустить в режиме разработки:
+```bash
+npm run dev
+```
+
+4. Открыть [http://localhost:3000](http://localhost:3000) в браузере.
+
+## Сборка для продакшена
+
+```bash
+npm run build
+npm start
+```
+
+## Лицензия
+
+MIT
