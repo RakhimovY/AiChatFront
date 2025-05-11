@@ -1,61 +1,79 @@
 import { NextResponse } from "next/server";
+import axios from "axios";
 
-// This is a simple demo implementation
-// In a real application, you would store users in a database
-const users = [
-  {
-    id: "1",
-    name: "Демо Пользователь",
-    email: "demo@example.com",
-    password: "password123",
-  },
-];
+// Define user interface
+interface User {
+  id: string;
+  email: string;
+}
+
+// Define registration request interface
+interface RegistrationRequest {
+  email: string;
+  password: string;
+}
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json();
+    const { name, email, password }: { name: string; email: string; password: string } = await request.json();
 
     // Validate input
-    if (!name || !email || !password) {
+    if (!email || !password) {
       return NextResponse.json(
-        { message: "Все поля обязательны для заполнения" },
+        { message: "Email и пароль обязательны для заполнения" },
         { status: 400 }
       );
     }
 
-    // Check if user already exists
-    const existingUser = users.find((user) => user.email === email);
-    if (existingUser) {
+    // Validate password requirements
+    if (password.length < 12) {
       return NextResponse.json(
-        { message: "Пользователь с таким email уже существует" },
+        { message: "Пароль должен содержать не менее 12 символов" },
         { status: 400 }
       );
     }
 
-    // In a real application, you would hash the password and store the user in a database
-    const newUser = {
-      id: (users.length + 1).toString(),
-      name,
-      email,
-      password, // In a real app, this would be hashed
-    };
+    // Check if password contains at least one lowercase letter, one uppercase letter, one digit, and one special character
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/;
+    if (!passwordRegex.test(password)) {
+      return NextResponse.json(
+        { message: "Пароль должен содержать как минимум одну строчную букву, одну заглавную букву, одну цифру и один специальный символ" },
+        { status: 400 }
+      );
+    }
 
-    // Add user to the in-memory array (for demo purposes)
-    users.push(newUser);
+    // Call the backend API to register the user
+    try {
+      const registrationRequest: RegistrationRequest = {
+        email,
+        password,
+      };
 
-    // Return success response
-    return NextResponse.json(
-      { 
-        message: "Пользователь успешно зарегистрирован",
-        user: {
-          id: newUser.id,
-          name: newUser.name,
-          email: newUser.email,
-        }
-      },
-      { status: 201 }
-    );
-  } catch (error) {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/sign-up`,
+        registrationRequest
+      );
+
+      // Return success response
+      return NextResponse.json(
+        { 
+          message: "Пользователь успешно зарегистрирован",
+          user: {
+            id: response.data.id.toString(),
+            email: response.data.email,
+          }
+        },
+        { status: 201 }
+      );
+    } catch (error) {
+      // Handle API-specific errors
+      console.error("API registration error:", error);
+      return NextResponse.json(
+        { message: "Ошибка при регистрации на сервере" },
+        { status: 500 }
+      );
+    }
+  } catch (error: unknown) {
     console.error("Registration error:", error);
     return NextResponse.json(
       { message: "Ошибка при регистрации" },

@@ -22,9 +22,11 @@ export default function DashboardPage() {
   }
 
   // For demo purposes, use a mock user if session is not available
-  const user = session?.user || {
-    name: "Демо Пользователь",
-    email: "demo@example.com",
+  // Ensure user object has required non-nullable properties
+  const user = {
+    name: session?.user?.name || "Демо Пользователь",
+    email: session?.user?.email || "demo@example.com",
+    image: session?.user?.image || undefined
   };
 
   return <DashboardContent user={user} />;

@@ -6,9 +6,10 @@ type ChatInputProps = {
   setInput: (input: string) => void;
   handleSubmit: (e: React.FormEvent) => void;
   isLoading: boolean;
+  disabled?: boolean;
 };
 
-export default function ChatInput({ input, setInput, handleSubmit, isLoading }: ChatInputProps) {
+export default function ChatInput({ input, setInput, handleSubmit, isLoading, disabled = false }: ChatInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Focus input on load
@@ -38,21 +39,21 @@ export default function ChatInput({ input, setInput, handleSubmit, isLoading }: 
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="flex items-end space-x-2">
-        <div className="flex-1 relative">
+      <form onSubmit={handleSubmit} className="flex items-center space-x-2">
+        <div className="flex-1 relative ">
           <textarea
             ref={inputRef}
             value={input}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Введите ваш вопрос..."
+            placeholder={disabled ? "Лимит демо-запросов исчерпан" : "Введите ваш вопрос..."}
             className="w-full p-3 pr-10 rounded-md border resize-none min-h-[50px] max-h-[200px] focus:outline-none focus:ring-2 focus:ring-primary/50"
-            disabled={isLoading}
+            disabled={isLoading || disabled}
           />
         </div>
         <button
           type="submit"
-          disabled={isLoading || !input.trim()}
+          disabled={isLoading || !input.trim() || disabled}
           className="p-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Send className="h-5 w-5" />

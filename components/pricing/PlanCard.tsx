@@ -19,9 +19,9 @@ export default function PlanCard({ plan }: PlanCardProps) {
         </div>
       )}
       <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
-      <p className="text-3xl font-bold mb-2">₽{plan.price}<span className="text-muted-foreground text-sm font-normal">/мес</span></p>
+      <p className="text-3xl font-bold mb-2">${plan.price}<span className="text-muted-foreground text-sm font-normal">{plan.id === "free" ? "" : plan.id === "monthly" ? "/mo" : "/yr"}</span></p>
       <p className="text-muted-foreground mb-6">{plan.description}</p>
-      
+
       <Link 
         href={`/checkout?plan=${plan.id}`} 
         className={`block text-center px-6 py-3 rounded-md mb-6 font-medium ${
@@ -32,7 +32,7 @@ export default function PlanCard({ plan }: PlanCardProps) {
       >
         Выбрать тариф
       </Link>
-      
+
       <div className="space-y-3">
         {plan.features.map((feature, index) => (
           <div key={index} className="flex items-start">

@@ -19,9 +19,9 @@ export default function ForgotPasswordForm() {
       // In a real application, this would be an API call to your backend
       // For demo purposes, we'll simulate a successful password reset request
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      
+
       setSuccess(true);
-    } catch (error) {
+    } catch (error: unknown) {
       setError("Произошла ошибка. Пожалуйста, попробуйте еще раз.");
       console.error("Password reset error:", error);
     } finally {

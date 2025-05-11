@@ -12,7 +12,7 @@ import SuccessMessage from "@/components/checkout/SuccessMessage";
 
 export default function CheckoutPage() {
   const searchParams = useSearchParams();
-  const planId = searchParams.get("plan") || "standard";
+  const planId = searchParams.get("plan") || "monthly";
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -28,28 +28,28 @@ export default function CheckoutPage() {
 
   // Define available plans
   const plans: Record<string, Plan> = {
-    basic: {
-      id: "basic",
-      name: "Базовый",
-      price: 990,
-      description: "До 50 запросов в день, базовые консультации",
+    free: {
+      id: "free",
+      name: "Бесплатный",
+      price: 0,
+      description: "До 30 запросов всего, базовые консультации",
     },
-    standard: {
-      id: "standard",
-      name: "Стандарт",
-      price: 1990,
-      description: "До 200 запросов в день, расширенные консультации",
+    monthly: {
+      id: "monthly",
+      name: "Месячный",
+      price: 9.99,
+      description: "Безлимитные запросы, расширенные консультации",
     },
-    professional: {
-      id: "professional",
-      name: "Профессиональный",
-      price: 4990,
-      description: "Безлимитные запросы, приоритетная поддержка",
+    yearly: {
+      id: "yearly",
+      name: "Годовой",
+      price: 99.99,
+      description: "Безлимитные запросы, приоритетная поддержка (экономия более 15%)",
     },
   };
 
   // Get current plan
-  const currentPlan = plans[planId] || plans.standard;
+  const currentPlan = plans[planId] || plans.monthly;
 
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,7 +139,7 @@ export default function CheckoutPage() {
 
       setIsSuccess(true);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Payment error:", error);
       setErrors({
         submit: "Произошла ошибка при обработке платежа. Пожалуйста, попробуйте еще раз.",

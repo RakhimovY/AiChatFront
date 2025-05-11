@@ -10,9 +10,24 @@ type AuthFormProps = {
   type: "login" | "register";
 };
 
+interface AuthFormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+interface RegisterResponse {
+  message: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 export default function AuthForm({ type }: AuthFormProps) {
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<AuthFormData>({
     name: "",
     email: "",
     password: "",
@@ -24,6 +39,20 @@ export default function AuthForm({ type }: AuthFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Validate password for registration
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 12) {
+      return "Пароль должен содержать не менее 12 символов";
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/;
+    if (!passwordRegex.test(password)) {
+      return "Пароль должен содержать как минимум одну строчную букву, одну заглавную букву, одну цифру и один специальный символ";
+    }
+
+    return null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,6 +76,14 @@ export default function AuthForm({ type }: AuthFormProps) {
           router.refresh();
         }
       } else {
+        // Validate password for registration
+        const passwordError = validatePassword(formData.password);
+        if (passwordError) {
+          setError(passwordError);
+          setIsLoading(false);
+          return;
+        }
+
         // Handle registration
         const response = await fetch("/api/auth/register", {
           method: "POST",
@@ -56,7 +93,7 @@ export default function AuthForm({ type }: AuthFormProps) {
           body: JSON.stringify(formData),
         });
 
-        const data = await response.json();
+        const data: RegisterResponse = await response.json();
 
         if (!response.ok) {
           setError(data.message || "Ошибка при регистрации");
@@ -76,7 +113,7 @@ export default function AuthForm({ type }: AuthFormProps) {
           }
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       setError("Произошла ошибка. Пожалуйста, попробуйте еще раз.");
       console.error("Auth error:", error);
     } finally {
@@ -88,7 +125,7 @@ export default function AuthForm({ type }: AuthFormProps) {
     setIsLoading(true);
     try {
       await signIn("google", { callbackUrl: "/dashboard" });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Google sign in error:", error);
       setError("Ошибка при входе через Google");
       setIsLoading(false);
@@ -169,6 +206,18 @@ export default function AuthForm({ type }: AuthFormProps) {
               )}
             </button>
           </div>
+          {type === "register" && (
+            <div className="text-xs text-muted-foreground mt-1">
+              <p>Пароль должен содержать:</p>
+              <ul className="list-disc list-inside">
+                <li>Минимум 12 символов</li>
+                <li>Хотя бы одну строчную букву (a-z)</li>
+                <li>Хотя бы одну заглавную букву (A-Z)</li>
+                <li>Хотя бы одну цифру (0-9)</li>
+                <li>Хотя бы один специальный символ (@$!%*?&)</li>
+              </ul>
+            </div>
+          )}
         </div>
 
         {type === "login" && (

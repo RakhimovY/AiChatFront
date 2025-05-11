@@ -10,12 +10,12 @@ export default function PricingPage() {
   // Define pricing plans
   const plans: Plan[] = [
     {
-      id: "basic",
-      name: "Базовый",
-      price: 990,
-      description: "Идеально для личного использования и базовых юридических вопросов",
+      id: "free",
+      name: "Бесплатный",
+      price: 0,
+      description: "Идеально для ознакомления с сервисом",
       features: [
-        { name: "До 50 запросов в день", included: true },
+        { name: "До 30 запросов всего", included: true },
         { name: "Базовые юридические консультации", included: true },
         { name: "Простые шаблоны документов", included: true },
         { name: "История чатов (до 7 дней)", included: true },
@@ -28,12 +28,12 @@ export default function PricingPage() {
       ],
     },
     {
-      id: "standard",
-      name: "Стандарт",
-      price: 1990,
+      id: "monthly",
+      name: "Месячный",
+      price: 9.99,
       description: "Оптимальный выбор для активных пользователей и малого бизнеса",
       features: [
-        { name: "До 200 запросов в день", included: true },
+        { name: "Безлимитные запросы", included: true },
         { name: "Базовые юридические консультации", included: true },
         { name: "Простые шаблоны документов", included: true },
         { name: "История чатов (до 30 дней)", included: true },
@@ -47,10 +47,10 @@ export default function PricingPage() {
       popular: true,
     },
     {
-      id: "professional",
-      name: "Профессиональный",
-      price: 4990,
-      description: "Полный набор возможностей для юристов и компаний",
+      id: "yearly",
+      name: "Годовой",
+      price: 99.99,
+      description: "Максимальная выгода для долгосрочного использования (экономия более 15%)",
       features: [
         { name: "Безлимитные запросы", included: true },
         { name: "Базовые юридические консультации", included: true },

@@ -42,7 +42,7 @@ export default function PricingPreview({ title, description, plans }: PricingPre
                   </div>
                 )}
                 <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
-                <p className="text-3xl font-bold mb-4">₽{plan.price}<span className="text-muted-foreground text-sm font-normal">/мес</span></p>
+                <p className="text-3xl font-bold mb-4">${plan.price}<span className="text-muted-foreground text-sm font-normal">{plan.id === "free" ? "" : plan.id === "monthly" ? "/mo" : "/yr"}</span></p>
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center">
