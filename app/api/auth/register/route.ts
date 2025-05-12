@@ -44,10 +44,15 @@ export async function POST(request: Request) {
 
     // Call the backend API to register the user
     try {
-      const registrationRequest: RegistrationRequest = {
+      const registrationRequest: RegistrationRequest & { name?: string } = {
         email,
         password,
       };
+
+      // Add name to the request if provided
+      if (name) {
+        registrationRequest.name = name;
+      }
 
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/sign-up`,

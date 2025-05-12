@@ -35,32 +35,37 @@ export default function PricingPreview({ title, description, plans }: PricingPre
               delay={index * 150}
               threshold={0.2}
             >
-              <div className={`border rounded-lg p-6 bg-card h-full ${plan.popular ? 'relative' : ''}`}>
+              <div className={`border rounded-lg p-6 bg-card h-full flex flex-col shadow-sm ${plan.popular ? 'relative border-primary/50' : ''}`}>
                 {plan.popular && (
                   <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs rounded-bl-lg rounded-tr-lg font-medium">
                     Популярный
                   </div>
                 )}
-                <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
-                <p className="text-3xl font-bold mb-4">${plan.price}<span className="text-muted-foreground text-sm font-normal">{plan.id === "free" ? "" : plan.id === "monthly" ? "/mo" : "/yr"}</span></p>
-                <ul className="space-y-2 mb-6">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center">
-                      <CheckCircle2 className="h-5 w-5 text-primary mr-2" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link 
-                  href={`/pricing?plan=${plan.id}`} 
-                  className={`block text-center px-6 py-2 rounded-md ${
-                    plan.popular 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                      : 'border border-primary text-primary hover:bg-primary/5'
-                  } font-medium`}
-                >
-                  Подробнее
-                </Link>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
+                  <p className="text-3xl font-bold mb-4">${plan.price}<span className="text-muted-foreground text-sm font-normal">{plan.id === "free" ? "" : plan.id === "monthly" ? "/mo" : "/yr"}</span></p>
+                  <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
+                  <ul className="space-y-2 mb-6">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-center">
+                        <CheckCircle2 className="h-5 w-5 text-primary mr-2 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-auto pt-4">
+                  <Link 
+                    href={`/pricing?plan=${plan.id}`} 
+                    className={`block text-center px-6 py-2 rounded-md ${
+                      plan.popular 
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                        : 'border border-primary text-primary hover:bg-primary/5'
+                    } font-medium transition-colors`}
+                  >
+                    Подробнее
+                  </Link>
+                </div>
               </div>
             </AnimateOnScroll>
           ))}

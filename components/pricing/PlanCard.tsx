@@ -9,7 +9,7 @@ type PlanCardProps = {
 export default function PlanCard({ plan }: PlanCardProps) {
   return (
     <div 
-      className={`border rounded-lg p-6 bg-card relative ${
+      className={`border rounded-lg p-6 bg-card relative h-full flex flex-col shadow-sm ${
         plan.popular ? "border-primary ring-2 ring-primary/20" : ""
       }`}
     >
@@ -18,13 +18,16 @@ export default function PlanCard({ plan }: PlanCardProps) {
           Популярный
         </div>
       )}
-      <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
-      <p className="text-3xl font-bold mb-2">${plan.price}<span className="text-muted-foreground text-sm font-normal">{plan.id === "free" ? "" : plan.id === "monthly" ? "/mo" : "/yr"}</span></p>
-      <p className="text-muted-foreground mb-6">{plan.description}</p>
+
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
+        <p className="text-3xl font-bold mb-2">${plan.price}<span className="text-muted-foreground text-sm font-normal">{plan.id === "free" ? "" : plan.id === "monthly" ? "/mo" : "/yr"}</span></p>
+        <p className="text-muted-foreground">{plan.description}</p>
+      </div>
 
       <Link 
         href={`/checkout?plan=${plan.id}`} 
-        className={`block text-center px-6 py-3 rounded-md mb-6 font-medium ${
+        className={`block text-center px-6 py-3 rounded-md mb-6 font-medium transition-colors ${
           plan.popular 
             ? "bg-primary text-primary-foreground hover:bg-primary/90" 
             : "border border-primary text-primary hover:bg-primary/5"
@@ -33,11 +36,11 @@ export default function PlanCard({ plan }: PlanCardProps) {
         Выбрать тариф
       </Link>
 
-      <div className="space-y-3">
+      <div className="space-y-3 mt-auto">
         {plan.features.map((feature, index) => (
           <div key={index} className="flex items-start">
             <CheckCircle2 
-              className={`h-5 w-5 mr-2 ${
+              className={`h-5 w-5 mr-2 flex-shrink-0 ${
                 feature.included ? "text-primary" : "text-muted-foreground/30"
               }`} 
             />

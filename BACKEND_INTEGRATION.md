@@ -42,6 +42,10 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
   - Тело запроса: `{ "email": "user@example.com", "password": "Password123!" }`
   - Ответ: `{ "token": "jwt-token", "privilege": ["ROLE_USER"] }`
 
+- `POST /api/auth/google` - Аутентификация через Google
+  - Тело запроса: `{ "token": "google-id-token", "email": "user@example.com", "name": "User Name", "picture": "https://...", "googleId": "google-user-id" }`
+  - Ответ: `{ "token": "jwt-token", "privilege": ["ROLE_USER"] }`
+
 ### Требования к паролю
 
 При регистрации пароль должен соответствовать следующим требованиям:
@@ -91,6 +95,20 @@ interface Chat {
   messages: ChatMessage[];
 }
 ```
+
+### Google Authentication
+
+Для аутентификации через Google используется NextAuth.js с провайдером GoogleProvider. Процесс аутентификации:
+
+1. Пользователь нажимает кнопку "Google" на странице входа
+2. NextAuth.js перенаправляет пользователя на страницу аутентификации Google
+3. После успешной аутентификации Google возвращает пользователя на callback URL с кодом авторизации
+4. NextAuth.js обменивает код на токен доступа и получает информацию о пользователе
+5. Фронтенд отправляет информацию о пользователе на бэкенд через эндпоинт `/api/auth/google`
+6. Бэкенд находит или создает пользователя с данными Google и возвращает JWT токен
+7. Фронтенд сохраняет JWT токен в сессии NextAuth.js
+
+Для настройки Google OAuth см. файл `GOOGLE_AUTH_SETUP.md`.
 
 ### Обработка токенов и сессий
 

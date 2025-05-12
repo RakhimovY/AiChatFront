@@ -4,17 +4,20 @@ import GoogleProvider from "next-auth/providers/google";
 import { NextAuthOptions } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import axios from "axios";
+import { OAuthUserConfig } from "next-auth/providers";
 
 // Define user interface
 interface User {
   id: string;
   email: string;
+  name?: string;
 }
 
 // Define login response interface
 interface LoginResponse {
   token: string;
   privilege: string[];
+  name?: string;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -45,6 +48,7 @@ export const authOptions: NextAuthOptions = {
             return {
               id: credentials.email, // Use email as ID since we don't have the actual ID
               email: credentials.email,
+              name: response.data.name || "Пользователь", // Use name from response or default
               token: response.data.token,
             };
           }
@@ -57,9 +61,18 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "your-google-client-id",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "your-google-client-secret",
-    }),
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          googleId: profile.sub,
+        };
+      },
+    } as OAuthUserConfig<any>),
   ],
   pages: {
     signIn: "/auth/login",
@@ -67,12 +80,59 @@ export const authOptions: NextAuthOptions = {
     error: "/auth/error",
   },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user: any }) {
+    async signIn({ user, account, profile }) {
+      // Only handle Google sign-in
+      if (account?.provider === "google" && profile) {
+        try {
+          // Check if Google credentials are configured
+          if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+            console.error("Google OAuth credentials are not configured");
+            return "/auth/error?error=GoogleCredentialsNotConfigured";
+          }
+
+          // Call the backend API to authenticate with Google
+          const response = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/google`,
+            {
+              token: account.id_token,
+              email: profile.email,
+              name: profile.name,
+              picture: profile.picture,
+              googleId: profile.sub,
+            }
+          );
+
+          if (response.data && response.data.token) {
+            // Store the token in the user object so it can be accessed in the jwt callback
+            user.token = response.data.token;
+            return true;
+          }
+          console.error("Invalid response from backend Google authentication");
+          return "/auth/error?error=InvalidBackendResponse";
+        } catch (error) {
+          console.error("Google authentication error:", error);
+          // Check if the error is due to the backend being unavailable
+          if (axios.isAxiosError(error) && !error.response) {
+            return "/auth/error?error=BackendUnavailable";
+          }
+          return "/auth/error?error=GoogleAuthFailed";
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }: { token: JWT; user: any; account: any }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.name = user.name;
+        token.picture = user.image;
         // Store the JWT token from the backend in the NextAuth.js token
         token.accessToken = user.token;
+
+        // Store provider information
+        if (account) {
+          token.provider = account.provider;
+        }
       }
       return token;
     },
@@ -80,8 +140,11 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id;
         session.user.email = token.email;
+        session.user.name = token.name;
+        session.user.image = token.picture;
         // Add the JWT token to the session so it can be used for authenticated requests
         session.accessToken = token.accessToken;
+        session.provider = token.provider;
       }
       return session;
     },
