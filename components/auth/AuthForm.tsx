@@ -33,7 +33,7 @@ export default function AuthForm({ type }: AuthFormProps) {
     name: "",
     email: "",
     password: "",
-    country: "Kazakhstan", // Default country
+    country: "KZ", // Default country
   });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -190,18 +190,30 @@ export default function AuthForm({ type }: AuthFormProps) {
               required
               className="w-full p-2 border rounded-md"
             >
-              <option value="Kazakhstan">Казахстан</option>
-              <option value="Russia">Россия</option>
-              <option value="Belarus">Беларусь</option>
-              <option value="Ukraine">Украина</option>
-              <option value="Uzbekistan">Узбекистан</option>
-              <option value="Kyrgyzstan">Кыргызстан</option>
-              <option value="Tajikistan">Таджикистан</option>
-              <option value="Turkmenistan">Туркменистан</option>
-              <option value="Azerbaijan">Азербайджан</option>
-              <option value="Armenia">Армения</option>
-              <option value="Georgia">Грузия</option>
-              <option value="Moldova">Молдова</option>
+              <option value="KZ">Казахстан</option>
+              <option value="RU">Россия</option>
+              <option value="BY">Беларусь</option>
+              <option value="UA">Украина</option>
+              <option value="UZ">Узбекистан</option>
+              <option value="KG">Кыргызстан</option>
+              <option value="TJ">Таджикистан</option>
+              <option value="TM">Туркменистан</option>
+              <option value="AZ">Азербайджан</option>
+              <option value="AM">Армения</option>
+              <option value="GE">Грузия</option>
+              <option value="MD">Молдова</option>
+              <option value="US">США</option>
+              <option value="GB">Великобритания</option>
+              <option value="DE">Германия</option>
+              <option value="FR">Франция</option>
+              <option value="IT">Италия</option>
+              <option value="ES">Испания</option>
+              <option value="CN">Китай</option>
+              <option value="JP">Япония</option>
+              <option value="IN">Индия</option>
+              <option value="BR">Бразилия</option>
+              <option value="CA">Канада</option>
+              <option value="AU">Австралия</option>
             </select>
           </div>
         )}

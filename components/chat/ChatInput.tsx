@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { Send } from "lucide-react";
+import CountrySelector from "./CountrySelector";
 
 type ChatInputProps = {
   input: string;
@@ -7,9 +8,11 @@ type ChatInputProps = {
   handleSubmit: (e: React.FormEvent) => void;
   isLoading: boolean;
   disabled?: boolean;
+  selectedCountry: string | null;
+  onSelectCountry: (country: string | null) => void;
 };
 
-export default function ChatInput({ input, setInput, handleSubmit, isLoading, disabled = false }: ChatInputProps) {
+export default function ChatInput({ input, setInput, handleSubmit, isLoading, disabled = false, selectedCountry, onSelectCountry }: ChatInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Focus input on load
@@ -59,9 +62,15 @@ export default function ChatInput({ input, setInput, handleSubmit, isLoading, di
           <Send className="h-5 w-5" />
         </button>
       </form>
-      <p className="text-xs text-muted-foreground mt-2 text-center">
-        LegalGPT предоставляет информацию общего характера. Для решения конкретных юридических вопросов рекомендуется консультация с квалифицированным юристом.
-      </p>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-2 space-y-2 md:space-y-0 max-w-full">
+        <CountrySelector 
+          selectedCountry={selectedCountry}
+          onSelectCountry={onSelectCountry}
+        />
+        <p className="text-xs text-muted-foreground text-center md:text-right md:flex-1 mt-2 md:mt-0 px-2 py-1.5 bg-background/80 rounded leading-relaxed tracking-wide">
+          Информация общего характера. Для юридических вопросов обратитесь к юристу.
+        </p>
+      </div>
     </div>
   );
 }

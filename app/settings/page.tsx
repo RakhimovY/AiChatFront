@@ -27,7 +27,7 @@ export default function SettingsPage() {
     name: session?.user?.name || "Демо Пользователь",
     email: session?.user?.email || "demo@example.com",
     image: session?.user?.image || undefined,
-    country: session?.user?.country || "Kazakhstan"
+    country: session?.user?.country || "KZ"
   };
 
   return <SettingsContent user={user} />;

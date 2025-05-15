@@ -46,6 +46,7 @@ export default function ChatPage() {
   const [currentChatId, setCurrentChatId] = useState<number | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(session?.user?.country || null);
 
   // Reference to the sidebar element
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -200,8 +201,8 @@ export default function ChatPage() {
         // Use the backend API for authenticated users
         const response = await sendMessage(
           currentChatId
-            ? { chatId: currentChatId, content: input, country: session?.user?.country }
-            : { content: input, country: session?.user?.country }
+            ? { chatId: currentChatId, content: input, country: selectedCountry }
+            : { content: input, country: selectedCountry }
         );
 
         // Update the current chat ID if this is a new chat
@@ -340,6 +341,8 @@ export default function ChatPage() {
               handleSubmit={handleSubmit}
               isLoading={isLoading || isLoadingHistory}
               disabled={(isDemoMode && isLimitExceeded) || status === "loading"}
+              selectedCountry={selectedCountry}
+              onSelectCountry={setSelectedCountry}
             />
           </div>
         </div>

@@ -24,12 +24,12 @@ export default function SettingsContent({ user }: SettingsContentProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  
+
   // Form state
   const [formData, setFormData] = useState({
     name: user.name,
     email: user.email,
-    country: user.country || "Kazakhstan",
+    country: user.country || "KZ",
   });
 
   // Reference to the sidebar element
@@ -86,7 +86,7 @@ export default function SettingsContent({ user }: SettingsContentProps) {
 
       if (response.status === 200) {
         setSuccess("Профиль успешно обновлен");
-        
+
         // Update the session with the new user data
         await update({
           ...session,
@@ -130,19 +130,19 @@ export default function SettingsContent({ user }: SettingsContentProps) {
         {/* Main content */}
         <main className="flex-1 p-6">
           <h1 className="text-2xl font-bold mb-6">Настройки профиля</h1>
-          
+
           {error && (
             <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4">
               {error}
             </div>
           )}
-          
+
           {success && (
             <div className="bg-green-100 text-green-800 text-sm p-3 rounded-md mb-4">
               {success}
             </div>
           )}
-          
+
           <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-medium">
@@ -159,7 +159,7 @@ export default function SettingsContent({ user }: SettingsContentProps) {
                 placeholder="Введите ваше имя"
               />
             </div>
-            
+
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 Email
@@ -175,7 +175,7 @@ export default function SettingsContent({ user }: SettingsContentProps) {
                 placeholder="Введите ваш email"
               />
             </div>
-            
+
             <div className="space-y-2">
               <label htmlFor="country" className="text-sm font-medium">
                 Страна
@@ -188,21 +188,33 @@ export default function SettingsContent({ user }: SettingsContentProps) {
                 required
                 className="w-full p-2 border rounded-md"
               >
-                <option value="Kazakhstan">Казахстан</option>
-                <option value="Russia">Россия</option>
-                <option value="Belarus">Беларусь</option>
-                <option value="Ukraine">Украина</option>
-                <option value="Uzbekistan">Узбекистан</option>
-                <option value="Kyrgyzstan">Кыргызстан</option>
-                <option value="Tajikistan">Таджикистан</option>
-                <option value="Turkmenistan">Туркменистан</option>
-                <option value="Azerbaijan">Азербайджан</option>
-                <option value="Armenia">Армения</option>
-                <option value="Georgia">Грузия</option>
-                <option value="Moldova">Молдова</option>
+                <option value="KZ">Казахстан</option>
+                <option value="RU">Россия</option>
+                <option value="BY">Беларусь</option>
+                <option value="UA">Украина</option>
+                <option value="UZ">Узбекистан</option>
+                <option value="KG">Кыргызстан</option>
+                <option value="TJ">Таджикистан</option>
+                <option value="TM">Туркменистан</option>
+                <option value="AZ">Азербайджан</option>
+                <option value="AM">Армения</option>
+                <option value="GE">Грузия</option>
+                <option value="MD">Молдова</option>
+                <option value="US">США</option>
+                <option value="GB">Великобритания</option>
+                <option value="DE">Германия</option>
+                <option value="FR">Франция</option>
+                <option value="IT">Италия</option>
+                <option value="ES">Испания</option>
+                <option value="CN">Китай</option>
+                <option value="JP">Япония</option>
+                <option value="IN">Индия</option>
+                <option value="BR">Бразилия</option>
+                <option value="CA">Канада</option>
+                <option value="AU">Австралия</option>
               </select>
             </div>
-            
+
             <button
               type="submit"
               disabled={isLoading}

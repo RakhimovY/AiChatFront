@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react";
+import DOMPurify from 'isomorphic-dompurify';
 
 type MessageProps = {
   id: string;
@@ -12,6 +13,75 @@ export default function Message({ id, role, content, isLoading = false }: Messag
   const formatBoldText = (text: string) => {
     // Replace **text** with <strong>text</strong>
     return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  };
+
+  // Function to detect and format code blocks
+  const formatCodeBlocks = (text: string) => {
+    // Replace ```code``` with formatted code blocks
+    return text.replace(/```([\s\S]*?)```/g, '<pre class="code-block"><code>$1</code></pre>');
+  };
+
+  // Function to detect and format block quotes
+  const formatBlockQuotes = (text: string) => {
+    // Replace lines starting with > with blockquote elements
+    const lines = text.split('\n');
+    let inBlockquote = false;
+    let result = '';
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.trim().startsWith('>')) {
+        // Extract the content after >
+        const content = line.trim().substring(1).trim();
+
+        if (!inBlockquote) {
+          // Start a new blockquote
+          result += '<blockquote class="block-quote">';
+          inBlockquote = true;
+        }
+
+        result += content + (i < lines.length - 1 ? '<br>' : '');
+      } else {
+        if (inBlockquote) {
+          // Close the blockquote
+          result += '</blockquote>';
+          inBlockquote = false;
+        }
+
+        result += line + (i < lines.length - 1 ? '\n' : '');
+      }
+    }
+
+    // Close any open blockquote
+    if (inBlockquote) {
+      result += '</blockquote>';
+    }
+
+    return result;
+  };
+
+  // Function to detect and format links
+  const formatLinks = (text: string) => {
+    // URL regex pattern
+    const urlPattern = /https?:\/\/[^\s<]+[^<.,:;"')\]\s]/g;
+
+    // Replace URLs with anchor tags
+    return text.replace(urlPattern, (url) => {
+      // Try to create a readable link text
+      let displayUrl = url;
+      try {
+        const urlObj = new URL(url);
+        displayUrl = urlObj.hostname + (urlObj.pathname !== '/' ? urlObj.pathname : '');
+        // Truncate if too long
+        if (displayUrl.length > 30) {
+          displayUrl = displayUrl.substring(0, 30) + '...';
+        }
+      } catch (e) {
+        // If URL parsing fails, use the original URL
+      }
+
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${displayUrl}</a>`;
+    });
   };
 
   // Function to detect indentation level
@@ -90,7 +160,7 @@ export default function Message({ id, role, content, isLoading = false }: Messag
     if (item.type === 'bullet') {
       return (
         <li key={key}>
-          <span dangerouslySetInnerHTML={{ __html: item.content }} />
+          <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.content) }} />
           {item.nested.length > 0 && (
             <ul className="list-disc pl-5 mt-1 space-y-1">
               {item.nested.map((nestedItem: any, nestedIndex: number) => 
@@ -107,7 +177,7 @@ export default function Message({ id, role, content, isLoading = false }: Messag
       <div key={key} className="flex mb-1">
         <span className="mr-2 flex-shrink-0 w-5 text-right">{item.number}.</span>
         <div className="flex-1">
-          <span dangerouslySetInnerHTML={{ __html: item.content }} />
+          <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.content) }} />
           {item.nested.length > 0 && (
             <div className="pl-5 mt-1 space-y-1">
               {item.nested.map((nestedItem: any, nestedIndex: number) => 
@@ -122,11 +192,20 @@ export default function Message({ id, role, content, isLoading = false }: Messag
 
   // Function to format the message content with proper paragraphs and lists
   const formatContent = (text: string) => {
+    // Apply code block formatting first (to avoid conflicts with other formatting)
+    const textWithCodeBlocks = formatCodeBlocks(text);
+
+    // Apply block quote formatting
+    const textWithBlockQuotes = formatBlockQuotes(textWithCodeBlocks);
+
     // Apply bold formatting
-    const textWithBoldFormatting = formatBoldText(text);
+    const textWithBoldFormatting = formatBoldText(textWithBlockQuotes);
+
+    // Apply link formatting
+    const textWithLinks = formatLinks(textWithBoldFormatting);
 
     // Split the text by double line breaks to create paragraphs
-    const paragraphs = textWithBoldFormatting.split(/\n\s*\n/);
+    const paragraphs = textWithLinks.split(/\n\s*\n/);
 
     return paragraphs.map((paragraph, index) => {
       // Check if the paragraph contains list items
@@ -162,7 +241,7 @@ export default function Message({ id, role, content, isLoading = false }: Messag
       const lines = paragraph.split(/\n/).filter(line => line.trim());
 
       if (lines.length === 1) {
-        return <p key={`p-${index}`} className="mb-2" dangerouslySetInnerHTML={{ __html: paragraph }} />;
+        return <p key={`p-${index}`} className="mb-2" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(paragraph) }} />;
       }
 
       return (
@@ -170,7 +249,7 @@ export default function Message({ id, role, content, isLoading = false }: Messag
           {lines.map((line, lineIndex) => (
             <p key={`line-${index}-${lineIndex}`} 
                className={lineIndex < lines.length - 1 ? "mb-1" : ""}
-               dangerouslySetInnerHTML={{ __html: line }} 
+               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(line) }} 
             />
           ))}
         </div>
@@ -186,9 +265,16 @@ export default function Message({ id, role, content, isLoading = false }: Messag
       }`}
     >
       {isLoading ? (
-        <div className="flex items-center space-x-2">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <p>Ассистент печатает...</p>
+        <div className="flex flex-col space-y-2">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <p>Ассистент печатает...</p>
+          </div>
+          <div className="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
       ) : (
         <div className="flex items-start">
