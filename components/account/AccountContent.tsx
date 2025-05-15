@@ -3,17 +3,17 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-  MessageSquare, 
-  FileText, 
-  Settings, 
-  CreditCard, 
+import {
+  MessageSquare,
+  FileText,
+  Settings,
+  CreditCard,
   HelpCircle
 } from "lucide-react";
 import Sidebar, { MenuItem, User } from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 
-type DashboardContentProps = {
+type AccountContentProps = {
   user: {
     name: string;
     email: string;
@@ -21,7 +21,7 @@ type DashboardContentProps = {
   };
 };
 
-export default function DashboardContent({ user }: DashboardContentProps) {
+export default function AccountContent({ user }: AccountContentProps) {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -64,8 +64,8 @@ export default function DashboardContent({ user }: DashboardContentProps) {
         user={user}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
-        pageTitle="Личный кабинет"
-        pageRoute="/dashboard"
+        pageTitle="LegalGPT"
+        pageRoute="/account"
       />
 
       <div className="flex flex-1 pt-16 md:pt-20">
@@ -75,7 +75,7 @@ export default function DashboardContent({ user }: DashboardContentProps) {
           user={user}
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
-          activePage="/dashboard"
+          activePage="/account"
         />
 
         {/* Main content */}

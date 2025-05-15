@@ -1,21 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { 
   MessageSquare, 
   CreditCard, 
-  HelpCircle, 
-  LogOut,
-  Menu,
-  X,
+  HelpCircle,
   Mail,
-  Phone,
   FileText
 } from "lucide-react";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import Sidebar, { MenuItem, User } from "@/components/layout/Sidebar";
+import Header from "@/components/layout/Header";
 
 type SupportContentProps = {
   user: {
@@ -29,11 +25,31 @@ export default function SupportContent({ user }: SupportContentProps) {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleSignOut = async () => {
-    await signOut({ redirect: true, callbackUrl: '/' });
-  };
+  // Reference to the sidebar element
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
-  const menuItems = [
+  // Handle clicks outside the sidebar to close it on mobile
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Only proceed if the sidebar is open and we're on mobile
+      if (!isMobileMenuOpen || window.innerWidth >= 768) return;
+
+      // Check if the click was outside the sidebar
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('mousedown', handleClickOutside);
+
+    // Clean up
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
+
+  const menuItems: MenuItem[] = [
     { icon: MessageSquare, label: "Чаты", href: "/chat" },
     { icon: CreditCard, label: "Подписка", href: "/billing" },
     { icon: HelpCircle, label: "Помощь", href: "/support" },
@@ -41,111 +57,73 @@ export default function SupportContent({ user }: SupportContentProps) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container flex justify-between items-center py-4">
-          <div className="flex items-center">
-            <button 
-              className="md:hidden mr-4"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
-            <Link href="/dashboard" className="text-xl font-bold">
-              LegalGPT
-            </Link>
-          </div>
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <div className="text-sm text-right">
-              <div className="font-medium">{user.name}</div>
-              <div className="text-muted-foreground">{user.email}</div>
-            </div>
-            <Link href="/dashboard">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer">
-                {user.image ? (
-                  <img 
-                    src={user.image} 
-                    alt={user.name} 
-                    className="h-8 w-8 rounded-full" 
-                  />
-                ) : (
-                  <span className="text-primary font-medium">
-                    {user.name.charAt(0).toUpperCase()}
-                  </span>
-                )}
-              </div>
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Header component for both mobile and desktop */}
+      <Header
+        user={user}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        pageTitle="Центр поддержки"
+        pageRoute="/support"
+      />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 pt-16 md:pt-20">
         {/* Sidebar */}
-        <aside 
-          className={`
-            ${isMobileMenuOpen ? 'block' : 'hidden'} 
-            md:block w-64 border-r bg-card fixed md:static inset-y-0 z-10 pt-16 md:pt-0
-          `}
-        >
-          <nav className="p-4 space-y-1">
-            {menuItems.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className="flex items-center p-2 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground"
-                >
-                  <Icon className="h-5 w-5 mr-3" />
-                  {item.label}
-                </Link>
-              );
-            })}
-            <button
-              onClick={handleSignOut}
-              className="flex items-center p-2 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground w-full text-left"
-            >
-              <LogOut className="h-5 w-5 mr-3" />
-              Выйти
-            </button>
-          </nav>
-        </aside>
+        <Sidebar 
+          menuItems={menuItems}
+          user={user}
+          isMobileMenuOpen={isMobileMenuOpen}
+          setIsMobileMenuOpen={setIsMobileMenuOpen}
+          activePage="/support"
+        />
 
         {/* Main content */}
         <main className="flex-1 p-6">
           <h1 className="text-2xl font-bold mb-6">Центр поддержки</h1>
 
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
             <div className="border rounded-lg p-6">
               <Mail className="h-8 w-8 text-primary mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Напишите нам</h2>
+              <h2 className="text-xl font-semibold mb-2">Email</h2>
               <p className="text-muted-foreground mb-4">
                 Отправьте нам сообщение, и мы ответим вам в течение 24 часов.
               </p>
               <a 
-                href="mailto:support@legalgpt.ru" 
+                href="mailto:erke.bulan622@gmail.com" 
                 className="text-primary hover:underline inline-flex items-center"
               >
-                support@legalgpt.ru
+                erke.bulan622@gmail.com
               </a>
             </div>
 
             <div className="border rounded-lg p-6">
-              <Phone className="h-8 w-8 text-primary mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Позвоните нам</h2>
+              <MessageSquare className="h-8 w-8 text-green-500 mb-4" />
+              <h2 className="text-xl font-semibold mb-2">WhatsApp</h2>
               <p className="text-muted-foreground mb-4">
-                Наша служба поддержки доступна с 9:00 до 18:00 по московскому времени.
+                Свяжитесь с нами через WhatsApp для быстрого ответа.
               </p>
               <a 
-                href="tel:+74951234567" 
+                href="https://wa.me/77086934037?text=Здравствуйте!%20У%20меня%20вопрос%20о%20LegalGPT." 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-primary hover:underline inline-flex items-center"
               >
-                +7 (495) 123-45-67
+                +7 708 693 4037
+              </a>
+            </div>
+
+            <div className="border rounded-lg p-6">
+              <MessageSquare className="h-8 w-8 text-blue-500 mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Telegram</h2>
+              <p className="text-muted-foreground mb-4">
+                Напишите нам в Telegram для оперативной поддержки.
+              </p>
+              <a 
+                href="https://t.me/YerkebulanR" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline inline-flex items-center"
+              >
+                @YerkebulanR
               </a>
             </div>
           </div>
@@ -188,14 +166,13 @@ export default function SupportContent({ user }: SupportContentProps) {
               <div>
                 <h2 className="text-xl font-semibold mb-2">Документация</h2>
                 <p className="text-muted-foreground mb-4">
-                  Ознакомьтесь с нашей подробной документацией, чтобы узнать больше о возможностях сервиса и получить ответы на технические вопросы.
+                  Наша подробная документация находится в разработке и скоро будет доступна. В ней вы сможете узнать больше о возможностях сервиса и получить ответы на технические вопросы.
                 </p>
-                <Link 
-                  href="/docs" 
-                  className="text-primary hover:underline inline-flex items-center"
-                >
-                  Перейти к документации
-                </Link>
+                <div className="flex items-center px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-md text-sm">
+                  <span className="text-yellow-800 dark:text-yellow-200">
+                    Документация будет доступна в ближайшее время. Доступ к ней будет предоставлен пользователям с активной подпиской.
+                  </span>
+                </div>
               </div>
             </div>
           </div>

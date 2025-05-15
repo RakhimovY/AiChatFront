@@ -23,19 +23,18 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // If the error is unauthorized (401) and we have a session, it might be due to token expiration
+    // If the error is unauthorized (401), it's due to token expiration
     if (error.response?.status === 401) {
-      // Check if this is a chat API request
-      const isChatRequest = error.config?.url?.includes('/chat/');
+      console.error('Authentication error:', error);
 
-      if (isChatRequest) {
-        // For chat requests, don't sign out automatically
-        console.error('Authentication error in chat request:', error);
-        // Let the component handle the error
-      } else {
-        // For other requests, sign out the user and redirect to login page
-        await signOut({ redirect: true, callbackUrl: '/auth/login' });
-      }
+      // Add a custom property to the error to indicate it's an auth error
+      error.isSessionExpired = true;
+
+      // Sign out the user and redirect to login page with a message
+      await signOut({ 
+        redirect: true, 
+        callbackUrl: '/auth/login?error=session_expired' 
+      });
     }
     return Promise.reject(error);
   }

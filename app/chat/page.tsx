@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Message } from "@/components/chat/types";
@@ -23,10 +23,10 @@ export default function ChatPage() {
   useInitializeDemoStore();
 
   // Get demo store state and actions
-  const { 
-    incrementRequestCount, 
+  const {
+    incrementRequestCount,
     isLimitExceeded,
-    requestCount 
+    requestCount
   } = useDemoStore();
 
   // State for messages, loading state, and sidebar
@@ -34,7 +34,7 @@ export default function ChatPage() {
     {
       id: "welcome",
       role: "assistant",
-      content: isDemoMode 
+      content: isDemoMode
         ? "Здравствуйте! Вы используете демо-режим с ограничением в 10 запросов. Чем я могу вам помочь сегодня?"
         : "Здравствуйте! Я ваш юридический ассистент. Чем я могу вам помочь сегодня?",
       timestamp: new Date(),
@@ -46,6 +46,9 @@ export default function ChatPage() {
   const [currentChatId, setCurrentChatId] = useState<number | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Reference to the sidebar element
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Fetch chat history when the component mounts or when the chat ID changes
   useEffect(() => {
@@ -73,6 +76,27 @@ export default function ChatPage() {
 
     fetchChatHistory();
   }, [currentChatId, isDemoMode, status]);
+
+  // Handle clicks outside the sidebar to close it on mobile
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Only proceed if the sidebar is open and we're on mobile
+      if (!isSidebarOpen || window.innerWidth >= 768) return;
+
+      // Check if the click was outside the sidebar
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('mousedown', handleClickOutside);
+
+    // Clean up
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSidebarOpen]);
 
   // Poll for new messages every 5 seconds
   useEffect(() => {
@@ -175,7 +199,7 @@ export default function ChatPage() {
       } else {
         // Use the backend API for authenticated users
         const response = await sendMessage(
-          currentChatId 
+          currentChatId
             ? { chatId: currentChatId, content: input }
             : { content: input }
         );
@@ -210,7 +234,7 @@ export default function ChatPage() {
         {
           id: `error-${userMessageId}`,
           role: "assistant",
-          content: isAuthError 
+          content: isAuthError
             ? "Извините, возникла проблема с авторизацией. Пожалуйста, обновите страницу или войдите в систему заново."
             : "Извините, произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте еще раз.",
           timestamp: new Date(),
@@ -257,17 +281,20 @@ export default function ChatPage() {
       {isDemoMode && <DemoLimitModal />}
 
       {/* Sidebar */}
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen}
-        clearChat={clearChat}
-        onSelectChat={(chatId) => setCurrentChatId(chatId)}
-        currentChatId={currentChatId}
-      />
+      <div ref={sidebarRef} className="h-full">
+        <Sidebar 
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+          clearChat={clearChat}
+          onSelectChat={(chatId) => setCurrentChatId(chatId)}
+          currentChatId={currentChatId}
+        />
+      </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col h-full">
         {/* Mobile header */}
-        <MobileHeader 
+        <MobileHeader
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
           exportChat={exportChat}
@@ -277,7 +304,7 @@ export default function ChatPage() {
         {isDemoMode && <DemoInfo />}
 
         {/* Chat container */}
-        <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <div className="flex-1 flex flex-col h-full overflow-hidden pt-16">
           {/* Error message */}
           {error && (
             <div className="bg-destructive/10 text-destructive text-sm p-3 m-4 rounded-md">
@@ -295,7 +322,7 @@ export default function ChatPage() {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4">
-            <ChatMessages 
+            <ChatMessages
               messages={messages}
               isLoading={isLoading}
             />
@@ -303,7 +330,7 @@ export default function ChatPage() {
 
           {/* Input area */}
           <div className="border-t p-4">
-            <ChatInput 
+            <ChatInput
               input={input}
               setInput={setInput}
               handleSubmit={handleSubmit}

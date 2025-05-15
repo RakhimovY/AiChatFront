@@ -16,13 +16,25 @@ export default function ForgotPasswordForm() {
     setIsLoading(true);
 
     try {
-      // In a real application, this would be an API call to your backend
-      // For demo purposes, we'll simulate a successful password reset request
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Make an API call to the frontend API route to request a password reset
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Произошла ошибка при запросе сброса пароля');
+      }
+
+      // If the request was successful, show the success message
       setSuccess(true);
     } catch (error: unknown) {
-      setError("Произошла ошибка. Пожалуйста, попробуйте еще раз.");
+      setError(error instanceof Error ? error.message : "Произошла ошибка. Пожалуйста, попробуйте еще раз.");
       console.error("Password reset error:", error);
     } finally {
       setIsLoading(false);

@@ -27,6 +27,7 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        remember: { label: "Remember Me", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -50,6 +51,7 @@ export const authOptions: NextAuthOptions = {
               email: credentials.email,
               name: response.data.name || "Пользователь", // Use name from response or default
               token: response.data.token,
+              remember: credentials.remember === "true", // Pass the remember me preference
             };
           }
 
@@ -119,7 +121,7 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user, account }: { token: JWT; user: any; account: any }) {
+    async jwt({ token, user, account, trigger }: { token: JWT; user: any; account: any; trigger?: string }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -131,6 +133,11 @@ export const authOptions: NextAuthOptions = {
         // Store provider information
         if (account) {
           token.provider = account.provider;
+        }
+
+        // Store remember me preference
+        if (trigger === "signIn" && user.remember !== undefined) {
+          token.remember = user.remember;
         }
       }
       return token;
@@ -144,12 +151,15 @@ export const authOptions: NextAuthOptions = {
         // Add the JWT token to the session so it can be used for authenticated requests
         session.accessToken = token.accessToken;
         session.provider = token.provider;
+        // Add the remember me preference to the session
+        session.remember = token.remember;
       }
       return session;
     },
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days by default
   },
 };
 

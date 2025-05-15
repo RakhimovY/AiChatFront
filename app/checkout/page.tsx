@@ -151,7 +151,7 @@ export default function CheckoutPage() {
 
   if (isSuccess) {
     return (
-      <main className="flex flex-col min-h-screen bg-background">
+      <main className="flex flex-col min-h-screen bg-background pt-16">
         <Navigation />
         <SuccessMessage plan={currentPlan} />
       </main>
@@ -159,7 +159,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="flex flex-col min-h-screen bg-background">
+    <main className="flex flex-col min-h-screen bg-background pt-16">
       <Navigation />
 
       <div className="container py-12">

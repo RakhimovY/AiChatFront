@@ -109,6 +109,41 @@
   @apply p-4 border-t border-border;
 }
 
+/* Message content formatting styles */
+.message-content {
+  @apply text-sm leading-relaxed;
+}
+
+.message-content p {
+  @apply mb-2;
+}
+
+.message-content ul, 
+.message-content ol {
+  @apply my-2 ml-5;
+}
+
+.message-content ul {
+  @apply list-disc;
+}
+
+.message-content ol {
+  @apply list-decimal;
+}
+
+.message-content li {
+  @apply mb-1;
+}
+
+.message-content li:last-child {
+  @apply mb-0;
+}
+
+/* Add a bit more spacing in assistant messages for better readability */
+.assistant-message .message-content {
+  @apply space-y-1;
+}
+
 /* Landing page specific styles */
 .hero-section {
   @apply py-20 px-4 md:px-6 lg:px-8 bg-gradient-to-r from-primary/10 to-secondary/10;

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
@@ -27,14 +27,24 @@ interface RegisterResponse {
 
 export default function AuthForm({ type }: AuthFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState<AuthFormData>({
     name: "",
     email: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Check for error parameters in the URL
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam === "session_expired") {
+      setError("Ваша сессия истекла. Пожалуйста, войдите снова.");
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -67,12 +77,13 @@ export default function AuthForm({ type }: AuthFormProps) {
           redirect: false,
           email: formData.email,
           password: formData.password,
+          remember: rememberMe, // Pass the remember me preference
         });
 
         if (result?.error) {
           setError("Неверный email или пароль");
         } else {
-          router.push("/dashboard");
+          router.push("/account");
           router.refresh();
         }
       } else {
@@ -103,12 +114,13 @@ export default function AuthForm({ type }: AuthFormProps) {
             redirect: false,
             email: formData.email,
             password: formData.password,
+            remember: rememberMe, // Pass the remember me preference
           });
 
           if (result?.error) {
             setError("Ошибка при автоматическом входе");
           } else {
-            router.push("/dashboard");
+            router.push("/account");
             router.refresh();
           }
         }
@@ -124,7 +136,7 @@ export default function AuthForm({ type }: AuthFormProps) {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/dashboard" });
+      await signIn("google", { callbackUrl: "/account" });
     } catch (error: unknown) {
       console.error("Google sign in error:", error);
       setError("Ошибка при входе через Google");
@@ -176,6 +188,7 @@ export default function AuthForm({ type }: AuthFormProps) {
             required
             className="w-full p-2 border rounded-md"
             placeholder="Введите ваш email"
+            autoComplete={type === "login" ? "username" : "email"}
           />
         </div>
 
@@ -193,6 +206,7 @@ export default function AuthForm({ type }: AuthFormProps) {
               required
               className="w-full p-2 border rounded-md pr-10"
               placeholder="Введите пароль"
+              autoComplete={type === "login" ? "current-password" : "new-password"}
             />
             <button
               type="button"
@@ -218,10 +232,37 @@ export default function AuthForm({ type }: AuthFormProps) {
               </ul>
             </div>
           )}
+
+          {type === "register" && (
+            <div className="flex items-center mt-4">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="rememberMe" className="text-sm">
+                Запомнить меня
+              </label>
+            </div>
+          )}
         </div>
 
         {type === "login" && (
-          <div className="text-right">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="rememberMe" className="text-sm">
+                Запомнить меня
+              </label>
+            </div>
             <Link
               href="/auth/forgot-password"
               className="text-sm text-primary hover:underline"

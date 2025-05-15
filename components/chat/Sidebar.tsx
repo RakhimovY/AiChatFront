@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Bot, Trash2, User, MessageSquare, X, Loader2 } from "lucide-react";
+import { Bot, PlusCircle, User, MessageSquare, X, Loader2 } from "lucide-react";
 import { getUserChats, deleteChat } from "@/lib/chatApi";
 import { useSession } from "next-auth/react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 type SidebarProps = {
   isSidebarOpen: boolean;
+  setIsSidebarOpen?: (isOpen: boolean) => void;
   clearChat: () => void;
   onSelectChat: (chatId: number) => void;
   currentChatId: number | null;
 };
 
-export default function Sidebar({ isSidebarOpen, clearChat, onSelectChat, currentChatId }: SidebarProps) {
+export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, onSelectChat, currentChatId }: SidebarProps) {
   const { data: session, status } = useSession();
   const [chats, setChats] = useState<Array<{ id: number; title: string | null; createdAt: string }>>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +45,10 @@ export default function Sidebar({ isSidebarOpen, clearChat, onSelectChat, curren
   // Handle chat selection
   const handleSelectChat = (chatId: number) => {
     onSelectChat(chatId);
+    // Close sidebar on mobile after selecting a chat
+    if (setIsSidebarOpen && window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
   };
 
   // Handle chat deletion
@@ -82,10 +87,10 @@ export default function Sidebar({ isSidebarOpen, clearChat, onSelectChat, curren
     <div 
       className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform ${
         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } transition-transform duration-200 ease-in-out md:relative md:translate-x-0`}
+      } transition-transform duration-200 ease-in-out md:relative md:translate-x-0 md:h-full`}
     >
       <div className="flex flex-col h-full">
-        <div className="p-4 border-b">
+        <div className="py-4 px-4 border-b">
           <div className="flex justify-between items-center">
             <Link href="/chat" className="flex items-center space-x-2">
               <Bot className="h-6 w-6 text-primary" />
@@ -146,17 +151,23 @@ export default function Sidebar({ isSidebarOpen, clearChat, onSelectChat, curren
 
           <div className="mt-6">
             <button 
-              onClick={clearChat}
+              onClick={() => {
+                clearChat();
+                // Close sidebar on mobile after creating a new chat
+                if (setIsSidebarOpen && window.innerWidth < 768) {
+                  setIsSidebarOpen(false);
+                }
+              }}
               className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground"
             >
-              <Trash2 className="h-4 w-4" />
+              <PlusCircle className="h-4 w-4" />
               <span>Новый чат</span>
             </button>
           </div>
         </div>
 
-        <div className="p-4 border-t">
-          <Link href="/dashboard">
+        <div className="py-4 px-4">
+          <Link href="/account">
             <div className="flex items-center space-x-3 cursor-pointer hover:bg-accent rounded-md p-2">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 {session?.user?.image ? (

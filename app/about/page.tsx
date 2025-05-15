@@ -4,7 +4,7 @@ import Footer from "@/components/layout/Footer";
 
 export default function AboutPage() {
   return (
-    <main className="flex flex-col min-h-screen">
+    <main className="flex flex-col min-h-screen pt-16">
       {/* Navigation */}
       <Navigation activePage="about" />
 
@@ -12,19 +12,19 @@ export default function AboutPage() {
       <section className="py-16">
         <div className="container max-w-4xl">
           <h1 className="text-4xl font-bold mb-8 text-center">О проекте LegalGPT</h1>
-          
+
           <div className="prose prose-lg mx-auto">
             <p className="text-xl text-center mb-12">
               LegalGPT создан с целью сделать юридическую помощь доступной для всех людей.
             </p>
-            
+
             <h2 className="text-2xl font-semibold mt-12 mb-6">Наша миссия</h2>
             <p>
               Мы верим, что каждый человек должен иметь доступ к качественной юридической информации и поддержке. 
               LegalGPT использует передовые технологии искусственного интеллекта, чтобы предоставить быстрые и точные 
               ответы на юридические вопросы, делая правовую помощь более доступной и понятной.
             </p>
-            
+
             <h2 className="text-2xl font-semibold mt-12 mb-6">Основные возможности</h2>
             <ul className="space-y-4">
               <li>
@@ -36,7 +36,7 @@ export default function AboutPage() {
                 основываясь на их содержании. Наш ИИ проанализирует документ и предоставит релевантные ответы.
               </li>
             </ul>
-            
+
             <h2 className="text-2xl font-semibold mt-12 mb-6">О создателе</h2>
             <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-8">
               <div className="w-48 h-48 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
@@ -61,7 +61,7 @@ export default function AboutPage() {
                 </div>
               </div>
             </div>
-            
+
             <h2 className="text-2xl font-semibold mt-12 mb-6">Связаться с нами</h2>
             <div className="grid md:grid-cols-3 gap-6">
               <a 
@@ -74,7 +74,7 @@ export default function AboutPage() {
                 <h3 className="font-medium mb-1">WhatsApp</h3>
                 <p className="text-sm text-center text-muted-foreground">+7 708 693 4037</p>
               </a>
-              
+
               <a 
                 href="https://t.me/YerkebulanR" 
                 target="_blank" 
@@ -85,7 +85,7 @@ export default function AboutPage() {
                 <h3 className="font-medium mb-1">Telegram</h3>
                 <p className="text-sm text-center text-muted-foreground">@YerkebulanR</p>
               </a>
-              
+
               <a 
                 href="mailto:erke.bulan622@gmail.com" 
                 target="_blank" 

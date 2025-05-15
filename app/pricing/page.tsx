@@ -88,7 +88,7 @@ export default function PricingPage() {
   ];
 
   return (
-    <main className="flex flex-col min-h-screen">
+    <main className="flex flex-col min-h-screen pt-16">
       {/* Navigation */}
       <Navigation activePage="pricing" />
 
