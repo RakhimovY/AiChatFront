@@ -11,11 +11,12 @@ interface User {
 interface RegistrationRequest {
   email: string;
   password: string;
+  country?: string;
 }
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password }: { name: string; email: string; password: string } = await request.json();
+    const { name, email, password, country }: { name: string; email: string; password: string; country: string } = await request.json();
 
     // Validate input
     if (!email || !password) {
@@ -52,6 +53,11 @@ export async function POST(request: Request) {
       // Add name to the request if provided
       if (name) {
         registrationRequest.name = name;
+      }
+
+      // Add country to the request if provided
+      if (country) {
+        registrationRequest.country = country;
       }
 
       const response = await axios.post(

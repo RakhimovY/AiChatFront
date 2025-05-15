@@ -14,6 +14,7 @@ interface AuthFormData {
   name: string;
   email: string;
   password: string;
+  country: string;
 }
 
 interface RegisterResponse {
@@ -32,6 +33,7 @@ export default function AuthForm({ type }: AuthFormProps) {
     name: "",
     email: "",
     password: "",
+    country: "Kazakhstan", // Default country
   });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -172,6 +174,35 @@ export default function AuthForm({ type }: AuthFormProps) {
               className="w-full p-2 border rounded-md"
               placeholder="Введите ваше имя"
             />
+          </div>
+        )}
+
+        {type === "register" && (
+          <div className="space-y-2">
+            <label htmlFor="country" className="text-sm font-medium">
+              Страна
+            </label>
+            <select
+              id="country"
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-md"
+            >
+              <option value="Kazakhstan">Казахстан</option>
+              <option value="Russia">Россия</option>
+              <option value="Belarus">Беларусь</option>
+              <option value="Ukraine">Украина</option>
+              <option value="Uzbekistan">Узбекистан</option>
+              <option value="Kyrgyzstan">Кыргызстан</option>
+              <option value="Tajikistan">Таджикистан</option>
+              <option value="Turkmenistan">Туркменистан</option>
+              <option value="Azerbaijan">Азербайджан</option>
+              <option value="Armenia">Армения</option>
+              <option value="Georgia">Грузия</option>
+              <option value="Moldova">Молдова</option>
+            </select>
           </div>
         )}
 

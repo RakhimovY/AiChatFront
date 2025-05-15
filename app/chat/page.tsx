@@ -200,8 +200,8 @@ export default function ChatPage() {
         // Use the backend API for authenticated users
         const response = await sendMessage(
           currentChatId
-            ? { chatId: currentChatId, content: input }
-            : { content: input }
+            ? { chatId: currentChatId, content: input, country: session?.user?.country }
+            : { content: input, country: session?.user?.country }
         );
 
         // Update the current chat ID if this is a new chat
@@ -243,18 +243,22 @@ export default function ChatPage() {
     }
   };
 
-  // Clear chat history
+  // Clear chat history and start a new chat
   const clearChat = () => {
     setMessages([
       {
         id: "welcome",
         role: "assistant",
-        content: "Чат очищен. Чем я могу вам помочь?",
+        content: isDemoMode
+          ? "Здравствуйте! Вы начали новый чат. Вы используете демо-режим с ограничением в 10 запросов. Чем я могу вам помочь сегодня?"
+          : "Здравствуйте! Вы начали новый чат. Я ваш юридический ассистент, готовый ответить на ваши вопросы. Чем я могу вам помочь сегодня?",
         timestamp: new Date(),
       },
     ]);
     // Reset the current chat ID to allow creating a new chat
     setCurrentChatId(null);
+    // Clear input field if there's any text
+    setInput("");
   };
 
   // Export chat history

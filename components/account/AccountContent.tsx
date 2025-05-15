@@ -53,7 +53,7 @@ export default function AccountContent({ user }: AccountContentProps) {
     { icon: MessageSquare, label: "Чаты", href: "/chat" },
     // { icon: FileText, label: "Документы", href: "/documents" },
     { icon: CreditCard, label: "Подписка", href: "/billing" },
-    // { icon: Settings, label: "Настройки", href: "/settings" },
+    { icon: Settings, label: "Настройки", href: "/settings" },
     { icon: HelpCircle, label: "Помощь", href: "/support" },
   ];
 
@@ -148,6 +148,24 @@ export default function AccountContent({ user }: AccountContentProps) {
                   className="text-primary hover:underline inline-flex items-center"
                 >
                   Управление подпиской
+                </Link>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-6 flex flex-col h-full">
+              <div>
+                <Settings className="h-8 w-8 text-primary mb-4" />
+                <h2 className="text-xl font-semibold mb-2">Настройки профиля</h2>
+                <p className="text-muted-foreground mb-4">
+                  Изменение личных данных, страны и других настроек вашего профиля.
+                </p>
+              </div>
+              <div className="mt-auto pt-2">
+                <Link 
+                  href="/settings" 
+                  className="text-primary hover:underline inline-flex items-center"
+                >
+                  Перейти к настройкам
                 </Link>
               </div>
             </div>

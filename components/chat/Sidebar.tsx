@@ -149,7 +149,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
             </div>
           )}
 
-          <div className="mt-6">
+          <div className="mt-6 mb-2">
             <button 
               onClick={() => {
                 clearChat();
@@ -158,10 +158,10 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
                   setIsSidebarOpen(false);
                 }
               }}
-              className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground"
+              className="flex items-center justify-center space-x-2 text-sm w-full p-2 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
             >
               <PlusCircle className="h-4 w-4" />
-              <span>Новый чат</span>
+              <span>Начать новый чат</span>
             </button>
           </div>
         </div>

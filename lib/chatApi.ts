@@ -12,6 +12,7 @@ export interface ChatMessage {
 export interface MessageRequest {
   chatId?: number;
   content: string;
+  country?: string;
 }
 
 export interface ChatDTO {
@@ -31,24 +32,12 @@ export interface Chat {
 // API functions
 export const sendMessage = async (message: MessageRequest): Promise<ChatMessage[]> => {
   try {
-    // Enhance the message with formatting instructions
-    const enhancedMessage: MessageRequest = {
-      ...message,
-      content: enhancePromptWithFormatting(message.content)
-    };
-
-    const response = await api.post<ChatMessage[]>('/chat/ask', enhancedMessage);
+    const response = await api.post<ChatMessage[]>('/chat/ask', message);
     return response.data;
   } catch (error) {
     console.error('Error sending message:', error);
     throw error;
   }
-};
-
-// Function to enhance the prompt with formatting instructions
-const enhancePromptWithFormatting = (content: string): string => {
-  // Simply return the original content without adding formatting instructions
-  return content;
 };
 
 // Function to get chat history

@@ -45,10 +45,10 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 214 84% 56%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 215 25% 27%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217.2 32.6% 17.5%;
@@ -94,24 +94,29 @@
 }
 
 .message {
-  @apply p-3 rounded-lg max-w-[80%];
+  @apply p-4 rounded-lg max-w-[80%] mb-4;
 }
 
 .user-message {
-  @apply bg-primary text-primary-foreground ml-auto;
+  @apply bg-primary text-primary-foreground ml-auto shadow-sm;
 }
 
 .assistant-message {
-  @apply bg-secondary text-secondary-foreground;
+  @apply bg-secondary text-secondary-foreground shadow-sm;
 }
 
 .message-input {
   @apply p-4 border-t border-border;
 }
 
+/* Improve chat input appearance in dark mode */
+.dark textarea {
+  @apply bg-gray-800 border-gray-700 focus:border-blue-500;
+}
+
 /* Message content formatting styles */
 .message-content {
-  @apply text-sm leading-relaxed;
+  @apply text-sm leading-relaxed tracking-wide;
 }
 
 .message-content p {
@@ -141,7 +146,12 @@
 
 /* Add a bit more spacing in assistant messages for better readability */
 .assistant-message .message-content {
-  @apply space-y-1;
+  @apply space-y-2;
+}
+
+/* Improve code and citation readability in dark mode */
+.dark .assistant-message .message-content strong {
+  @apply text-blue-300;
 }
 
 /* Landing page specific styles */
