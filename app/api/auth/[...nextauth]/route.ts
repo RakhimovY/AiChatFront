@@ -63,7 +63,7 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      profile(profile) {
+      profile(profile: { sub: any; name: any; email: any; picture: any; }) {
         return {
           id: profile.sub,
           name: profile.name,
@@ -76,7 +76,6 @@ export const authOptions: NextAuthOptions = {
   ],
   pages: {
     signIn: "/auth/login",
-    signOut: "/",
     error: "/auth/error",
   },
   callbacks: {

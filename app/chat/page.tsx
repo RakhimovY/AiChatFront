@@ -229,6 +229,8 @@ export default function ChatPage() {
         timestamp: new Date(),
       },
     ]);
+    // Reset the current chat ID to allow creating a new chat
+    setCurrentChatId(null);
   };
 
   // Export chat history

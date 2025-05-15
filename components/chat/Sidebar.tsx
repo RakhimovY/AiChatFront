@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Bot, Trash2, User, MessageSquare, X, Loader2 } from "lucide-react";
 import { getUserChats, deleteChat } from "@/lib/chatApi";
 import { useSession } from "next-auth/react";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 type SidebarProps = {
   isSidebarOpen: boolean;
@@ -38,7 +39,7 @@ export default function Sidebar({ isSidebarOpen, clearChat, onSelectChat, curren
     };
 
     fetchChats();
-  }, [status]);
+  }, [status, currentChatId]);
 
   // Handle chat selection
   const handleSelectChat = (chatId: number) => {
@@ -85,10 +86,13 @@ export default function Sidebar({ isSidebarOpen, clearChat, onSelectChat, curren
     >
       <div className="flex flex-col h-full">
         <div className="p-4 border-b">
-          <Link href="/" className="flex items-center space-x-2">
-            <Bot className="h-6 w-6 text-primary" />
-            <span className="font-bold text-lg">LegalGPT</span>
-          </Link>
+          <div className="flex justify-between items-center">
+            <Link href="/chat" className="flex items-center space-x-2">
+              <Bot className="h-6 w-6 text-primary" />
+              <span className="font-bold text-lg">LegalGPT</span>
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
@@ -152,15 +156,27 @@ export default function Sidebar({ isSidebarOpen, clearChat, onSelectChat, curren
         </div>
 
         <div className="p-4 border-t">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="h-4 w-4 text-primary" />
+          <Link href="/dashboard">
+            <div className="flex items-center space-x-3 cursor-pointer hover:bg-accent rounded-md p-2">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                {session?.user?.image ? (
+                  <img 
+                    src={session.user.image} 
+                    alt={session?.user?.name || "Пользователь"} 
+                    className="h-8 w-8 rounded-full" 
+                  />
+                ) : (
+                  <span className="text-primary font-medium">
+                    {(session?.user?.name || "П").charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div>
+                <p className="text-sm font-medium">{session?.user?.name || "Пользователь"}</p>
+                <p className="text-xs text-muted-foreground">{session?.user?.email || "Гость"}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium">{session?.user?.name || "Пользователь"}</p>
-              <p className="text-xs text-muted-foreground">{session?.user?.email || "Гость"}</p>
-            </div>
-          </div>
+          </Link>
         </div>
       </div>
     </div>

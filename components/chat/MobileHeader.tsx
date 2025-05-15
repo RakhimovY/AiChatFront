@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Bot, Download, Menu } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 type MobileHeaderProps = {
   isSidebarOpen: boolean;
@@ -20,16 +21,19 @@ export default function MobileHeader({
       >
         {isSidebarOpen ? <ArrowLeft className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
-      <Link href="/" className="flex items-center space-x-2">
+      <Link href="/chat" className="flex items-center space-x-2">
         <Bot className="h-5 w-5 text-primary" />
         <span className="font-bold">LegalGPT</span>
       </Link>
-      <button 
-        onClick={exportChat}
-        className="p-2 rounded-md hover:bg-secondary"
-      >
-        <Download className="h-5 w-5" />
-      </button>
+      <div className="flex items-center space-x-2">
+        <ThemeToggle />
+        <button 
+          onClick={exportChat}
+          className="p-2 rounded-md hover:bg-secondary"
+        >
+          <Download className="h-5 w-5" />
+        </button>
+      </div>
     </header>
   );
 }
