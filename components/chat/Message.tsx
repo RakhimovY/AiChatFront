@@ -23,6 +23,15 @@ export default function Message({ id, role, content, isLoading = false }: Messag
     return text.replace(/```([\s\S]*?)```/g, '<pre class="code-block"><code>$1</code></pre>');
   };
 
+  // Function to format markdown headers
+  const formatMarkdownHeaders = (text: string) => {
+    // Replace ### Header with formatted headers or remove them
+    return text.replace(/^(#{1,6})\s+(.*?)$/gm, (match, hashes, content) => {
+      const level = hashes.length;
+      return `<h${level} class="markdown-header">${content}</h${level}>`;
+    });
+  };
+
   // Function to detect and format block quotes
   const formatBlockQuotes = (text: string) => {
     // Replace lines starting with > with blockquote elements
@@ -197,8 +206,11 @@ export default function Message({ id, role, content, isLoading = false }: Messag
     // Apply code block formatting first (to avoid conflicts with other formatting)
     const textWithCodeBlocks = formatCodeBlocks(text);
 
+    // Apply markdown headers formatting
+    const textWithHeaders = formatMarkdownHeaders(textWithCodeBlocks);
+
     // Apply block quote formatting
-    const textWithBlockQuotes = formatBlockQuotes(textWithCodeBlocks);
+    const textWithBlockQuotes = formatBlockQuotes(textWithHeaders);
 
     // Apply bold formatting
     const textWithBoldFormatting = formatBoldText(textWithBlockQuotes);

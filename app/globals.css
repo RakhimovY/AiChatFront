@@ -123,6 +123,27 @@
   @apply mb-2;
 }
 
+/* Markdown header styling */
+.markdown-header {
+  @apply font-semibold my-3;
+}
+
+h1.markdown-header {
+  @apply text-xl;
+}
+
+h2.markdown-header {
+  @apply text-lg;
+}
+
+h3.markdown-header {
+  @apply text-base;
+}
+
+h4.markdown-header, h5.markdown-header, h6.markdown-header {
+  @apply text-sm;
+}
+
 .message-content ul, 
 .message-content ol {
   @apply my-2 ml-5;
