@@ -284,7 +284,7 @@ export default function ChatPage() {
   // Export chat history
   const exportChat = () => {
     const chatText = messages
-      .map((msg) => `${msg.role === "user" ? "Вы" : "Ассистент"}: ${msg.content}`)
+      .map((msg) => `${msg.role === "user" ? t.user : t.assistant}: ${msg.content}`)
       .join("\n\n");
 
     const blob = new Blob([chatText], { type: "text/plain" });
@@ -340,7 +340,7 @@ export default function ChatPage() {
           {isLoadingHistory && (
             <div className="flex justify-center items-center p-4">
               <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
-              <span className="ml-2 text-sm text-muted-foreground">Загрузка истории чата...</span>
+              <span className="ml-2 text-sm text-muted-foreground">{t.loadingHistory}</span>
             </div>
           )}
 

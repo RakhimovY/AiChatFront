@@ -118,6 +118,7 @@ export const ru = {
   // Roles
   user: "Вы",
   assistant: "Ассистент",
+  assistantTyping: "Ассистент печатает...",
 
   // Navigation
   home: "Главная",

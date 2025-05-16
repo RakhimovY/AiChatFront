@@ -118,6 +118,7 @@ export const en = {
   // Roles
   user: "You",
   assistant: "Assistant",
+  assistantTyping: "Assistant is typing...",
 
   // Navigation
   home: "Home",

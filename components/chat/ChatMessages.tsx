@@ -1,6 +1,7 @@
 import { useRef, useEffect } from "react";
 import Message from "./Message";
 import { Loader2 } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 type Message = {
   id: string;
@@ -16,6 +17,7 @@ type ChatMessagesProps = {
 
 export default function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -37,7 +39,7 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
         <Message
           id="loading"
           role="assistant"
-          content="Ассистент печатает..."
+          content={t.assistantTyping}
           isLoading={true}
         />
       )}

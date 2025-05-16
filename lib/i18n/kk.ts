@@ -118,6 +118,7 @@ export const kk = {
   // Roles
   user: "Сіз",
   assistant: "Көмекші",
+  assistantTyping: "Көмекші теруде...",
 
   // Navigation
   home: "Басты бет",

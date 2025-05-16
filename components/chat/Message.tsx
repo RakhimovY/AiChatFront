@@ -1,5 +1,6 @@
 import { Loader2 } from "lucide-react";
 import DOMPurify from 'isomorphic-dompurify';
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 type MessageProps = {
   id: string;
@@ -9,6 +10,7 @@ type MessageProps = {
 };
 
 export default function Message({ id, role, content, isLoading = false }: MessageProps) {
+  const { t } = useLanguage();
   // Function to format bold text with ** markers
   const formatBoldText = (text: string) => {
     // Replace **text** with <strong>text</strong>
@@ -265,16 +267,9 @@ export default function Message({ id, role, content, isLoading = false }: Messag
       }`}
     >
       {isLoading ? (
-        <div className="flex flex-col space-y-2">
-          <div className="flex items-center space-x-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <p>Ассистент печатает...</p>
-          </div>
-          <div className="typing-indicator">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <p>{t.assistantTyping}</p>
         </div>
       ) : (
         <div className="flex items-start">
