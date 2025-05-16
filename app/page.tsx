@@ -1,3 +1,5 @@
+"use client";
+
 import { ArrowRight, MessageSquare, FileText } from "lucide-react";
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
@@ -5,19 +7,22 @@ import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
 import PricingPreview from "@/components/landing/PricingPreview";
 import CTASection from "@/components/ui/CTASection";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function Home() {
+  const { t } = useLanguage();
+
   // Define features
   const features = [
     {
       icon: MessageSquare,
-      title: "Чат с ИИ",
-      description: "Задавайте юридические вопросы и получайте мгновенные ответы от нашего искусственного интеллекта, обученного на правовых документах."
+      title: t.featureAiChat,
+      description: t.featureAiChatDesc
     },
     {
       icon: FileText,
-      title: "Загрузка документов",
-      description: "Загружайте юридические документы и задавайте вопросы, основываясь на их содержании. Наш ИИ проанализирует документ и предоставит релевантные ответы."
+      title: t.featureDocUpload,
+      description: t.featureDocUploadDesc
     }
   ];
 
@@ -25,38 +30,38 @@ export default function Home() {
   const pricingPlans = [
     {
       id: "free",
-      name: "Бесплатный",
+      name: t.planFree,
       price: 0,
-      description: "Для ознакомления",
+      description: t.planFreeDesc,
       features: [
-        "До 30 запросов в чате с ИИ",
-        "Базовые юридические консультации",
-        "Ограниченный анализ документов (до 5 страниц)"
+        t.pricingFeature1,
+        t.pricingFeature2,
+        t.pricingFeature3
       ]
     },
     {
       id: "monthly",
-      name: "Месячный",
+      name: t.planMonthly,
       price: 9.99,
-      description: "Для активных пользователей",
+      description: t.planMonthlyDesc,
       features: [
-        "Безлимитные запросы в чате с ИИ",
-        "Расширенные юридические консультации",
-        "Полный анализ документов (до 50 страниц)",
-        "История чатов (до 30 дней)"
+        t.pricingFeature4,
+        t.pricingFeature5,
+        t.pricingFeature6,
+        t.pricingFeature7
       ],
       popular: true
     },
     {
       id: "yearly",
-      name: "Годовой",
+      name: t.planYearly,
       price: 99.99,
-      description: "Максимальная выгода (экономия более 15%)",
+      description: t.planYearlyDesc,
       features: [
-        "Все функции Месячного тарифа",
-        "Приоритетная поддержка",
-        "Неограниченный анализ документов",
-        "Неограниченная история чатов"
+        t.pricingFeature8,
+        t.pricingFeature9,
+        t.pricingFeature10,
+        t.pricingFeature11
       ]
     }
   ];
@@ -68,32 +73,32 @@ export default function Home() {
 
       {/* Hero Section */}
       <Hero 
-        title="Юридический ассистент на базе искусственного интеллекта"
-        description="Получите мгновенные ответы на юридические вопросы, составьте документы и проконсультируйтесь по правовым вопросам с помощью передовых технологий ИИ."
-        primaryButtonText="Начать бесплатно"
+        title={t.heroTitle}
+        description={t.heroDescription}
+        primaryButtonText={t.startFree}
         primaryButtonLink="/auth/register"
-        secondaryButtonText="Попробовать демо"
+        secondaryButtonText={t.tryDemo}
         secondaryButtonLink="/demo"
       />
 
       {/* Features Section */}
       <Features 
-        title="Возможности LegalGPT"
+        title={t.featuresTitle}
         features={features}
       />
 
       {/* Pricing Section Preview */}
       <PricingPreview 
-        title="Доступные тарифы"
-        description="Выберите подходящий тариф для ваших потребностей. От базового плана для личного использования до расширенных возможностей для профессионалов."
+        title={t.pricingTitle}
+        description={t.pricingDescription}
         plans={pricingPlans}
       />
 
       {/* CTA Section */}
       <CTASection 
-        title="Готовы начать?"
-        description="Зарегистрируйтесь сейчас и получите 7 дней бесплатного доступа к Стандарт-тарифу."
-        buttonText="Создать аккаунт"
+        title={t.ctaTitle}
+        description={t.ctaDescription}
+        buttonText={t.createAccount}
         buttonLink="/auth/register"
         icon={<ArrowRight className="ml-2 h-5 w-5" />}
         bgClass="py-20 bg-primary/5"

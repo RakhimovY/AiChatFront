@@ -13,11 +13,13 @@ import DemoLimitModal from "@/components/ui/DemoLimitModal";
 import DemoInfo from "@/components/ui/DemoInfo";
 import { useDemoStore, useInitializeDemoStore } from "@/store/demoStore";
 import { sendMessage, convertToFrontendMessage, getChatHistory } from "@/lib/chatApi";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const isDemoMode = searchParams.get("mode") === "demo";
   const { data: session, status } = useSession();
+  const { language, t } = useLanguage();
 
   // Initialize demo store if in demo mode
   useInitializeDemoStore();
@@ -35,8 +37,8 @@ export default function ChatPage() {
       id: "welcome",
       role: "assistant",
       content: isDemoMode
-        ? "Здравствуйте! Вы используете демо-режим с ограничением в 10 запросов. Чем я могу вам помочь сегодня?"
-        : "Здравствуйте! Я ваш юридический ассистент. Чем я могу вам помочь сегодня?",
+        ? t.welcomeMessageDemo
+        : t.welcomeMessage,
       timestamp: new Date(),
     },
   ]);
@@ -69,14 +71,31 @@ export default function ChatPage() {
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);
-        setError("Не удалось загрузить историю чата. Пожалуйста, попробуйте еще раз.");
+        setError(t.errorLoading);
       } finally {
         setIsLoadingHistory(false);
       }
     };
 
     fetchChatHistory();
-  }, [currentChatId, isDemoMode, status]);
+  }, [currentChatId, isDemoMode, status, language]); // Added language dependency to re-fetch when language changes
+
+  // Update welcome message when language changes
+  useEffect(() => {
+    // Only update if there's no active chat (showing welcome message)
+    if (!currentChatId && messages.length === 1 && messages[0].id === "welcome") {
+      setMessages([
+        {
+          id: "welcome",
+          role: "assistant",
+          content: isDemoMode
+            ? t.welcomeMessageDemo
+            : t.welcomeMessage,
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  }, [language, isDemoMode, t]);
 
   // Handle clicks outside the sidebar to close it on mobile
   useEffect(() => {
@@ -128,14 +147,14 @@ export default function ChatPage() {
 
         if (isAuthError) {
           // For auth errors, set a specific error message but don't disrupt the experience
-          setError("Ошибка авторизации при обновлении чата. Пожалуйста, обновите страницу.");
+          setError(t.errorAuth);
         }
         // For other errors, don't show error messages to avoid disrupting the user experience
       }
     }, 5000); // Poll every 5 seconds
 
     return () => clearInterval(pollInterval);
-  }, [currentChatId, isDemoMode, status, isLoading, messages.length, error]);
+  }, [currentChatId, isDemoMode, status, isLoading, messages.length, error, language]); // Added language dependency
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -178,7 +197,7 @@ export default function ChatPage() {
             const limitMessage: Message = {
               id: `limit-${userMessageId}`,
               role: "assistant",
-              content: "Вы достигли лимита в 10 запросов в демо-режиме. Пожалуйста, зарегистрируйтесь или выберите тариф, чтобы продолжить использование сервиса.",
+              content: t.demoLimitReached,
               timestamp: new Date(),
             };
 
@@ -201,8 +220,8 @@ export default function ChatPage() {
         // Use the backend API for authenticated users
         const response = await sendMessage(
           currentChatId
-            ? { chatId: currentChatId, content: input, country: selectedCountry }
-            : { content: input, country: selectedCountry }
+            ? { chatId: currentChatId, content: input, country: selectedCountry, language }
+            : { content: input, country: selectedCountry, language }
         );
 
         // Update the current chat ID if this is a new chat
@@ -224,9 +243,9 @@ export default function ChatPage() {
 
       // Set appropriate error state
       if (isAuthError) {
-        setError("Ошибка авторизации. Пожалуйста, обновите страницу или войдите в систему заново.");
+        setError(t.errorAuth);
       } else {
-        setError("Произошла ошибка при отправке сообщения. Пожалуйста, попробуйте еще раз.");
+        setError(t.errorSending);
       }
 
       // Add error message to chat
@@ -236,8 +255,8 @@ export default function ChatPage() {
           id: `error-${userMessageId}`,
           role: "assistant",
           content: isAuthError
-            ? "Извините, возникла проблема с авторизацией. Пожалуйста, обновите страницу или войдите в систему заново."
-            : "Извините, произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте еще раз.",
+            ? t.errorAuth
+            : t.errorSending,
           timestamp: new Date(),
         },
       ]);
@@ -251,8 +270,8 @@ export default function ChatPage() {
         id: "welcome",
         role: "assistant",
         content: isDemoMode
-          ? "Здравствуйте! Вы начали новый чат. Вы используете демо-режим с ограничением в 10 запросов. Чем я могу вам помочь сегодня?"
-          : "Здравствуйте! Вы начали новый чат. Я ваш юридический ассистент, готовый ответить на ваши вопросы. Чем я могу вам помочь сегодня?",
+          ? t.newChatMessageDemo
+          : t.newChatMessage,
         timestamp: new Date(),
       },
     ]);

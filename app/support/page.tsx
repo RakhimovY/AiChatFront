@@ -3,9 +3,11 @@
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import SupportContent from "@/components/support/SupportContent";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function SupportPage() {
   const { data: session, status } = useSession();
+  const { t } = useLanguage();
 
   // If the user is not authenticated, redirect to the login page
   if (status === "unauthenticated") {
@@ -24,7 +26,7 @@ export default function SupportPage() {
   // For demo purposes, use a mock user if session is not available
   // Ensure user object has required non-nullable properties
   const user = {
-    name: session?.user?.name || "Демо Пользователь",
+    name: session?.user?.name || t.demoUser || "Demo User",
     email: session?.user?.email || "demo@example.com",
     image: session?.user?.image || undefined
   };

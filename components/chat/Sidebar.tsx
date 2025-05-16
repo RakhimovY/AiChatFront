@@ -4,6 +4,7 @@ import { Bot, PlusCircle, User, MessageSquare, X, Loader2 } from "lucide-react";
 import { getUserChats, deleteChat } from "@/lib/chatApi";
 import { useSession } from "next-auth/react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 type SidebarProps = {
   isSidebarOpen: boolean;
@@ -15,6 +16,7 @@ type SidebarProps = {
 
 export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, onSelectChat, currentChatId }: SidebarProps) {
   const { data: session, status } = useSession();
+  const { t } = useLanguage();
   const [chats, setChats] = useState<Array<{ id: number; title: string | null; createdAt: string }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
         setChats(Array.isArray(userChats) ? userChats : []);
       } catch (error) {
         console.error("Error fetching chats:", error);
-        setError("Не удалось загрузить чаты");
+        setError(t.errorLoadingChats);
       } finally {
         setIsLoading(false);
       }
@@ -68,7 +70,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
       }
     } catch (error) {
       console.error("Error deleting chat:", error);
-      setError("Не удалось удалить чат");
+      setError(t.errorDeletingChat);
     } finally {
       setIsDeleting(null);
     }
@@ -80,7 +82,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
 
     // Format date for display
     const date = new Date(chat.createdAt);
-    return `Чат от ${date.toLocaleDateString()}`;
+    return `${t.chatFrom} ${date.toLocaleDateString()}`;
   };
 
   return (
@@ -101,7 +103,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          <h3 className="font-medium mb-2 text-sm text-muted-foreground">Недавние чаты</h3>
+          <h3 className="font-medium mb-2 text-sm text-muted-foreground">{t.recentChats}</h3>
 
           {error && (
             <div className="text-sm text-destructive mb-2">
@@ -115,11 +117,11 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
             </div>
           ) : !Array.isArray(chats) ? (
             <div className="text-sm text-destructive py-2">
-              Ошибка загрузки чатов
+              {t.loadingChatsError}
             </div>
           ) : chats.length === 0 ? (
             <div className="text-sm text-muted-foreground py-2">
-              У вас пока нет чатов
+              {t.noChatsYet}
             </div>
           ) : (
             <div className="space-y-1">
@@ -136,7 +138,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
                   <button
                     onClick={(e) => handleDeleteChat(chat.id, e)}
                     className="ml-2 p-1 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                    title="Удалить чат"
+                    title={t.deleteChat}
                   >
                     {isDeleting === chat.id ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -161,7 +163,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
               className="flex items-center justify-center space-x-2 text-sm w-full p-2 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
             >
               <PlusCircle className="h-4 w-4" />
-              <span>Начать новый чат</span>
+              <span>{t.startNewChat}</span>
             </button>
           </div>
         </div>
@@ -173,18 +175,18 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
                 {session?.user?.image ? (
                   <img 
                     src={session.user.image} 
-                    alt={session?.user?.name || "Пользователь"} 
+                    alt={session?.user?.name || t.user} 
                     className="h-8 w-8 rounded-full" 
                   />
                 ) : (
                   <span className="text-primary font-medium">
-                    {(session?.user?.name || "П").charAt(0).toUpperCase()}
+                    {(session?.user?.name || t.user.charAt(0)).charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium">{session?.user?.name || "Пользователь"}</p>
-                <p className="text-xs text-muted-foreground">{session?.user?.email || "Гость"}</p>
+                <p className="text-sm font-medium">{session?.user?.name || t.user}</p>
+                <p className="text-xs text-muted-foreground">{session?.user?.email || t.guest}</p>
               </div>
             </div>
           </Link>

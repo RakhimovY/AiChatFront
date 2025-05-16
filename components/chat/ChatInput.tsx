@@ -1,6 +1,7 @@
 import { useRef, useEffect } from "react";
 import { Send } from "lucide-react";
 import CountrySelector from "./CountrySelector";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 type ChatInputProps = {
   input: string;
@@ -14,6 +15,7 @@ type ChatInputProps = {
 
 export default function ChatInput({ input, setInput, handleSubmit, isLoading, disabled = false, selectedCountry, onSelectCountry }: ChatInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const { t } = useLanguage();
 
   // Focus input on load
   useEffect(() => {
@@ -49,7 +51,7 @@ export default function ChatInput({ input, setInput, handleSubmit, isLoading, di
             value={input}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder={disabled ? "Лимит демо-запросов исчерпан" : "Введите ваш вопрос..."}
+            placeholder={disabled ? t.demoLimitExceeded : t.enterQuestion}
             className="w-full p-3 pr-10 rounded-md border resize-none min-h-[50px] max-h-[200px] focus:outline-none focus:ring-2 focus:ring-primary/50"
             disabled={isLoading || disabled}
           />
@@ -68,7 +70,7 @@ export default function ChatInput({ input, setInput, handleSubmit, isLoading, di
           onSelectCountry={onSelectCountry}
         />
         <p className="text-xs text-muted-foreground text-center md:text-right md:flex-1 mt-2 md:mt-0 px-2 py-1.5 bg-background/80 rounded leading-relaxed tracking-wide">
-          Информация общего характера. Для юридических вопросов обратитесь к юристу.
+          {t.disclaimer}
         </p>
       </div>
     </div>

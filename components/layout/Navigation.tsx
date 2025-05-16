@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Scale, Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import LanguageSelector from "@/components/layout/LanguageSelector";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 type NavigationProps = {
   activePage?: "home" | "pricing" | "about";
@@ -11,13 +13,14 @@ type NavigationProps = {
 
 export default function Navigation({ activePage }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <nav className="border-b fixed top-0 left-0 right-0 z-50 bg-background">
       <div className="container flex justify-between items-center py-4">
         <Link href="/" className="flex items-center space-x-2">
           <Scale className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">LegalGPT</span>
+          <span className="text-xl font-bold">{t.appName}</span>
         </Link>
 
         {/* Mobile menu button */}
@@ -43,7 +46,7 @@ export default function Navigation({ activePage }: NavigationProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Главная
+            {t.home}
           </Link>
           <Link 
             href="/pricing" 
@@ -53,7 +56,7 @@ export default function Navigation({ activePage }: NavigationProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Тарифы
+            {t.pricing}
           </Link>
           <Link 
             href="/about" 
@@ -63,20 +66,21 @@ export default function Navigation({ activePage }: NavigationProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            О сервисе
+            {t.about}
           </Link>
+          <LanguageSelector />
           <ThemeToggle />
           <Link 
             href="/auth/login" 
             className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
           >
-            Войти
+            {t.login}
           </Link>
           <Link 
             href="/auth/register" 
             className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            Регистрация
+            {t.register}
           </Link>
         </div>
       </div>
@@ -94,7 +98,7 @@ export default function Navigation({ activePage }: NavigationProps) {
               }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Главная
+              {t.home}
             </Link>
             <Link 
               href="/pricing" 
@@ -105,7 +109,7 @@ export default function Navigation({ activePage }: NavigationProps) {
               }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Тарифы
+              {t.pricing}
             </Link>
             <Link 
               href="/about" 
@@ -116,10 +120,14 @@ export default function Navigation({ activePage }: NavigationProps) {
               }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              О сервисе
+              {t.about}
             </Link>
             <div className="flex items-center py-2">
-              <span className="text-sm text-muted-foreground mr-2">Тема:</span>
+              <span className="text-sm text-muted-foreground mr-2">{t.selectLanguage}:</span>
+              <LanguageSelector />
+            </div>
+            <div className="flex items-center py-2">
+              <span className="text-sm text-muted-foreground mr-2">{t.theme}:</span>
               <ThemeToggle />
             </div>
             <div className="flex flex-col space-y-2 pt-2">
@@ -128,14 +136,14 @@ export default function Navigation({ activePage }: NavigationProps) {
                 className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-center"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Войти
+                {t.login}
               </Link>
               <Link 
                 href="/auth/register" 
                 className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Регистрация
+                {t.register}
               </Link>
             </div>
           </div>

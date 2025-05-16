@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronDown, Globe } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 // List of countries with their codes
 const countries = [
@@ -40,6 +41,7 @@ export default function CountrySelector({ selectedCountry, onSelectCountry }: Co
   const [filteredCountries, setFilteredCountries] = useState(countries);
   const [dropPosition, setDropPosition] = useState<'top' | 'bottom'>('bottom');
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const { t } = useLanguage();
 
   // Filter countries based on search term
   useEffect(() => {
@@ -130,10 +132,10 @@ export default function CountrySelector({ selectedCountry, onSelectCountry }: Co
           setIsOpen(!isOpen);
         }}
         className="flex items-center space-x-1 text-xs text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-accent"
-        title="Выберите страну для юридической информации"
+        title={t.selectCountry}
       >
         <Globe className="h-3 w-3" />
-        <span>{selectedCountryName || "Выберите страну"}</span>
+        <span>{selectedCountryName || t.selectCountry}</span>
         <ChevronDown className="h-3 w-3" />
       </button>
 
@@ -155,7 +157,7 @@ export default function CountrySelector({ selectedCountry, onSelectCountry }: Co
           <div className="p-2">
             <input
               type="text"
-              placeholder="Поиск страны..."
+              placeholder={t.searchCountry}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full p-2 text-sm rounded-md border focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -172,7 +174,7 @@ export default function CountrySelector({ selectedCountry, onSelectCountry }: Co
               }}
               className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-accent"
             >
-              Не указывать страну
+              {t.noCountry}
             </button>
             {filteredCountries.map((country) => (
               <button

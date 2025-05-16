@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Bot, Menu, X, ArrowLeft, Download } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import LanguageSelector from "@/components/layout/LanguageSelector";
 
 type HeaderProps = {
   // Common props
@@ -59,6 +60,7 @@ export default function Header({
           <span className="font-bold">{pageTitle}</span>
         </Link>
         <div className="flex items-center space-x-2">
+          <LanguageSelector />
           {showThemeToggle && <ThemeToggle />}
           {exportChat && (
             <button 
@@ -78,6 +80,7 @@ export default function Header({
             {pageTitle}
           </Link>
           <div className="flex items-center space-x-4">
+            <LanguageSelector />
             {showThemeToggle && <ThemeToggle />}
             {showUserInfo && user && (
               <>

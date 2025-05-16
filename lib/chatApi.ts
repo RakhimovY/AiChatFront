@@ -13,6 +13,7 @@ export interface MessageRequest {
   chatId?: number;
   content: string;
   country?: string;
+  language?: string;
 }
 
 export interface ChatDTO {
