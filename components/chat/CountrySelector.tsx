@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronDown, Globe } from "lucide-react";
+import { ChevronDown, MapPin } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 // List of countries with their codes
@@ -134,7 +134,7 @@ export default function CountrySelector({ selectedCountry, onSelectCountry }: Co
         className="flex items-center space-x-1 text-xs text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-accent"
         title={t.selectCountry}
       >
-        <Globe className="h-3 w-3" />
+        <MapPin className="h-3 w-3" />
         <span>{selectedCountryName || t.selectCountry}</span>
         <ChevronDown className="h-3 w-3" />
       </button>
