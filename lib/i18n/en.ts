@@ -119,6 +119,7 @@ export const en = {
   user: "You",
   assistant: "Assistant",
   assistantTyping: "Assistant is typing...",
+  assistantStreaming: "Receiving message...",
 
   // Navigation
   home: "Home",

@@ -119,6 +119,7 @@ export const kk = {
   user: "Сіз",
   assistant: "Көмекші",
   assistantTyping: "Көмекші теруде...",
+  assistantStreaming: "Хабарлама алынуда...",
 
   // Navigation
   home: "Басты бет",

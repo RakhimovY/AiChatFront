@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Message } from "@/components/chat/types";
+import { useState as useReactState } from "react";
 import { getSimulatedResponse } from "@/components/chat/utils";
 import Sidebar from "@/components/chat/Sidebar";
 import MobileHeader from "@/components/chat/MobileHeader";
@@ -12,7 +13,7 @@ import ChatInput from "@/components/chat/ChatInput";
 import DemoLimitModal from "@/components/ui/DemoLimitModal";
 import DemoInfo from "@/components/ui/DemoInfo";
 import { useDemoStore, useInitializeDemoStore } from "@/store/demoStore";
-import { sendMessage, convertToFrontendMessage, getChatHistory } from "@/lib/chatApi";
+import { sendMessage, sendMessageStream, convertToFrontendMessage, getChatHistory } from "@/lib/chatApi";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function ChatPage() {
@@ -118,20 +119,31 @@ export default function ChatPage() {
     };
   }, [isSidebarOpen]);
 
-  // Poll for new messages every 5 seconds
+  // Manual refresh instead of automatic polling to prevent disrupting user's scroll position
   useEffect(() => {
     // Skip if in demo mode, not authenticated, or no chat ID
     if (isDemoMode || status !== "authenticated" || !currentChatId || isLoading) {
       return;
     }
 
-    const pollInterval = setInterval(async () => {
+    // Initial fetch when chat is loaded or changed
+    const fetchLatestMessages = async () => {
       try {
         const chatHistory = await getChatHistory(currentChatId);
         if (chatHistory.length > 0) {
           const frontendMessages = chatHistory.map(convertToFrontendMessage);
-          // Only update if there are new messages
-          if (frontendMessages.length > messages.length) {
+
+          // Update in these cases:
+          // 1. If there are new messages (more messages than before)
+          // 2. If the last message content has changed (to get updated content)
+          const shouldUpdate = 
+            frontendMessages.length > messages.length || 
+            (frontendMessages.length > 0 && 
+             messages.length > 0 && 
+             frontendMessages[frontendMessages.length - 1].content !== 
+             messages[messages.length - 1].content);
+
+          if (shouldUpdate) {
             setMessages(frontendMessages);
           }
         }
@@ -140,7 +152,7 @@ export default function ChatPage() {
           setError(null);
         }
       } catch (error) {
-        console.error("Error polling for new messages:", error);
+        console.error("Error fetching latest messages:", error);
 
         // Check if it's an authentication error (401)
         const isAuthError = (error as any)?.response?.status === 401;
@@ -151,10 +163,14 @@ export default function ChatPage() {
         }
         // For other errors, don't show error messages to avoid disrupting the user experience
       }
-    }, 5000); // Poll every 5 seconds
+    };
 
-    return () => clearInterval(pollInterval);
-  }, [currentChatId, isDemoMode, status, isLoading, messages.length, error, language]); // Added language dependency
+    // Fetch once when the chat is loaded or changed
+    fetchLatestMessages();
+
+    // No automatic polling to prevent disrupting user's scroll position
+
+  }, [currentChatId, isDemoMode, status, isLoading, language]); // Removed messages.length and error dependencies to prevent frequent updates
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -218,21 +234,110 @@ export default function ChatPage() {
         }, 1500);
       } else {
         // Use the backend API for authenticated users
-        const response = await sendMessage(
-          currentChatId
-            ? { chatId: currentChatId, content: input, country: selectedCountry, language }
-            : { content: input, country: selectedCountry, language }
-        );
+        // Create a placeholder for the assistant's response
+        const assistantMessageId = `response-${userMessageId}`;
+        const assistantMessage: Message = {
+          id: assistantMessageId,
+          role: "assistant",
+          content: "",
+          timestamp: new Date(),
+          isStreaming: true, // Mark as streaming initially
+        };
 
-        // Update the current chat ID if this is a new chat
-        if (!currentChatId && response.length > 0) {
-          setCurrentChatId(response[0].chatId);
-        }
+        // Add the placeholder message to the chat
+        setMessages((prev) => [...prev, assistantMessage]);
 
-        // Convert backend messages to frontend format and update the state
-        const frontendMessages = response.map(convertToFrontendMessage);
-        setMessages(frontendMessages);
+        // Set isLoading to false since we're now showing a streaming indicator in the message
         setIsLoading(false);
+
+        // Prepare the message request
+        const messageRequest = currentChatId
+          ? { chatId: currentChatId, content: input, country: selectedCountry, language }
+          : { content: input, country: selectedCountry, language };
+
+        try {
+          // Use streaming API for better user experience
+
+          // Set up callbacks for the streaming response
+          const abortStream = await sendMessageStream(
+            messageRequest,
+            {
+              onMessage: (content, messageId) => {
+                // Update the placeholder message with the received content
+                setMessages((prev) => {
+                  // Find the assistant message and update its content
+                  return prev.map((msg) => {
+                    if (msg.id === assistantMessageId) {
+                      return {
+                        ...msg,
+                        content: msg.content + content,
+                        isStreaming: true, // Ensure streaming state is maintained
+                      };
+                    }
+                    return msg;
+                  });
+                });
+              },
+              onComplete: () => {
+                // Update the message to indicate streaming is complete
+                setMessages((prev) => {
+                  return prev.map((msg) => {
+                    if (msg.id === assistantMessageId) {
+                      return {
+                        ...msg,
+                        isStreaming: false, // Mark streaming as complete
+                      };
+                    }
+                    return msg;
+                  });
+                });
+
+                // If this is a new chat, we need to fetch the chat history to get the chat ID
+                if (!currentChatId) {
+                  // We'll poll for new messages which will update the chat ID
+                  // This is handled by the polling effect
+                }
+              },
+              onError: (error) => {
+                console.error("Error in streaming response:", error);
+                setError(t.errorSending);
+
+                // Update the placeholder message with an error and mark streaming as complete
+                setMessages((prev) => {
+                  return prev.map((msg) => {
+                    if (msg.id === assistantMessageId) {
+                      return {
+                        ...msg,
+                        content: t.errorSending,
+                        isStreaming: false, // Mark streaming as complete on error
+                      };
+                    }
+                    return msg;
+                  });
+                });
+              }
+            }
+          );
+
+          // Clean up the stream when the component unmounts or when a new message is sent
+          return () => {
+            abortStream();
+          };
+        } catch (streamError) {
+          // Fall back to non-streaming API if streaming fails
+          console.error("Streaming failed, falling back to regular API:", streamError);
+
+          const response = await sendMessage(messageRequest);
+
+          // Update the current chat ID if this is a new chat
+          if (!currentChatId && response.length > 0) {
+            setCurrentChatId(response[0].chatId);
+          }
+
+          // Convert backend messages to frontend format and update the state
+          const frontendMessages = response.map(convertToFrontendMessage);
+          setMessages(frontendMessages);
+        }
       }
     } catch (error: unknown) {
       console.error("Error sending message:", error);

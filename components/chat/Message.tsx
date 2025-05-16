@@ -7,10 +7,16 @@ type MessageProps = {
   role: "user" | "assistant";
   content: string;
   isLoading?: boolean;
+  isStreaming?: boolean;
 };
 
-export default function Message({ id, role, content, isLoading = false }: MessageProps) {
+export default function Message({ id, role, content, isLoading = false, isStreaming = false }: MessageProps) {
   const { t } = useLanguage();
+
+  // Don't render empty assistant messages (prevents empty gray blocks)
+  if (role === "assistant" && content.trim() === "" && !isLoading && !isStreaming) {
+    return null;
+  }
   // Function to format bold text with ** markers
   const formatBoldText = (text: string) => {
     // Replace **text** with <strong>text</strong>
@@ -287,6 +293,12 @@ export default function Message({ id, role, content, isLoading = false }: Messag
         <div className="flex items-start">
           <div className="flex-1 message-content">
             {formatContent(content)}
+            {isStreaming && (
+              <div className="flex items-center mt-2 text-sm text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                <span>{t.assistantStreaming || "Receiving message..."}</span>
+              </div>
+            )}
           </div>
         </div>
       )}

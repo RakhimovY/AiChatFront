@@ -119,6 +119,7 @@ export const ru = {
   user: "Вы",
   assistant: "Ассистент",
   assistantTyping: "Ассистент печатает...",
+  assistantStreaming: "Получение сообщения...",
 
   // Navigation
   home: "Главная",

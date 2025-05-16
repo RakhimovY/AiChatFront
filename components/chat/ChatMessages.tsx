@@ -8,6 +8,7 @@ type Message = {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  isStreaming?: boolean;
 };
 
 type ChatMessagesProps = {
@@ -19,9 +20,33 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom only in specific cases to avoid disrupting user's reading
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Check if we should auto-scroll
+    const shouldAutoScroll = () => {
+      // Always scroll if this is the first set of messages
+      if (messages.length <= 1) return true;
+
+      // Check if the user is already near the bottom
+      const container = messagesEndRef.current?.parentElement;
+      if (container) {
+        const { scrollTop, scrollHeight, clientHeight } = container;
+        // If user is within 100px of the bottom, auto-scroll
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+        return isNearBottom;
+      }
+
+      // Check if the latest message is being streamed (show new content as it arrives)
+      const latestMessage = messages[messages.length - 1];
+      if (latestMessage?.isStreaming) return true;
+
+      return false;
+    };
+
+    // Only scroll if conditions are met
+    if (shouldAutoScroll()) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   return (
@@ -32,6 +57,7 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
           id={message.id}
           role={message.role}
           content={message.content}
+          isStreaming={message.isStreaming}
         />
       ))}
 
