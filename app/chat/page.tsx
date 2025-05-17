@@ -49,6 +49,7 @@ export default function ChatPage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(session?.user?.country || null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Reference to the sidebar element
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -220,8 +221,19 @@ export default function ChatPage() {
         // Use the backend API for authenticated users
         const response = await sendMessage(
           currentChatId
-            ? { chatId: currentChatId, content: input, country: selectedCountry, language }
-            : { content: input, country: selectedCountry, language }
+            ? { 
+                chatId: currentChatId, 
+                content: input, 
+                country: selectedCountry, 
+                language,
+                document: selectedFile 
+              }
+            : { 
+                content: input, 
+                country: selectedCountry, 
+                language,
+                document: selectedFile 
+              }
         );
 
         // Update the current chat ID if this is a new chat
@@ -233,6 +245,9 @@ export default function ChatPage() {
         const frontendMessages = response.map(convertToFrontendMessage);
         setMessages(frontendMessages);
         setIsLoading(false);
+
+        // Clear the selected file after sending
+        setSelectedFile(null);
       }
     } catch (error: unknown) {
       console.error("Error sending message:", error);
@@ -260,6 +275,9 @@ export default function ChatPage() {
           timestamp: new Date(),
         },
       ]);
+
+      // Clear the selected file on error
+      setSelectedFile(null);
     }
   };
 
@@ -362,6 +380,8 @@ export default function ChatPage() {
               disabled={(isDemoMode && isLimitExceeded) || status === "loading"}
               selectedCountry={selectedCountry}
               onSelectCountry={setSelectedCountry}
+              onFileSelect={setSelectedFile}
+              maxFileSize={10 * 1024 * 1024} // 10MB max file size
             />
           </div>
         </div>

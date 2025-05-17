@@ -1,5 +1,5 @@
-import { useRef, useEffect } from "react";
-import { Send } from "lucide-react";
+import { useRef, useEffect, useState } from "react";
+import { Send, Paperclip, X } from "lucide-react";
 import CountrySelector from "./CountrySelector";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
@@ -11,11 +11,26 @@ type ChatInputProps = {
   disabled?: boolean;
   selectedCountry: string | null;
   onSelectCountry: (country: string | null) => void;
+  onFileSelect?: (file: File | null) => void;
+  maxFileSize?: number; // in bytes, default 10MB
 };
 
-export default function ChatInput({ input, setInput, handleSubmit, isLoading, disabled = false, selectedCountry, onSelectCountry }: ChatInputProps) {
+export default function ChatInput({ 
+  input, 
+  setInput, 
+  handleSubmit, 
+  isLoading, 
+  disabled = false, 
+  selectedCountry, 
+  onSelectCountry,
+  onFileSelect,
+  maxFileSize = 10 * 1024 * 1024 // Default 10MB
+}: ChatInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useLanguage();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   // Focus input on load
   useEffect(() => {
@@ -42,10 +57,94 @@ export default function ChatInput({ input, setInput, handleSubmit, isLoading, di
     }
   };
 
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFileError(null);
+
+    if (file) {
+      // Check file size
+      if (file.size > maxFileSize) {
+        setFileError(`File size exceeds the maximum allowed size (${Math.round(maxFileSize / (1024 * 1024))}MB)`);
+        setSelectedFile(null);
+        if (onFileSelect) onFileSelect(null);
+        return;
+      }
+
+      setSelectedFile(file);
+      if (onFileSelect) onFileSelect(file);
+    } else {
+      setSelectedFile(null);
+      if (onFileSelect) onFileSelect(null);
+    }
+  };
+
+  // Handle file removal
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setFileError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    if (onFileSelect) onFileSelect(null);
+  };
+
+  // Trigger file input click
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div>
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+        accept=".pdf,.doc,.docx,.txt,.rtf,.csv,.xls,.xlsx,.ppt,.pptx"
+      />
+
+      {/* File error message */}
+      {fileError && (
+        <div className="text-destructive text-sm mb-2 p-2 bg-destructive/10 rounded-md">
+          {fileError}
+        </div>
+      )}
+
+      {/* Selected file display */}
+      {selectedFile && (
+        <div className="mb-2 p-2 bg-muted rounded-md flex items-center justify-between">
+          <div className="flex items-center space-x-2 truncate">
+            <Paperclip className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm truncate">{selectedFile.name}</span>
+            <span className="text-xs text-muted-foreground">
+              ({Math.round(selectedFile.size / 1024)} KB)
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleRemoveFile}
+            className="text-muted-foreground hover:text-destructive"
+            aria-label="Remove file"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="flex items-center space-x-2">
-        <div className="flex-1 relative ">
+        <button
+          type="button"
+          onClick={handleAttachClick}
+          disabled={isLoading || disabled || !!selectedFile}
+          className="p-3 rounded-md border bg-background hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Attach file"
+        >
+          <Paperclip className="h-5 w-5 text-muted-foreground" />
+        </button>
+
+        <div className="flex-1 relative">
           <textarea
             ref={inputRef}
             value={input}
@@ -56,6 +155,7 @@ export default function ChatInput({ input, setInput, handleSubmit, isLoading, di
             disabled={isLoading || disabled}
           />
         </div>
+
         <button
           type="submit"
           disabled={isLoading || !input.trim() || disabled}
@@ -64,6 +164,7 @@ export default function ChatInput({ input, setInput, handleSubmit, isLoading, di
           <Send className="h-5 w-5" />
         </button>
       </form>
+
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-2 space-y-2 md:space-y-0 max-w-full">
         <CountrySelector 
           selectedCountry={selectedCountry}

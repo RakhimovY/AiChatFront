@@ -8,6 +8,8 @@ type Message = {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  documentUrl?: string;
+  documentName?: string;
 };
 
 type ChatMessagesProps = {
@@ -32,6 +34,8 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
           id={message.id}
           role={message.role}
           content={message.content}
+          documentUrl={message.documentUrl}
+          documentName={message.documentName}
         />
       ))}
 

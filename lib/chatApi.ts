@@ -15,6 +15,7 @@ export interface MessageRequest {
   content: string;
   country?: string;
   language?: string;
+  document?: File;
 }
 
 export interface ChatDTO {
@@ -131,10 +132,36 @@ const retryWithBackoff = async <T>(
 
 export const sendMessage = async (message: MessageRequest): Promise<ChatMessage[]> => {
   try {
-    // Use retry mechanism with exponential backoff
-    const response = await retryWithBackoff(() => 
-      api.post<ChatMessage[]>('/chat/ask', message)
-    );
+    let response;
+
+    // Check if there's a document to upload
+    if (message.document) {
+      // Create FormData for file upload
+      const formData = new FormData();
+
+      // Add message data
+      formData.append('content', message.content);
+      if (message.chatId) formData.append('chatId', message.chatId.toString());
+      if (message.country) formData.append('country', message.country);
+      if (message.language) formData.append('language', message.language);
+
+      // Add document
+      formData.append('document', message.document);
+
+      // Use retry mechanism with exponential backoff
+      response = await retryWithBackoff(() => 
+        api.post<ChatMessage[]>('/chat/ask-with-document', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        })
+      );
+    } else {
+      // Regular message without document
+      response = await retryWithBackoff(() => 
+        api.post<ChatMessage[]>('/chat/ask', message)
+      );
+    }
 
     // Invalidate relevant cache entries
     if (message.chatId) {
