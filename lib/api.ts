@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { getSession, signOut } from 'next-auth/react';
 
-// Create an axios instance with the base URL
+// Create an axios instance with the base URL and timeout configuration
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
+  // Set a longer timeout (2 minutes) for AI responses which might take time
+  timeout: 120000,
 });
 
 // Add a request interceptor to add the authorization header
