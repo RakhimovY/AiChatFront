@@ -133,47 +133,51 @@ export default function ChatInput({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex items-center space-x-2">
-        <button
-          type="button"
-          onClick={handleAttachClick}
-          disabled={isLoading || disabled || !!selectedFile}
-          className="p-3 rounded-md border bg-background hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Attach file"
-        >
-          <Paperclip className="h-5 w-5 text-muted-foreground" />
-        </button>
+      <form onSubmit={handleSubmit}>
+        <div className="flex items-center space-x-2 mb-2">
+          <div className="flex-1 relative">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder={disabled ? t.demoLimitExceeded : t.enterQuestion}
+              className="w-full p-3 pr-10 rounded-md border resize-none min-h-[50px] max-h-[200px] focus:outline-none focus:ring-2 focus:ring-primary/50"
+              disabled={isLoading || disabled}
+            />
+          </div>
 
-        <div className="flex-1 relative">
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder={disabled ? t.demoLimitExceeded : t.enterQuestion}
-            className="w-full p-3 pr-10 rounded-md border resize-none min-h-[50px] max-h-[200px] focus:outline-none focus:ring-2 focus:ring-primary/50"
-            disabled={isLoading || disabled}
-          />
+          <div className="flex space-x-2">
+            <button
+              type="button"
+              onClick={handleAttachClick}
+              disabled={isLoading || disabled || !!selectedFile}
+              className="p-3 rounded-md border bg-background hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Attach file"
+            >
+              <Paperclip className="h-5 w-5 text-muted-foreground" />
+            </button>
+
+            <button
+              type="submit"
+              disabled={isLoading || !input.trim() || disabled}
+              className="p-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Send className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={isLoading || !input.trim() || disabled}
-          className="p-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Send className="h-5 w-5" />
-        </button>
+        <div className="flex items-center justify-between space-x-4">
+          <CountrySelector 
+            selectedCountry={selectedCountry}
+            onSelectCountry={onSelectCountry}
+          />
+          <p className="text-xs text-muted-foreground flex-1 px-2 py-1.5 bg-background/80 rounded leading-relaxed tracking-wide">
+            {t.disclaimer}
+          </p>
+        </div>
       </form>
-
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-2 space-y-2 md:space-y-0 max-w-full">
-        <CountrySelector 
-          selectedCountry={selectedCountry}
-          onSelectCountry={onSelectCountry}
-        />
-        <p className="text-xs text-muted-foreground text-center md:text-right md:flex-1 mt-2 md:mt-0 px-2 py-1.5 bg-background/80 rounded leading-relaxed tracking-wide">
-          {t.disclaimer}
-        </p>
-      </div>
     </div>
   );
 }

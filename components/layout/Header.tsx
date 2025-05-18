@@ -66,6 +66,7 @@ export default function Header({
             <button 
               onClick={exportChat}
               className="p-2 rounded-md hover:bg-secondary"
+              title="Export chat"
             >
               <Download className="h-5 w-5" />
             </button>
@@ -82,6 +83,15 @@ export default function Header({
           <div className="flex items-center space-x-4">
             <LanguageSelector />
             {showThemeToggle && <ThemeToggle />}
+            {exportChat && (
+              <button 
+                onClick={exportChat}
+                className="p-2 rounded-md hover:bg-secondary"
+                title="Export chat"
+              >
+                <Download className="h-5 w-5" />
+              </button>
+            )}
             {showUserInfo && user && (
               <>
                 <div className="text-sm text-right">

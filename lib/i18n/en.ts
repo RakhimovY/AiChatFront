@@ -113,7 +113,7 @@ export const en = {
   newChatMessageDemo: "Hello! You have started a new chat. You are using demo mode with a limit of 10 requests. How can I help you today?",
 
   // Disclaimer
-  disclaimer: "General information only. For legal matters, please consult a lawyer.",
+  disclaimer: "General information only. We recommend checking important information.",
 
   // Roles
   user: "You",

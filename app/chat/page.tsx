@@ -301,15 +301,66 @@ export default function ChatPage() {
 
   // Export chat history
   const exportChat = () => {
-    const chatText = messages
-      .map((msg) => `${msg.role === "user" ? t.user : t.assistant}: ${msg.content}`)
-      .join("\n\n");
+    // Get current date and time for the header
+    const now = new Date();
+    const dateStr = now.toLocaleDateString();
+    const timeStr = now.toLocaleTimeString();
 
+    // Create a header with metadata
+    const chatTitle = currentChatId 
+      ? messages.length > 0 && messages[0].role === "assistant" && messages[0].id === "welcome" 
+        ? messages[0].content.split('\n')[0] // Use first line of welcome message as title
+        : `Chat #${currentChatId}`
+      : t.newChat || "Новый чат";
+
+    // Use translation keys if available, otherwise use fallbacks
+    const exportedOn = "Экспортировано";
+    const messagesCount = "Количество сообщений";
+
+    const header = [
+      `LegalGPT - ${chatTitle}`,
+      `${exportedOn}: ${dateStr} ${timeStr}`,
+      `${messagesCount}: ${messages.length}`,
+      "----------------------------------------",
+      ""
+    ].join("\n");
+
+    // Format each message with timestamp and role
+    const formattedMessages = messages.map((msg) => {
+      const msgTime = msg.timestamp.toLocaleTimeString();
+      const msgDate = msg.timestamp.toLocaleDateString();
+      const role = msg.role === "user" ? t.user || "Вы" : t.assistant || "Ассистент";
+
+      return [
+        `[${msgDate} ${msgTime}] ${role}:`,
+        msg.content,
+        "----------------------------------------"
+      ].join("\n");
+    });
+
+    // Join all messages with a newline
+    const chatContent = formattedMessages.join("\n\n");
+
+    // Use translation keys if available, otherwise use fallbacks
+    const exportedWith = "Экспортировано с помощью";
+    const exportDate = "Дата экспорта";
+
+    // Add a footer
+    const footer = [
+      "",
+      `${exportedWith} LegalGPT`,
+      `${exportDate}: ${dateStr}`
+    ].join("\n");
+
+    // Combine header, content, and footer
+    const chatText = `${header}${chatContent}\n\n${footer}`;
+
+    // Create and download the file
     const blob = new Blob([chatText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `legal-gpt-chat-${new Date().toISOString().split("T")[0]}.txt`;
+    a.download = `legal-gpt-chat-${now.toISOString().split("T")[0]}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
