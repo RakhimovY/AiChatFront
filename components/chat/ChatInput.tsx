@@ -134,46 +134,51 @@ export default function ChatInput({
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="flex items-center space-x-2 mb-2">
-          <div className="flex-1 relative">
+        <div className="relative mb-2">
+          <div className="flex flex-col w-full rounded-xl border bg-background shadow-md focus-within:ring-1 focus-within:ring-primary/50">
+            {/* Textarea for user input */}
             <textarea
               ref={inputRef}
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder={disabled ? t.demoLimitExceeded : t.enterQuestion}
-              className="w-full p-3 pr-10 rounded-md border resize-none min-h-[50px] max-h-[200px] focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="flex-1 p-3 pt-4 pb-10 bg-transparent border-0 resize-none min-h-[50px] max-h-[200px] rounded-xl  focus:outline-none"
               disabled={isLoading || disabled}
             />
-          </div>
 
-          <div className="flex space-x-2">
-            <button
-              type="button"
-              onClick={handleAttachClick}
-              disabled={isLoading || disabled || !!selectedFile}
-              className="p-3 rounded-md border bg-background hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Attach file"
-            >
-              <Paperclip className="h-5 w-5 text-muted-foreground" />
-            </button>
+            {/* Buttons positioned at the bottom of the input container */}
+            <div className="absolute bottom-1.5 left-2 right-2 flex justify-between items-center">
+              {/* File attachment button */}
+              <button
+                type="button"
+                onClick={handleAttachClick}
+                disabled={isLoading || disabled || !!selectedFile}
+                className="p-1.5 rounded-full hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Attach file"
+              >
+                <Paperclip className="h-4 w-4 text-muted-foreground" />
+              </button>
 
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim() || disabled}
-              className="p-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Send className="h-5 w-5" />
-            </button>
+              {/* Send button */}
+              <button
+                type="submit"
+                disabled={isLoading || !input.trim() || disabled}
+                className="p-1.5 rounded-full hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <Send className={`h-4 w-4 ${input.trim() ? 'text-primary' : 'text-muted-foreground'}`} />
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-between space-x-4">
+        {/* Country selector and disclaimer in a single line */}
+        <div className="flex items-center space-x-3 text-xs">
           <CountrySelector 
             selectedCountry={selectedCountry}
             onSelectCountry={onSelectCountry}
           />
-          <p className="text-xs text-muted-foreground flex-1 px-2 py-1.5 bg-background/80 rounded leading-relaxed tracking-wide">
+          <p className="text-muted-foreground flex-1">
             {t.disclaimer}
           </p>
         </div>

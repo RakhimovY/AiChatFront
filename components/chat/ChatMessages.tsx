@@ -15,9 +15,10 @@ type Message = {
 type ChatMessagesProps = {
   messages: Message[];
   isLoading: boolean;
+  userImage?: string;
 };
 
-export default function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
+export default function ChatMessages({ messages, isLoading, userImage }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
@@ -36,6 +37,7 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
           content={message.content}
           documentUrl={message.documentUrl}
           documentName={message.documentName}
+          userImage={userImage}
         />
       ))}
 
@@ -45,6 +47,7 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
           role="assistant"
           content={t.assistantTyping}
           isLoading={true}
+          userImage={userImage}
         />
       )}
 

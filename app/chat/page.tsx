@@ -418,6 +418,7 @@ export default function ChatPage() {
             <ChatMessages
               messages={messages}
               isLoading={isLoading}
+              userImage={session?.user?.image}
             />
           </div>
 

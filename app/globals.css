@@ -94,15 +94,15 @@
 }
 
 .message {
-  @apply p-4 rounded-lg max-w-[80%] mb-4;
+  @apply py-3 px-4 rounded-xl max-w-[80%] mb-4 relative;
 }
 
 .user-message {
-  @apply bg-primary text-primary-foreground ml-auto shadow-sm;
+  @apply bg-primary/10 text-foreground ml-auto border border-primary/20 shadow-sm;
 }
 
 .assistant-message {
-  @apply bg-secondary text-secondary-foreground shadow-sm;
+  @apply bg-secondary/50 text-foreground border border-border shadow-sm;
 }
 
 .message-input {
@@ -117,10 +117,6 @@
 /* Message content formatting styles */
 .message-content {
   @apply text-sm leading-relaxed tracking-wide;
-}
-
-.message-content p {
-  @apply mb-2;
 }
 
 /* Markdown header styling */

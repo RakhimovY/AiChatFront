@@ -10,6 +10,7 @@ type MessageProps = {
   isLoading?: boolean;
   documentUrl?: string;
   documentName?: string;
+  userImage?: string;
 };
 
 // Move formatting functions outside the component to prevent recreation on each render
@@ -257,11 +258,11 @@ const formatMessageContent = (text: string) => {
     const lines = paragraph.split(/\n/).filter(line => line.trim());
 
     if (lines.length === 1) {
-      return <p key={`p-${index}`} className="mb-2" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(paragraph) }} />;
+      return <p key={`p-${index}`} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(paragraph) }} />;
     }
 
     return (
-      <div key={`p-${index}`} className="mb-2">
+      <div key={`p-${index}`} >
         {lines.map((line, lineIndex) => (
           <p key={`line-${index}-${lineIndex}`} 
              className={lineIndex < lines.length - 1 ? "mb-1" : ""}
@@ -273,7 +274,7 @@ const formatMessageContent = (text: string) => {
   });
 };
 
-export default function Message({ id, role, content, isLoading = false, documentUrl, documentName }: MessageProps) {
+export default function Message({ id, role, content, isLoading = false, documentUrl, documentName, userImage }: MessageProps) {
   const { t } = useLanguage();
 
   // Memoize the formatted content to prevent unnecessary re-rendering

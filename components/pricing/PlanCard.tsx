@@ -38,7 +38,7 @@ export default function PlanCard({ plan }: PlanCardProps) {
 
       <div className="space-y-3 mt-auto">
         {plan.features.map((feature, index) => (
-          <div key={index} className="flex items-start">
+          <div key={index} className="flex items-center">
             <CheckCircle2 
               className={`h-5 w-5 mr-2 flex-shrink-0 ${
                 feature.included ? "text-primary" : "text-muted-foreground/30"
