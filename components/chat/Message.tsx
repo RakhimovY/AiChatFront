@@ -10,7 +10,6 @@ type MessageProps = {
   isLoading?: boolean;
   documentUrl?: string;
   documentName?: string;
-  userImage?: string;
 };
 
 // Move formatting functions outside the component to prevent recreation on each render
@@ -274,7 +273,7 @@ const formatMessageContent = (text: string) => {
   });
 };
 
-export default function Message({ id, role, content, isLoading = false, documentUrl, documentName, userImage }: MessageProps) {
+export default function Message({ id, role, content, isLoading = false, documentUrl, documentName }: MessageProps) {
   const { t } = useLanguage();
 
   // Memoize the formatted content to prevent unnecessary re-rendering

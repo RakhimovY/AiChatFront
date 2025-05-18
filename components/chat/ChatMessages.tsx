@@ -37,7 +37,6 @@ export default function ChatMessages({ messages, isLoading, userImage }: ChatMes
           content={message.content}
           documentUrl={message.documentUrl}
           documentName={message.documentName}
-          userImage={userImage}
         />
       ))}
 
