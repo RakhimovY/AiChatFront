@@ -47,7 +47,6 @@ export default function ChatMessages({ messages, isLoading, userImage }: ChatMes
           role="assistant"
           content={t.assistantTyping}
           isLoading={true}
-          userImage={userImage}
         />
       )}
 
