@@ -45,7 +45,7 @@ export default function Header({
   return (
     <>
       {/* Mobile Header - Only visible on mobile */}
-      <header className="border-b p-4 flex items-center justify-between md:hidden fixed top-0 left-0 right-0 z-50 bg-background">
+      <header className="border-b p-2 md:p-4 flex items-center justify-between md:hidden fixed top-0 left-0 right-0 z-50 bg-background">
         <button
           onClick={toggleMobileMenu}
           className="p-2 rounded-md hover:bg-secondary"
@@ -76,7 +76,7 @@ export default function Header({
 
       {/* Desktop Header - Only visible on desktop */}
       <header className="border-b hidden md:block fixed top-0 left-0 right-0 z-50 bg-background">
-        <div className="container flex justify-between items-center py-4">
+        <div className="container flex justify-between items-center py-2 md:py-4">
           <Link href={pageRoute} className="text-xl font-bold">
             {pageTitle}
           </Link>
@@ -98,7 +98,7 @@ export default function Header({
                   <div className="font-medium">{user.name}</div>
                   <div className="text-muted-foreground">{user.email}</div>
                 </div>
-                <Link href="/account">
+                <Link href="/settings">
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer">
                     {user.image ? (
                       <img 

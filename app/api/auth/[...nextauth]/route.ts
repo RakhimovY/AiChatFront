@@ -109,7 +109,7 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === "google" && profile) {
         try {
           // Check if Google credentials are configured
-          if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+          if (!process.env.GOOGLE_CLIENT_ID || !`process.env.GOOGLE_CLIENT_SECRET`) {
             console.error("Google OAuth credentials are not configured");
             return "/auth/error?error=GoogleCredentialsNotConfigured";
           }

@@ -73,7 +73,7 @@ export default function Sidebar({
         md:block w-64 border-r bg-card fixed md:static inset-y-0 z-10 md:pt-0
       `}
         >
-            <div className="py-4 px-4 border-b md:hidden">
+            <div className="py-2 md:py-4 px-2 md:px-4 border-b md:hidden">
                 <div className="flex justify-between items-center">
                     <Link href="/chat" className="flex items-center space-x-2">
                         <Bot className="h-6 w-6 text-primary"/>
@@ -82,7 +82,7 @@ export default function Sidebar({
                     <ThemeToggle/>
                 </div>
             </div>
-            <nav className="p-4 space-y-1">
+            <nav className="p-2 md:p-4 space-y-1">
                 {menuItems.map((item, index) => {
                     const Icon = item.icon;
                     const isActive = activePage === item.href;

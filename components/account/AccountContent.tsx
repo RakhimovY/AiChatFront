@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   MessageSquare,
   FileText,
@@ -23,7 +22,6 @@ type AccountContentProps = {
 };
 
 export default function AccountContent({ user }: AccountContentProps) {
-  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
 

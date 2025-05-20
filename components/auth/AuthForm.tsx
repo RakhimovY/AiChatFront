@@ -87,7 +87,7 @@ export default function AuthForm({ type }: AuthFormProps) {
         if (result?.error) {
           setError(t.invalidCredentials);
         } else {
-          router.push("/account");
+          router.push("/settings");
           router.refresh();
         }
       } else {
@@ -124,7 +124,7 @@ export default function AuthForm({ type }: AuthFormProps) {
           if (result?.error) {
             setError(t.autoLoginError);
           } else {
-            router.push("/account");
+            router.push("/settings");
             router.refresh();
           }
         }
@@ -140,7 +140,7 @@ export default function AuthForm({ type }: AuthFormProps) {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/account" });
+      await signIn("google", { callbackUrl: "/settings" });
     } catch (error: unknown) {
       console.error("Google sign in error:", error);
       setError(t.googleSignInError);

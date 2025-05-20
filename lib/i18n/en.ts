@@ -2,7 +2,6 @@ export const en = {
   // Common
   appName: "LegalGPT",
   appDescription: "Legal AI Assistant",
-  demoUser: "Demo User",
 
   // Auth
   login: "Login",
@@ -101,16 +100,9 @@ export const en = {
   errorAuth: "Authentication error. Please refresh the page or log in again.",
   errorLoading: "Failed to load chat history. Please try again.",
 
-  // Demo mode
-  demoMode: "Demo Mode",
-  demoLimitReached: "You have reached the limit of 10 requests in demo mode. Please register or choose a plan to continue using the service.",
-  demoLimitExceeded: "Demo request limit exceeded",
-
   // Welcome messages
   welcomeMessage: "Hello! I am your legal assistant. How can I help you today?",
-  welcomeMessageDemo: "Hello! You are using demo mode with a limit of 10 requests. How can I help you today?",
   newChatMessage: "Hello! You have started a new chat. I am your legal assistant, ready to answer your questions. How can I help you today?",
-  newChatMessageDemo: "Hello! You have started a new chat. You are using demo mode with a limit of 10 requests. How can I help you today?",
 
   // Disclaimer
   disclaimer: "General information only. We recommend checking important information.",
@@ -168,7 +160,6 @@ export const en = {
   heroTitle: "Legal Assistant Powered by Artificial Intelligence",
   heroDescription: "Get instant answers to legal questions, draft documents, and consult on legal matters using advanced AI technology.",
   startFree: "Start for Free",
-  tryDemo: "Try Demo",
 
   // Features
   featuresTitle: "LegalGPT Features",
@@ -203,5 +194,10 @@ export const en = {
   // CTA
   ctaTitle: "Ready to Start?",
   ctaDescription: "Sign up now and get 7 days of free access to the Standard plan.",
-  createAccount: "Create Account"
+  createAccount: "Create Account",
+
+  // Footer
+  privacyPolicy: "Privacy Policy",
+  termsOfService: "Terms of Service",
+  allRightsReserved: "All rights reserved."
 };

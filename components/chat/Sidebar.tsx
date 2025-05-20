@@ -92,7 +92,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
       } transition-transform duration-200 ease-in-out md:relative md:translate-x-0 md:h-full`}
     >
       <div className="flex flex-col h-full">
-        <div className="py-4 px-4 border-b">
+        <div className="py-2 md:py-4 px-2 md:px-4 border-b">
           <div className="flex justify-between items-center">
             <Link href="/chat" className="flex items-center space-x-2">
               <Bot className="h-6 w-6 text-primary" />
@@ -102,7 +102,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-2 md:p-4">
           <h3 className="font-medium mb-2 text-sm text-muted-foreground">{t.recentChats}</h3>
 
           {error && (
@@ -128,7 +128,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
               {chats.map(chat => (
                 <div 
                   key={chat.id} 
-                  className={`flex items-center w-full text-left px-3 py-2 text-sm rounded-md hover:bg-primary/10 cursor-pointer ${
+                  className={`flex items-center w-full text-left px-2 md:px-3 py-1 md:py-2 text-sm rounded-md hover:bg-primary/10 cursor-pointer ${
                     currentChatId === chat.id ? "bg-primary/10 font-medium" : ""
                   }`}
                   onClick={() => handleSelectChat(chat.id)}
@@ -160,7 +160,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
                   setIsSidebarOpen(false);
                 }
               }}
-              className="flex items-center justify-center space-x-2 text-sm w-full p-2 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+              className="flex items-center justify-center space-x-1 md:space-x-2 text-sm w-full p-1 md:p-2 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
             >
               <PlusCircle className="h-4 w-4" />
               <span>{t.startNewChat}</span>
@@ -168,9 +168,25 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
           </div>
         </div>
 
-        <div className="py-4 px-4">
-          <Link href="/account">
-            <div className="flex items-center space-x-3 cursor-pointer hover:bg-accent rounded-md p-2">
+        <div className="py-2 md:py-4 px-2 md:px-4 space-y-1 md:space-y-2">
+          {/* Subscription link */}
+          {status === "authenticated" && (
+            <Link href="/subscription">
+              <div className="flex items-center space-x-2 md:space-x-3 cursor-pointer hover:bg-accent rounded-md p-1 md:p-2">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-primary">💎</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Subscription</p>
+                  <p className="text-xs text-muted-foreground">Manage your plan</p>
+                </div>
+              </div>
+            </Link>
+          )}
+
+          {/* User profile link */}
+          <Link href="/settings">
+            <div className="flex items-center space-x-2 md:space-x-3 cursor-pointer hover:bg-accent rounded-md p-1 md:p-2">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 {session?.user?.image ? (
                   <img 

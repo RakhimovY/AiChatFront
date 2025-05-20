@@ -1,3 +1,5 @@
+"use client";
+
 import { Linkedin, Mail, MessageSquare } from "lucide-react";
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";

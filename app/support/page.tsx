@@ -23,11 +23,10 @@ export default function SupportPage() {
     );
   }
 
-  // For demo purposes, use a mock user if session is not available
   // Ensure user object has required non-nullable properties
   const user = {
-    name: session?.user?.name || t.demoUser || "Demo User",
-    email: session?.user?.email || "demo@example.com",
+    name: session?.user?.name || "User",
+    email: session?.user?.email || "",
     image: session?.user?.image || undefined
   };
 

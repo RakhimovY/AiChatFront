@@ -17,7 +17,7 @@ export default function Navigation({ activePage }: NavigationProps) {
 
   return (
     <nav className="border-b fixed top-0 left-0 right-0 z-50 bg-background">
-      <div className="container flex justify-between items-center py-4">
+      <div className="container flex justify-between items-center py-4 mx-auto max-w-6xl">
         <Link href="/" className="flex items-center space-x-2">
           <Scale className="h-6 w-6 text-primary" />
           <span className="text-xl font-bold">{t.appName}</span>
@@ -88,7 +88,7 @@ export default function Navigation({ activePage }: NavigationProps) {
       {/* Mobile navigation */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t">
-          <div className="container py-4 flex flex-col space-y-4">
+          <div className="container py-3 md:py-4 flex flex-col space-y-2 md:space-y-4">
             <Link 
               href="/" 
               className={`text-sm ${
@@ -122,15 +122,15 @@ export default function Navigation({ activePage }: NavigationProps) {
             >
               {t.about}
             </Link>
-            <div className="flex items-center py-2">
+            <div className="flex items-center py-1 md:py-2">
               <span className="text-sm text-muted-foreground mr-2">{t.selectLanguage}:</span>
               <LanguageSelector />
             </div>
-            <div className="flex items-center py-2">
+            <div className="flex items-center py-1 md:py-2">
               <span className="text-sm text-muted-foreground mr-2">{t.theme}:</span>
               <ThemeToggle />
             </div>
-            <div className="flex flex-col space-y-2 pt-2">
+            <div className="flex flex-col space-y-1 md:space-y-2 pt-1 md:pt-2">
               <Link 
                 href="/auth/login" 
                 className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-center"

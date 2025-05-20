@@ -142,7 +142,7 @@ export default function ChatInput({
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder={disabled ? t.demoLimitExceeded : t.enterQuestion}
+              placeholder={disabled ? t.errorAuth : t.enterQuestion}
               className="flex-1 p-3 pt-4 pb-10 bg-transparent border-0 resize-none min-h-[50px] max-h-[200px] rounded-xl  focus:outline-none"
               disabled={isLoading || disabled}
             />

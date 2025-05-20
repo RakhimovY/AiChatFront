@@ -1,44 +1,25 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Message } from "@/components/chat/types";
-import { getSimulatedResponse } from "@/components/chat/utils";
 import Sidebar from "@/components/chat/Sidebar";
 import MobileHeader from "@/components/chat/MobileHeader";
 import ChatMessages from "@/components/chat/ChatMessages";
 import ChatInput from "@/components/chat/ChatInput";
-import DemoLimitModal from "@/components/ui/DemoLimitModal";
-import DemoInfo from "@/components/ui/DemoInfo";
-import { useDemoStore, useInitializeDemoStore } from "@/store/demoStore";
 import { sendMessage, convertToFrontendMessage, getChatHistory } from "@/lib/chatApi";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function ChatPage() {
-  const searchParams = useSearchParams();
-  const isDemoMode = searchParams.get("mode") === "demo";
   const { data: session, status } = useSession();
   const { language, t } = useLanguage();
-
-  // Initialize demo store if in demo mode
-  useInitializeDemoStore();
-
-  // Get demo store state and actions
-  const {
-    incrementRequestCount,
-    isLimitExceeded,
-    requestCount
-  } = useDemoStore();
 
   // State for messages, loading state, and sidebar
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: isDemoMode
-        ? t.welcomeMessageDemo
-        : t.welcomeMessage,
+      content: t.welcomeMessage,
       timestamp: new Date(),
     },
   ]);
@@ -56,8 +37,8 @@ export default function ChatPage() {
 
   // Fetch chat history when the component mounts or when the chat ID changes
   useEffect(() => {
-    // Skip if in demo mode or not authenticated
-    if (isDemoMode || status !== "authenticated" || !currentChatId) {
+    // Skip if not authenticated or no chat ID
+    if (status !== "authenticated" || !currentChatId) {
       return;
     }
 
@@ -79,7 +60,7 @@ export default function ChatPage() {
     };
 
     fetchChatHistory();
-  }, [currentChatId, isDemoMode, status, language]); // Added language dependency to re-fetch when language changes
+  }, [currentChatId, status, language]); // Added language dependency to re-fetch when language changes
 
   // Update welcome message when language changes
   useEffect(() => {
@@ -89,14 +70,12 @@ export default function ChatPage() {
         {
           id: "welcome",
           role: "assistant",
-          content: isDemoMode
-            ? t.welcomeMessageDemo
-            : t.welcomeMessage,
+          content: t.welcomeMessage,
           timestamp: new Date(),
         },
       ]);
     }
-  }, [language, isDemoMode, t]);
+  }, [language, t, currentChatId]);
 
   // Handle clicks outside the sidebar to close it on mobile
   useEffect(() => {
@@ -121,8 +100,8 @@ export default function ChatPage() {
 
   // Poll for new messages every 5 seconds
   useEffect(() => {
-    // Skip if in demo mode, not authenticated, or no chat ID
-    if (isDemoMode || status !== "authenticated" || !currentChatId || isLoading) {
+    // Skip if not authenticated, no chat ID, or loading
+    if (status !== "authenticated" || !currentChatId || isLoading) {
       return;
     }
 
@@ -155,18 +134,13 @@ export default function ChatPage() {
     }, 5000); // Poll every 5 seconds
 
     return () => clearInterval(pollInterval);
-  }, [currentChatId, isDemoMode, status, isLoading, messages.length, error, language]); // Added language dependency
+  }, [currentChatId, status, isLoading, messages.length, error, language]); // Added language dependency
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!input.trim() || isLoading) return;
-
-    // Check if demo limit is exceeded
-    if (isDemoMode && isLimitExceeded) {
-      return;
-    }
 
     // Generate a unique ID for the message
     const userMessageId = Date.now().toString();
@@ -183,42 +157,10 @@ export default function ChatPage() {
     setInput("");
     setIsLoading(true);
 
-    // Increment request count if in demo mode
-    if (isDemoMode) {
-      incrementRequestCount();
-    }
-
     setError(null);
     try {
-      // If in demo mode or not authenticated, use simulated response
-      if (isDemoMode || status !== "authenticated") {
-        setTimeout(() => {
-          // If demo limit was exceeded after incrementing, show a special message
-          if (isDemoMode && isLimitExceeded) {
-            const limitMessage: Message = {
-              id: `limit-${userMessageId}`,
-              role: "assistant",
-              content: t.demoLimitReached,
-              timestamp: new Date(),
-            };
-
-            setMessages((prev) => [...prev, limitMessage]);
-          } else {
-            // Normal response
-            const assistantMessage: Message = {
-              id: `response-${userMessageId}`,
-              role: "assistant",
-              content: getSimulatedResponse(input),
-              timestamp: new Date(),
-            };
-
-            setMessages((prev) => [...prev, assistantMessage]);
-          }
-
-          setIsLoading(false);
-        }, 1500);
-      } else {
-        // Use the backend API for authenticated users
+      // Use the backend API for authenticated users
+      if (status === "authenticated") {
         const response = await sendMessage(
           currentChatId
             ? { 
@@ -248,6 +190,21 @@ export default function ChatPage() {
 
         // Clear the selected file after sending
         setSelectedFile(null);
+      } else {
+        // For unauthenticated users, show an error message
+        setError(t.errorAuth);
+        setIsLoading(false);
+
+        // Add error message to chat
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `error-${userMessageId}`,
+            role: "assistant",
+            content: t.errorAuth,
+            timestamp: new Date(),
+          },
+        ]);
       }
     } catch (error: unknown) {
       console.error("Error sending message:", error);
@@ -287,9 +244,7 @@ export default function ChatPage() {
       {
         id: "welcome",
         role: "assistant",
-        content: isDemoMode
-          ? t.newChatMessageDemo
-          : t.newChatMessage,
+        content: t.newChatMessage,
         timestamp: new Date(),
       },
     ]);
@@ -370,9 +325,6 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-background">
-      {/* Demo limit modal */}
-      {isDemoMode && <DemoLimitModal />}
-
       {/* Sidebar */}
       <div ref={sidebarRef} className="h-full">
         <Sidebar 
@@ -392,9 +344,6 @@ export default function ChatPage() {
           setIsSidebarOpen={setIsSidebarOpen}
           exportChat={exportChat}
         />
-
-        {/* Demo mode info */}
-        {isDemoMode && <DemoInfo />}
 
         {/* Chat container */}
         <div className="flex-1 flex flex-col h-full overflow-hidden pt-16">
@@ -428,7 +377,7 @@ export default function ChatPage() {
               setInput={setInput}
               handleSubmit={handleSubmit}
               isLoading={isLoading || isLoadingHistory}
-              disabled={(isDemoMode && isLimitExceeded) || status === "loading"}
+              disabled={status === "loading"}
               selectedCountry={selectedCountry}
               onSelectCountry={setSelectedCountry}
               onFileSelect={setSelectedFile}
