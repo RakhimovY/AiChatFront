@@ -41,13 +41,13 @@ export default function SubscribeButton({
       // Using the Polar checkout directly with URL parameters
       const polar = new Polar({
         accessToken: process.env.NEXT_PUBLIC_POLAR_API_KEY,
+        server: "sandbox"
       });
 
       const checkout = await polar.checkouts.create({
         products: ["e545ed36-051e-48b5-aa98-082820de2381"],
       });
-
-      redirect(checkout.url)
+      window.location.href = checkout.url;
 
     } catch (error) {
       console.error('Error initiating subscription:', error);
