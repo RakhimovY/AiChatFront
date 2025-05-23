@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Scale, Menu, X } from "lucide-react";
+import { Scale, Menu, X, MessageSquare } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import LanguageSelector from "@/components/layout/LanguageSelector";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { useSession } from "next-auth/react";
 
 type NavigationProps = {
   activePage?: "home" | "pricing" | "about";
@@ -14,6 +15,7 @@ type NavigationProps = {
 export default function Navigation({ activePage }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
+  const { data: session, status } = useSession();
 
   return (
     <nav className="border-b fixed top-0 left-0 right-0 z-50 bg-background">
@@ -70,18 +72,30 @@ export default function Navigation({ activePage }: NavigationProps) {
           </Link>
           <LanguageSelector />
           <ThemeToggle />
-          <Link 
-            href="/auth/login" 
-            className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
-          >
-            {t.login}
-          </Link>
-          <Link 
-            href="/auth/register" 
-            className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            {t.register}
-          </Link>
+          {status === "authenticated" ? (
+            <Link 
+              href="/chat" 
+              className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              {t.chat}
+            </Link>
+          ) : (
+            <>
+              <Link 
+                href="/auth/login" 
+                className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              >
+                {t.login}
+              </Link>
+              <Link 
+                href="/auth/register" 
+                className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {t.register}
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
@@ -124,27 +138,40 @@ export default function Navigation({ activePage }: NavigationProps) {
             </Link>
             <div className="flex items-center py-1 md:py-2">
               <span className="text-sm text-muted-foreground mr-2">{t.selectLanguage}:</span>
-              <LanguageSelector />
+              <LanguageSelector isMobile={true} />
             </div>
             <div className="flex items-center py-1 md:py-2">
               <span className="text-sm text-muted-foreground mr-2">{t.theme}:</span>
               <ThemeToggle />
             </div>
             <div className="flex flex-col space-y-1 md:space-y-2 pt-1 md:pt-2">
-              <Link 
-                href="/auth/login" 
-                className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-center"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t.login}
-              </Link>
-              <Link 
-                href="/auth/register" 
-                className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t.register}
-              </Link>
+              {status === "authenticated" ? (
+                <Link 
+                  href="/chat" 
+                  className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center flex items-center justify-center gap-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  {t.chat}
+                </Link>
+              ) : (
+                <>
+                  <Link 
+                    href="/auth/login" 
+                    className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {t.login}
+                  </Link>
+                  <Link 
+                    href="/auth/register" 
+                    className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {t.register}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

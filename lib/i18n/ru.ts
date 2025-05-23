@@ -1,6 +1,6 @@
 export const ru = {
   // Common
-  appName: "LegalGPT",
+  appName: "AIuris",
   appDescription: "Юридический AI-ассистент",
 
   // Auth
@@ -117,6 +117,7 @@ export const ru = {
   pricing: "Тарифы",
   about: "О сервисе",
   theme: "Тема",
+  chat: "Чат",
 
   // Account
   accountDashboard: "Личный кабинет",
@@ -162,7 +163,7 @@ export const ru = {
   startFree: "Начать бесплатно",
 
   // Features
-  featuresTitle: "Возможности LegalGPT",
+  featuresTitle: "Возможности AIuris",
   featureAiChat: "Чат с ИИ",
   featureAiChatDesc: "Задавайте юридические вопросы и получайте мгновенные ответы от нашего искусственного интеллекта, обученного на правовых документах.",
   featureDocUpload: "Загрузка документов",

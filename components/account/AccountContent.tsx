@@ -64,7 +64,7 @@ export default function AccountContent({ user }: AccountContentProps) {
         user={user}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
-        pageTitle="LegalGPT"
+        pageTitle="AIuris"
         pageRoute="/account"
       />
 

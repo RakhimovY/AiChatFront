@@ -1,6 +1,6 @@
 export const en = {
   // Common
-  appName: "LegalGPT",
+  appName: "AIuris",
   appDescription: "Legal AI Assistant",
 
   // Auth
@@ -117,6 +117,7 @@ export const en = {
   pricing: "Pricing",
   about: "About",
   theme: "Theme",
+  chat: "Chat",
 
   // Account
   accountDashboard: "Account Dashboard",
@@ -162,7 +163,7 @@ export const en = {
   startFree: "Start for Free",
 
   // Features
-  featuresTitle: "LegalGPT Features",
+  featuresTitle: "AIuris Features",
   featureAiChat: "AI Chat",
   featureAiChatDesc: "Ask legal questions and get instant answers from our artificial intelligence trained on legal documents.",
   featureDocUpload: "Document Upload",

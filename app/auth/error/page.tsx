@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import LanguageSelector from "@/components/layout/LanguageSelector";
+import Navigation from "@/components/layout/Navigation";
 
 export default function ErrorPage() {
   const searchParams = useSearchParams();
@@ -47,14 +48,10 @@ export default function ErrorPage() {
 
   return (
     <main className="flex flex-col min-h-screen bg-background">
-      <div className="container py-12">
-        <div className="flex justify-between items-center mb-8">
-          <Link href="/auth/login" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t.backToLoginPage}
-          </Link>
-          <LanguageSelector />
-        </div>
+      {/* Navigation */}
+      <Navigation />
+
+      <div className="container py-12 mt-16">
 
         <div className="max-w-md mx-auto p-6 bg-card rounded-lg shadow-sm border">
           <div className="flex items-center justify-center mb-6">

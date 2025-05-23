@@ -104,7 +104,7 @@ export default function SupportContent({ user }: SupportContentProps) {
                 {t.whatsappDescription || "Свяжитесь с нами через WhatsApp для быстрого ответа."}
               </p>
               <a 
-                href="https://wa.me/77086934037?text=Здравствуйте!%20У%20меня%20вопрос%20о%20LegalGPT." 
+                href="https://wa.me/77086934037?text=Здравствуйте!%20У%20меня%20вопрос%20о%20AIuris." 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline inline-flex items-center"

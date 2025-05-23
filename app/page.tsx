@@ -14,15 +14,7 @@ import Footer from "@/components/layout/Footer";
 
 export default function Page() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const { t } = useLanguage();
-
-  // If user is already authenticated, redirect to chat
-  useEffect(() => {
-    if (status === 'authenticated') {
-      router.push('/chat');
-    }
-  }, [status, router]);
 
   // If still loading, show nothing
   if (status === 'loading') {

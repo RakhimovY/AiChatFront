@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { signIn } from "next-auth/react";
+import {signIn, signOut} from "next-auth/react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 type AuthFormProps = {
@@ -40,7 +40,7 @@ export default function AuthForm({ type }: AuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // Check for error parameters in the URL
   useEffect(() => {
@@ -71,27 +71,31 @@ export default function AuthForm({ type }: AuthFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
 
     try {
       if (type === "login") {
+        // Сначала выполняем выход, если есть параметр session_expired
+        if (searchParams.get("error") === "session_expired") {
+          await signOut({ redirect: false });
+        }
+
         // Handle login
         const result = await signIn("credentials", {
           redirect: false,
           email: formData.email,
           password: formData.password,
-          remember: rememberMe, // Pass the remember me preference
+          remember: rememberMe,
         });
 
         if (result?.error) {
           setError(t.invalidCredentials);
         } else {
-          router.push("/settings");
+          setError("");
+          router.replace("/chat");
           router.refresh();
         }
       } else {
-        // Validate password for registration
         const passwordError = validatePassword(formData.password);
         if (passwordError) {
           setError(passwordError);
@@ -124,7 +128,7 @@ export default function AuthForm({ type }: AuthFormProps) {
           if (result?.error) {
             setError(t.autoLoginError);
           } else {
-            router.push("/settings");
+            router.push("/chat");
             router.refresh();
           }
         }
@@ -140,7 +144,7 @@ export default function AuthForm({ type }: AuthFormProps) {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/settings" });
+      await signIn("google", { callbackUrl: "/chat" });
     } catch (error: unknown) {
       console.error("Google sign in error:", error);
       setError(t.googleSignInError);

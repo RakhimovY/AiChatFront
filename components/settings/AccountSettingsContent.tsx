@@ -171,7 +171,6 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
           {/* Account Dashboard Tab */}
           {activeTab === 'account' && (
             <>
-              <h1 className="text-2xl font-bold mb-6">{t.accountDashboard || "Личный кабинет"}</h1>
               <div className="flex items-center mb-6 p-4 border rounded-lg bg-primary/5">
                 <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mr-4">
                   {user.image ? (
@@ -253,8 +252,6 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
           {/* Settings Tab */}
           {activeTab === 'settings' && (
             <>
-              <h1 className="text-2xl font-bold mb-6">{t.profileSettings || "Настройки профиля"}</h1>
-
               {error && (
                 <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4">
                   {error}
@@ -284,21 +281,21 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 border rounded-md"
-                    placeholder={t.enterYourEmail || "Введите ваш email"}
-                  />
-                </div>
+                {/*<div className="space-y-2">*/}
+                {/*  <label htmlFor="email" className="text-sm font-medium">*/}
+                {/*    Email*/}
+                {/*  </label>*/}
+                {/*  <input*/}
+                {/*    id="email"*/}
+                {/*    name="email"*/}
+                {/*    type="email"*/}
+                {/*    value={formData.email}*/}
+                {/*    onChange={handleChange}*/}
+                {/*    required*/}
+                {/*    className="w-full p-2 border rounded-md"*/}
+                {/*    placeholder={t.enterYourEmail || "Введите ваш email"}*/}
+                {/*  />*/}
+                {/*</div>*/}
 
                 <div className="space-y-2">
                   <label htmlFor="country" className="text-sm font-medium">

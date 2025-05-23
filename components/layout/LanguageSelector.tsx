@@ -5,7 +5,7 @@ import { Globe, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { LanguageCode, languageNames } from "@/lib/i18n";
 
-export default function LanguageSelector() {
+export default function LanguageSelector({ isMobile }: { isMobile?: boolean } = {}) {
   const { language, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -50,7 +50,7 @@ export default function LanguageSelector() {
       {isOpen && (
         <div 
           ref={dropdownRef}
-          className="absolute right-0 mt-1 w-40 rounded-md shadow-lg bg-card border z-50"
+          className={`absolute ${isMobile ? 'left-0' : 'right-0'} mt-1 w-40 rounded-md shadow-lg bg-card border z-50`}
         >
           <div className="py-1">
             {(Object.keys(languageNames) as LanguageCode[]).map((code) => (

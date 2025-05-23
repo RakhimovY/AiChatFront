@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import LanguageSelector from "@/components/layout/LanguageSelector";
+import Navigation from "@/components/layout/Navigation";
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
@@ -15,14 +16,10 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <main className="flex flex-col min-h-screen bg-background">
-        <div className="container py-12">
-          <div className="flex justify-between items-center mb-8">
-            <Link href="/auth/login" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {t.backToLogin}
-            </Link>
-            <LanguageSelector />
-          </div>
+        {/* Navigation */}
+        <Navigation />
+
+        <div className="container py-12 mt-16">
 
           <div className="max-w-md mx-auto">
             <div className="w-full max-w-md mx-auto p-6 bg-card rounded-lg shadow-sm border">
@@ -45,14 +42,10 @@ export default function ResetPasswordPage() {
 
   return (
     <main className="flex flex-col min-h-screen bg-background">
-      <div className="container py-12">
-        <div className="flex justify-between items-center mb-8">
-          <Link href="/auth/login" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t.backToLogin}
-          </Link>
-          <LanguageSelector />
-        </div>
+      {/* Navigation */}
+      <Navigation />
+
+      <div className="container py-12 mt-16">
 
         <div className="max-w-md mx-auto">
           <ResetPasswordForm token={token} />

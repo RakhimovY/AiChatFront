@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Settings, Save, User } from "lucide-react";
 import Sidebar, { MenuItem } from "@/components/layout/Sidebar";
@@ -18,7 +17,6 @@ type SettingsContentProps = {
 };
 
 export default function SettingsContent({ user }: SettingsContentProps) {
-  const router = useRouter();
   const { data: session, update } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -129,8 +127,6 @@ export default function SettingsContent({ user }: SettingsContentProps) {
 
         {/* Main content */}
         <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mb-6">Настройки профиля</h1>
-
           {error && (
             <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4">
               {error}

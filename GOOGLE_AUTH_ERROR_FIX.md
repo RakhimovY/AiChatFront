@@ -31,7 +31,7 @@ Follow the instructions in the `GOOGLE_AUTH_SETUP.md` file to create a project i
 3. Navigate to "APIs & Services" > "Credentials"
 4. Click "Create Credentials" and select "OAuth client ID"
 5. Select "Web application" as the application type
-6. Enter a name for your OAuth client (e.g., "LegalGPT")
+6. Enter a name for your OAuth client (e.g., "AIuris")
 7. Add authorized JavaScript origins:
    - `http://localhost:3000` (for development)
    - Your production URL (if applicable)

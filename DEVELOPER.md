@@ -1,6 +1,6 @@
-# LegalGPT - Руководство для разработчиков
+# AIuris - Руководство для разработчиков
 
-Это руководство содержит информацию о структуре проекта, архитектуре и инструкции по разработке для проекта LegalGPT.
+Это руководство содержит информацию о структуре проекта, архитектуре и инструкции по разработке для проекта AIuris.
 
 ## Технологический стек
 
@@ -63,11 +63,11 @@
    ```
    # Базовые настройки
    NEXT_PUBLIC_API_URL=http://localhost:3001/api
-   
+
    # Аутентификация (для будущей интеграции)
    NEXTAUTH_URL=http://localhost:3000
    NEXTAUTH_SECRET=your-secret-key
-   
+
    # Stripe (для будущей интеграции)
    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_key
    STRIPE_SECRET_KEY=sk_test_your_key

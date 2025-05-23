@@ -174,8 +174,6 @@ export default function SubscriptionPage() {
 
         {/* Main content */}
         <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mb-6">{t.subscription || "Подписка"}</h1>
-
           {subscriptions.length === 0 ? (
             <div className="space-y-6">
               <Card>

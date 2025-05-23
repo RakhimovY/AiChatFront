@@ -96,7 +96,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
           <div className="flex justify-between items-center">
             <Link href="/chat" className="flex items-center space-x-2">
               <Bot className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">LegalGPT</span>
+              <span className="font-bold text-lg">AIuris</span>
             </Link>
             <ThemeToggle />
           </div>

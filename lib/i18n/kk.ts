@@ -1,6 +1,6 @@
 export const kk = {
   // Common
-  appName: "LegalGPT",
+  appName: "AIuris",
   appDescription: "Заңгерлік AI-көмекші",
 
   // Auth
@@ -117,6 +117,7 @@ export const kk = {
   pricing: "Тарифтер",
   about: "Қызмет туралы",
   theme: "Тақырып",
+  chat: "Чат",
 
   // Account
   accountDashboard: "Жеке кабинет",
@@ -162,7 +163,7 @@ export const kk = {
   startFree: "Тегін бастау",
 
   // Features
-  featuresTitle: "LegalGPT мүмкіндіктері",
+  featuresTitle: "AIuris мүмкіндіктері",
   featureAiChat: "AI-мен сөйлесу",
   featureAiChatDesc: "Заңгерлік сұрақтар қойыңыз және заңды құжаттарға оқытылған жасанды интеллектіміздің жылдам жауаптарын алыңыз.",
   featureDocUpload: "Құжаттарды жүктеу",

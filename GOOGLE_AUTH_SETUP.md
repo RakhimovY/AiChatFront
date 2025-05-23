@@ -1,6 +1,6 @@
 # Google Authentication Setup
 
-This document provides instructions on how to set up Google OAuth credentials for the LegalGPT application.
+This document provides instructions on how to set up Google OAuth credentials for the AIuris application.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ This document provides instructions on how to set up Google OAuth credentials fo
 3. Navigate to "APIs & Services" > "Credentials"
 4. Click "Create Credentials" and select "OAuth client ID"
 5. Select "Web application" as the application type
-6. Enter a name for your OAuth client (e.g., "LegalGPT")
+6. Enter a name for your OAuth client (e.g., "AIuris")
 7. Add authorized JavaScript origins:
    - `http://localhost:3000` (for development)
    - Your production URL (e.g., `https://your-domain.com`)

@@ -50,6 +50,9 @@ export default function ChatPage() {
         if (chatHistory.length > 0) {
           const frontendMessages = chatHistory.map(convertToFrontendMessage);
           setMessages(frontendMessages);
+        } else {
+          // If there's no history, set an empty messages array instead of showing welcome message
+          setMessages([]);
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);
@@ -273,7 +276,7 @@ export default function ChatPage() {
     const messagesCount = "Количество сообщений";
 
     const header = [
-      `LegalGPT - ${chatTitle}`,
+      `AIuris - ${chatTitle}`,
       `${exportedOn}: ${dateStr} ${timeStr}`,
       `${messagesCount}: ${messages.length}`,
       "----------------------------------------",
@@ -303,7 +306,7 @@ export default function ChatPage() {
     // Add a footer
     const footer = [
       "",
-      `${exportedWith} LegalGPT`,
+      `${exportedWith} AIuris`,
       `${exportDate}: ${dateStr}`
     ].join("\n");
 
@@ -315,7 +318,7 @@ export default function ChatPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `legal-gpt-chat-${now.toISOString().split("T")[0]}.txt`;
+    a.download = `aiuris-chat-${now.toISOString().split("T")[0]}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
