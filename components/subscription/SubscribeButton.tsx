@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Polar } from "@polar-sh/sdk";
-import {redirect} from "next/navigation";
 
 interface SubscribeButtonProps {
   planId: string;
@@ -22,8 +22,7 @@ export default function SubscribeButton({
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-
+  const router = useRouter();
 
   const handleSubscribe = async () => {
     if (!session?.user?.email) {
@@ -38,15 +37,28 @@ export default function SubscribeButton({
     setIsLoading(true);
 
     try {
-      // Using the Polar checkout directly with URL parameters
+      // Using the Polar checkout with the correct configuration
       const polar = new Polar({
-        accessToken: process.env.NEXT_PUBLIC_POLAR_API_KEY,
-        server: "sandbox"
+        accessToken: process.env.NEXT_PUBLIC_POLAR_API_KEY!,
+        server: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox'
       });
 
+      // Generate a unique session ID for this checkout
+      const sessionId = Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('polarSessionId', sessionId);
+
+      // Create checkout session with customer email and success URL including the session ID
       const checkout = await polar.checkouts.create({
-        products: ["e545ed36-051e-48b5-aa98-082820de2381"],
+        products: [planId], // Use the planId prop instead of hardcoded value
+        customerEmail: session.user.email,
+        successUrl: `${window.location.origin}/subscription/success?session=${sessionId}`,
+        cancelUrl: `${window.location.origin}/subscription/cancel`,
       });
+
+      // Store checkout ID in localStorage to use it for verification on success page
+      localStorage.setItem('polarCheckoutId', checkout.id);
+
+      // Redirect to the checkout URL
       window.location.href = checkout.url;
 
     } catch (error) {

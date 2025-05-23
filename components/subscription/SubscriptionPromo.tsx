@@ -53,9 +53,9 @@ export default function SubscriptionPromo({ className = '' }: SubscriptionPromoP
       </CardContent>
       <CardFooter>
         {status === 'authenticated' ? (
-          <SubscribeButton 
-            planId="premium-monthly" 
-            buttonText="Subscribe Now" 
+          <SubscribeButton
+            planId="e545ed36-051e-48b5-aa98-082820de2381"
+            buttonText="Subscribe Now"
             className="w-full"
           />
         ) : (

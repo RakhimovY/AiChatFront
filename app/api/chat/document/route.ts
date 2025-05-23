@@ -3,14 +3,14 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 /**
- * Handler for GET /subscriptions
- * This endpoint forwards the request to the backend API
+ * Handler for POST /api/chat/document
+ * This endpoint forwards document upload requests to the backend
  */
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     // Get the session to access the token
     const session = await getServerSession(authOptions);
-
+    
     if (!session?.accessToken) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
@@ -21,12 +21,17 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Get the form data from the request
+    const formData = await req.formData();
+    
     // Forward the request to the backend
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/ask-with-document`, {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json'
-      }
+        'Authorization': `Bearer ${session.accessToken}`
+        // Don't set Content-Type here, it will be set automatically with the boundary
+      },
+      body: formData
     });
 
     // Get the response data
@@ -41,11 +46,11 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (error) {
-    console.error('Error fetching subscriptions:', error);
+    console.error('Error sending message with document:', error);
 
     // Return an error response
     return new Response(
-      JSON.stringify({ error: 'Failed to fetch subscriptions' }),
+      JSON.stringify({ error: 'Failed to send message with document' }),
       { 
         status: 500,
         headers: { 'Content-Type': 'application/json' }

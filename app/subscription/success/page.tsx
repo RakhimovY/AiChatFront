@@ -1,20 +1,27 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import  { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, MessageSquare, CreditCard, Settings, HelpCircle } from 'lucide-react';
+import { CheckCircle, MessageSquare, CreditCard, Settings, HelpCircle, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import Header from "@/components/layout/Header";
 import Sidebar, { MenuItem } from "@/components/layout/Sidebar";
+import { useToast } from '@/components/ui/use-toast';
+import subscriptionApi from '@/lib/subscriptionApi';
+import api from "@/lib/api";
 
 export default function SubscriptionSuccessPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [redirectCountdown, setRedirectCountdown] = useState(5);
 
   // Reference to the sidebar element
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -47,16 +54,135 @@ export default function SubscriptionSuccessPage() {
     }
   }, [status, router]);
 
-  // Redirect to subscription page after 5 seconds
+  // Extract session ID from URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionId = urlParams.get('session');
+
+      if (sessionId) {
+        // Store the session ID from URL in state for verification
+        localStorage.setItem('currentSessionId', sessionId);
+      }
+    }
+  }, []);
+
+  // Verify subscription status
   useEffect(() => {
     if (status === 'authenticated') {
-      const timer = setTimeout(() => {
-        router.push('/subscription');
-      }, 5000);
+      const verifySubscription = async () => {
+        try {
+          // Get the checkout ID and session ID from localStorage
+          const checkoutId = localStorage.getItem('polarCheckoutId');
+          const sessionId = localStorage.getItem('currentSessionId');
+          const storedSessionId = localStorage.getItem('polarSessionId');
 
-      return () => clearTimeout(timer);
+          // Verify that the session ID in the URL matches the one we stored
+          const isValidSession = sessionId && storedSessionId && sessionId === storedSessionId;
+
+          // Check subscription status directly from the backend
+          const statusResponse = await subscriptionApi.checkSubscriptionStatus();
+
+          if (statusResponse.hasActiveSubscription) {
+            // User has active subscriptions
+            setSubscriptionStatus('active');
+            // Clean up localStorage
+            localStorage.removeItem('polarCheckoutId');
+            localStorage.removeItem('polarSessionId');
+            localStorage.removeItem('currentSessionId');
+          } else if (statusResponse.subscriptions.length > 0) {
+            // User has subscriptions, but none are active (might be pending or canceled)
+            const pendingSubscription = statusResponse.subscriptions.find(
+              sub => sub.status === 'pending' || sub.status === 'created'
+            );
+
+            if (pendingSubscription) {
+              setSubscriptionStatus('pending');
+            } else {
+              // Subscriptions exist but are canceled or expired
+              setSubscriptionStatus('inactive');
+            }
+          } else if (isValidSession && checkoutId) {
+            // Valid session and checkout ID, but no subscription found yet
+            // This means the webhook hasn't been processed yet
+            // Try a manual check with the checkout ID
+            try {
+              // Use the checkout ID to trigger a backend check
+              await subscriptionApi.notifySubscriptionCreated(checkoutId);
+
+              // Check status again after notification
+              const refreshedStatus = await subscriptionApi.checkSubscriptionStatus();
+
+              if (refreshedStatus.hasActiveSubscription) {
+                setSubscriptionStatus('active');
+                // Clean up localStorage
+                localStorage.removeItem('polarCheckoutId');
+                localStorage.removeItem('polarSessionId');
+                localStorage.removeItem('currentSessionId');
+              } else {
+                // Still no active subscriptions, subscription might be pending
+                setSubscriptionStatus('pending');
+              }
+            } catch (error) {
+              console.error('Error checking subscription status:', error);
+              setSubscriptionStatus('unknown');
+            }
+          } else {
+            // No valid session or checkout ID, and no subscriptions found
+            // Try a manual check as fallback
+            try {
+              // Use 'manual-check' to trigger a backend check without a specific subscription ID
+              await subscriptionApi.notifySubscriptionCreated('manual-check');
+
+              // Check status again after notification
+              const refreshedStatus = await subscriptionApi.checkSubscriptionStatus();
+
+              if (refreshedStatus.hasActiveSubscription) {
+                setSubscriptionStatus('active');
+              } else {
+                // Still no active subscriptions, subscription might be pending
+                setSubscriptionStatus('pending');
+              }
+            } catch (error) {
+              console.error('Error checking subscription status:', error);
+              setSubscriptionStatus('unknown');
+            }
+          }
+        } catch (error) {
+          console.error('Error verifying subscription:', error);
+          setSubscriptionStatus('error');
+        } finally {
+          setIsVerifying(false);
+        }
+      };
+
+      verifySubscription();
     }
-  }, [router, status]);
+  }, [status]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (status === 'authenticated' && !isVerifying) {
+      const timer = setInterval(() => {
+        setRedirectCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [status, isVerifying]);
+
+  // Separate effect for navigation after countdown reaches zero
+  useEffect(() => {
+    if (redirectCountdown === 0) {
+      router.push('/subscription');
+    }
+  }, [redirectCountdown, router]);
 
   // Define menu items for the sidebar
   const menuItems: MenuItem[] = [
@@ -73,11 +199,11 @@ export default function SubscriptionSuccessPage() {
     image: session?.user?.image || undefined
   };
 
-  if (status === 'loading') {
+  if (status === 'loading' || isVerifying) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-        <p className="text-muted-foreground mt-4">Loading...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">Verifying your subscription...</p>
       </div>
     );
   }
@@ -105,20 +231,41 @@ export default function SubscriptionSuccessPage() {
 
         {/* Main content */}
         <main className="flex-1 p-6 flex items-center justify-center">
-          <Card className="border-green-200 max-w-md w-full">
+          <Card className={`max-w-md w-full ${subscriptionStatus === 'active' ? 'border-green-200' : subscriptionStatus === 'error' ? 'border-red-200' : 'border-amber-200'}`}>
             <CardHeader className="text-center">
               <div className="flex justify-center mb-4">
-                <CheckCircle className="h-16 w-16 text-green-500" />
+                {subscriptionStatus === 'active' ? (
+                  <CheckCircle className="h-16 w-16 text-green-500" />
+                ) : subscriptionStatus === 'error' ? (
+                  <AlertCircle className="h-16 w-16 text-red-500" />
+                ) : (
+                  <AlertCircle className="h-16 w-16 text-amber-500" />
+                )}
               </div>
-              <CardTitle className="text-2xl">Subscription Successful!</CardTitle>
+              <CardTitle className="text-2xl">
+                {subscriptionStatus === 'active' ? 'Subscription Successful!' : 
+                 subscriptionStatus === 'error' ? 'Subscription Error' : 
+                 'Subscription Processing'}
+              </CardTitle>
               <CardDescription>
-                Thank you for subscribing to our premium service.
+                {subscriptionStatus === 'active' ? 'Thank you for subscribing to our premium service.' : 
+                 subscriptionStatus === 'error' ? 'There was an error processing your subscription.' : 
+                 'Your subscription is being processed.'}
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-muted-foreground">
-                Your subscription has been activated. You now have access to all premium features.
+                {subscriptionStatus === 'active' ? 
+                  'Your subscription has been activated. You now have access to all premium features.' : 
+                 subscriptionStatus === 'error' ? 
+                  'Please check your subscription status on the subscription page or contact support.' : 
+                  'Please wait while we verify your subscription. This may take a moment.'}
               </p>
+              {!isVerifying && (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Redirecting to subscription page in {redirectCountdown} seconds...
+                </p>
+              )}
             </CardContent>
             <CardFooter className="flex justify-center">
               <Button onClick={() => router.push('/subscription')}>

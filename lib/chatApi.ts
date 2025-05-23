@@ -13,9 +13,9 @@ export interface ChatMessage {
 export interface MessageRequest {
   chatId?: number;
   content: string;
-  country?: string;
+  country?: string | null;
   language?: string;
-  document?: File;
+  document?: File| null;
 }
 
 export interface ChatDTO {
@@ -150,7 +150,7 @@ export const sendMessage = async (message: MessageRequest): Promise<ChatMessage[
 
       // Use retry mechanism with exponential backoff
       response = await retryWithBackoff(() => 
-        api.post<ChatMessage[]>('/chat/ask-with-document', formData, {
+        api.post<ChatMessage[]>('/chat/document', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -159,7 +159,7 @@ export const sendMessage = async (message: MessageRequest): Promise<ChatMessage[
     } else {
       // Regular message without document
       response = await retryWithBackoff(() => 
-        api.post<ChatMessage[]>('/chat/ask', message)
+        api.post<ChatMessage[]>('/chat', message)
       );
     }
 
@@ -219,7 +219,7 @@ export const getUserChats = async (): Promise<Chat[]> => {
 
     // If not in cache, fetch from API
     const response = await retryWithBackoff(() => 
-      api.get<ChatDTO[]>('/chat/user')
+      api.get<ChatDTO[]>('/chat')
     );
 
     // Ensure the response data is an array

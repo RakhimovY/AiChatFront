@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 /**
- * Handler for GET /subscriptions
- * This endpoint forwards the request to the backend API
+ * Handler for GET /subscriptions/status
+ * This endpoint checks the subscription status for the authenticated user
  */
 export async function GET(req: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Forward the request to the backend
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions/status`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json'
@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
 
     // Get the response data
     const data = await response.json();
+    console.log('Response from backend:', data);
 
     // Return the response from the backend
     return new Response(
@@ -41,12 +42,16 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (error) {
-    console.error('Error fetching subscriptions:', error);
+    console.error('Error checking subscription status:', error);
 
     // Return an error response
     return new Response(
-      JSON.stringify({ error: 'Failed to fetch subscriptions' }),
-      { 
+      JSON.stringify({
+        hasActiveSubscription: false,
+        subscriptions: [],
+        message: 'Failed to check subscription status'
+      }),
+      {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
       }

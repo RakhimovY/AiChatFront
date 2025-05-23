@@ -3,8 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 /**
- * Handler for GET /subscriptions
+ * Handler for GET /chat/user
  * This endpoint forwards the request to the backend API
+ * to get all chats for the current user
  */
 export async function GET(req: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
 
     if (!session?.accessToken) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized: Please log in to access this resource' }),
         { 
           status: 401,
           headers: { 'Content-Type': 'application/json' }
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Forward the request to the backend
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/user`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json'
@@ -41,11 +42,11 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (error) {
-    console.error('Error fetching subscriptions:', error);
+    console.error('Error fetching user chats:', error);
 
     // Return an error response
     return new Response(
-      JSON.stringify({ error: 'Failed to fetch subscriptions' }),
+      JSON.stringify({ error: 'Failed to fetch user chats' }),
       { 
         status: 500,
         headers: { 'Content-Type': 'application/json' }

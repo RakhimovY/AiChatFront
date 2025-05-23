@@ -1,18 +1,17 @@
 import { NextRequest } from 'next/server';
-import axios from 'axios';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 /**
- * Handler for POST /api/subscriptions/notify
+ * Handler for POST /subscriptions/notify
  * This endpoint forwards the request to the backend API
  */
 export async function POST(req: NextRequest) {
   try {
-    // Get the session to verify the user is authenticated
+    // Get the session to access the token
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session?.accessToken) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { 
@@ -25,27 +24,26 @@ export async function POST(req: NextRequest) {
     // Parse the request body
     const body = await req.json();
 
-    // Add the user's email to the request if not provided
-    if (!body.email && session.user.email) {
-      body.email = session.user.email;
-    }
-
     // Forward the request to the backend
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/subscriptions/notify`,
-      body,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.accessToken}`,
-        },
-      }
-    );
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions/notify`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    // Get the response data
+    const data = await response.json();
 
     // Return the response from the backend
     return new Response(
-      JSON.stringify(response.data),
-      { headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify(data),
+      { 
+        status: response.status,
+        headers: { 'Content-Type': 'application/json' } 
+      }
     );
   } catch (error) {
     console.error('Error notifying subscription:', error);

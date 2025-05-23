@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from './api';
 
 // Define types for subscription-related data
 export interface Subscription {
@@ -21,12 +21,19 @@ export interface SubscriptionCancellationResponse {
   subscription: Subscription | null;
 }
 
+// Define interface for subscription status response
+export interface SubscriptionStatusResponse {
+  hasActiveSubscription: boolean;
+  subscriptions: Subscription[];
+  message: string;
+}
+
 // API client for subscription management
 const subscriptionApi = {
   // Get all subscriptions for the authenticated user
   getUserSubscriptions: async (): Promise<Subscription[]> => {
     try {
-      const response = await axios.get('/api/subscriptions');
+      const response = await api.get('/subscriptions');
       return response.data;
     } catch (error) {
       console.error('Error fetching user subscriptions:', error);
@@ -37,7 +44,7 @@ const subscriptionApi = {
   // Get active subscriptions for the authenticated user
   getActiveSubscriptions: async (): Promise<Subscription[]> => {
     try {
-      const response = await axios.get('/api/subscriptions/active');
+      const response = await api.get('/subscriptions/active');
       return response.data;
     } catch (error) {
       console.error('Error fetching active subscriptions:', error);
@@ -45,10 +52,21 @@ const subscriptionApi = {
     }
   },
 
+  // Check subscription status for the authenticated user
+  checkSubscriptionStatus: async (): Promise<SubscriptionStatusResponse> => {
+    try {
+      const response = await api.get('/subscriptions/status');
+      return response.data;
+    } catch (error) {
+      console.error('Error checking subscription status:', error);
+      throw error;
+    }
+  },
+
   // Cancel a subscription
   cancelSubscription: async (polarSubscriptionId: string): Promise<SubscriptionCancellationResponse> => {
     try {
-      const response = await axios.post('/api/subscriptions/cancel', { polarSubscriptionId });
+      const response = await api.post('/subscriptions/cancel', { polarSubscriptionId });
       return response.data;
     } catch (error) {
       console.error('Error canceling subscription:', error);
@@ -59,7 +77,7 @@ const subscriptionApi = {
   // Notify the backend about a new subscription
   notifySubscriptionCreated: async (polarSubscriptionId: string): Promise<void> => {
     try {
-      await axios.post('/api/subscriptions/notify', { polarSubscriptionId });
+      await api.post('/subscriptions/notify', { polarSubscriptionId });
     } catch (error) {
       console.error('Error notifying subscription creation:', error);
       throw error;

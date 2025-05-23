@@ -4,7 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { NextAuthOptions } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import axios from "axios";
-import { OAuthUserConfig } from "next-auth/providers";
+import {OAuthUserConfig} from "next-auth/providers/oauth";
 
 // Define user interface
 interface User {
@@ -109,7 +109,7 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === "google" && profile) {
         try {
           // Check if Google credentials are configured
-          if (!process.env.GOOGLE_CLIENT_ID || !`process.env.GOOGLE_CLIENT_SECRET`) {
+          if (!process.env.GOOGLE_CLIENT_ID) {
             console.error("Google OAuth credentials are not configured");
             return "/auth/error?error=GoogleCredentialsNotConfigured";
           }

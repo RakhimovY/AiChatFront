@@ -1,18 +1,17 @@
 import { NextRequest } from 'next/server';
-import axios from 'axios';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 /**
- * Handler for GET /api/subscriptions/active
+ * Handler for GET /subscriptions/active
  * This endpoint forwards the request to the backend API
  */
 export async function GET(req: NextRequest) {
   try {
-    // Get the session to verify the user is authenticated
+    // Get the session to access the token
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user) {
+    if (!session?.accessToken) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { 
@@ -23,23 +22,54 @@ export async function GET(req: NextRequest) {
     }
 
     // Forward the request to the backend
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/subscriptions/active`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.accessToken}`,
-        },
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions/active`, {
+      headers: {
+        'Authorization': `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json'
       }
-    );
+    });
+
+    // Check if response is 401 Unauthorized
+    if (response.status === 401) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { 
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Get the response data
+    const data = await response.json();
 
     // Return the response from the backend
     return new Response(
-      JSON.stringify(response.data),
-      { headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify(data),
+      { 
+        status: response.status,
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   } catch (error) {
     console.error('Error fetching active subscriptions:', error);
+
+    // Check if it's an authentication error (401)
+    // This handles cases where the error object might contain response info
+    if (
+      error && 
+      typeof error === 'object' && 
+      ('status' in error && error.status === 401 || 
+       'response' in error && error.response?.status === 401)
+    ) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { 
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
     // Return an error response
     return new Response(

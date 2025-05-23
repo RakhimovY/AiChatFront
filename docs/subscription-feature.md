@@ -47,6 +47,8 @@ The subscription feature allows users to subscribe to premium plans using Polar 
    https://your-domain.com/api/subscription/webhook
    ```
 
+   Note: The webhook will be forwarded to the backend endpoint `/polar/webhook`.
+
 ## How to Use
 
 ### Adding the Subscription Promo to a Page
@@ -113,7 +115,7 @@ To test webhooks locally, you can use a tool like ngrok to expose your local ser
 2. Start your frontend server: `npm run dev`
 3. In a separate terminal, run: `ngrok http 3000`
 4. Copy the ngrok URL (e.g., `https://abc123.ngrok.io`)
-5. Set up the webhook in your Polar dashboard to point to: `https://abc123.ngrok.io/api/subscription/webhook`
+5. Set up the webhook in your Polar dashboard to point to: `https://abc123.ngrok.io/api/subscription/webhook` (this will be forwarded to the backend endpoint `/api/polar/webhook`)
 6. Test the subscription flow as described above.
 
 ## Troubleshooting
@@ -128,7 +130,7 @@ If the subscription is not created after a successful checkout, you can try:
 
 1. Check the browser console for any errors.
 2. Check the backend logs for any errors.
-3. Manually notify the backend by calling the `/api/subscription/notify` endpoint with the subscription ID.
+3. Manually notify the backend by calling the `/subscription/notify` endpoint with the subscription ID.
 
 ## Implementation Details
 
@@ -142,24 +144,50 @@ If the subscription is not created after a successful checkout, you can try:
 
 ### Backend Components
 
-- `SubscriptionController`: Handles subscription-related API requests.
+- `SubscriptionController`: Handles subscription-related API requests (subscriptions management, cancellation, etc.).
+- `PolarWebhookController`: Handles webhook events from Polar (subscription creation, updates, cancellation, etc.).
 - `SubscriptionService`: Manages subscription data and business logic.
 - `Subscription`: Model for storing subscription data.
 - `SubscriptionRepository`: Data access for subscriptions.
+- `PolarWebhookEvent`: DTO for Polar webhook events.
 
 ### API Endpoints
 
 - `GET /api/subscriptions`: Get all subscriptions for the authenticated user.
 - `GET /api/subscriptions/active`: Get active subscriptions for the authenticated user.
+- `GET /api/subscriptions/status`: Check subscription status for the authenticated user.
 - `POST /api/subscriptions/cancel`: Cancel a subscription.
-- `POST /api/subscriptions/webhook`: Webhook endpoint for Polar subscription events.
+- `POST /polar/webhook`: Webhook endpoint for Polar subscription events (replaces the old `/subscriptions/webhook` endpoint).
 - `POST /api/subscriptions/notify`: Manual notification endpoint for subscription events.
 
 ### Frontend API Routes
 
-- `POST /api/subscription/webhook`: Receives webhook events from Polar and forwards them to the backend. Uses the `Webhooks` function from `@polar-sh/nextjs` for signature verification and event handling.
+- `POST /api/subscription/webhook`: Receives webhook events from Polar and forwards them to the backend endpoint `/polar/webhook`. Uses the `Webhooks` function from `@polar-sh/nextjs` for signature verification and event handling.
 - `POST /api/subscription/notify`: Notifies the backend about a subscription when the webhook might not be received.
 - `POST /api/subscription/checkout`: Creates a checkout session and returns the redirect URL. Uses the `Checkout` function from `@polar-sh/nextjs` to handle the checkout process.
+- `GET /api/subscriptions/status`: Checks the subscription status for the authenticated user and returns comprehensive information about their subscriptions.
+- `GET /api/subscriptions`: Gets all subscriptions for the authenticated user.
+- `GET /api/subscriptions/active`: Gets active subscriptions for the authenticated user.
+- `POST /api/subscriptions/cancel`: Cancels a subscription.
+
+### Server-Side Subscription Tracking
+
+The subscription feature uses a server-side approach to track subscription status, which provides the following benefits:
+
+1. **Reliability**: Subscription data is stored in the database, not in localStorage or other client-side storage mechanisms
+2. **Security**: Sensitive subscription information is kept on the server
+3. **Consistency**: All clients see the same subscription status
+4. **Persistence**: Subscription status persists across sessions and devices
+
+The flow for tracking subscription status is:
+
+1. When a user initiates a subscription, they are redirected to Polar's checkout page
+2. After successful payment, Polar sends a webhook to our webhook endpoint
+3. The webhook handler forwards the event to the backend
+4. The backend stores the subscription data in the database
+5. The frontend can query the subscription status at any time using the `/subscriptions/status` endpoint
+
+This approach eliminates the need for client-side storage of subscription data and ensures that the subscription status is always up-to-date.
 
 ### Integration with @polar-sh/nextjs
 

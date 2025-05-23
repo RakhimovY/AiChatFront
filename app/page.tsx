@@ -12,7 +12,7 @@ import Navigation from "@/components/layout/Navigation";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import Footer from "@/components/layout/Footer";
 
-export default function HomePage() {
+export default function Page() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { t } = useLanguage();

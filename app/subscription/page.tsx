@@ -55,17 +55,29 @@ export default function SubscriptionPage() {
   }, [status, router]);
 
   // Fetch subscriptions when component mounts
+  const [hasFetchedSubscriptions, setHasFetchedSubscriptions] = useState(false);
+
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (status === 'authenticated' && !hasFetchedSubscriptions) {
       fetchSubscriptions();
+      setHasFetchedSubscriptions(true);
     }
-  }, [status]);
+  }, [status, hasFetchedSubscriptions]);
 
   const fetchSubscriptions = async () => {
     setIsLoading(true);
     try {
-      const data = await subscriptionApi.getUserSubscriptions();
-      setSubscriptions(data);
+      // Use the new checkSubscriptionStatus method to get more comprehensive information
+      const statusResponse = await subscriptionApi.checkSubscriptionStatus();
+      setSubscriptions(statusResponse.subscriptions);
+      // If there's an error, show it
+      if (!statusResponse.hasActiveSubscription && statusResponse.message.includes('error')) {
+        toast({
+          title: "Warning",
+          description: statusResponse.message,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error('Error fetching subscriptions:', error);
       toast({
@@ -87,7 +99,8 @@ export default function SubscriptionPage() {
           title: "Success",
           description: "Your subscription has been cancelled.",
         });
-        // Refresh subscriptions list
+        // Reset the flag and refresh subscriptions list
+        setHasFetchedSubscriptions(false);
         fetchSubscriptions();
       } else {
         toast({
@@ -174,9 +187,9 @@ export default function SubscriptionPage() {
                 </CardHeader>
                 <CardFooter>
                   <SubscribeButton 
-                    planId="AIuris"
-                    buttonText="Subscribe Now" 
+                    buttonText="Subscribe Now"
                     className="w-full md:w-auto"
+                    planId="e545ed36-051e-48b5-aa98-082820de2381"
                   />
                 </CardFooter>
               </Card>
