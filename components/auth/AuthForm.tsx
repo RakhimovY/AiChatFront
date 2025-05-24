@@ -72,12 +72,12 @@ export default function AuthForm({ type }: AuthFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
     try {
       if (type === "login") {
-        // Сначала выполняем выход, если есть параметр session_expired
-        if (searchParams.get("error") === "session_expired") {
-          await signOut({ redirect: false });
+        if (searchParams.has("error")) {
+          window.history.replaceState({}, '', '/auth/login');
         }
 
         // Handle login
@@ -91,7 +91,6 @@ export default function AuthForm({ type }: AuthFormProps) {
         if (result?.error) {
           setError(t.invalidCredentials);
         } else {
-          setError("");
           router.replace("/chat");
           router.refresh();
         }
@@ -126,10 +125,11 @@ export default function AuthForm({ type }: AuthFormProps) {
           });
 
           if (result?.error) {
+            console.error("Auto login error:", result.error);
             setError(t.autoLoginError);
           } else {
-            router.push("/chat");
-            router.refresh();
+            // Use window.location for a full page navigation
+            window.location.href = "/chat";
           }
         }
       }

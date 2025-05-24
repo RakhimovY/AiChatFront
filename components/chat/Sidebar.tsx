@@ -27,7 +27,10 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
     const fetchChats = async () => {
       if (status !== "authenticated") return;
 
-      setIsLoading(true);
+      // Only show loading state if there are no chats yet
+      if (chats.length === 0) {
+        setIsLoading(true);
+      }
       setError(null);
       try {
         const userChats = await getUserChats();

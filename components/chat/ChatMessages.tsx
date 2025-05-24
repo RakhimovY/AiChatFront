@@ -48,7 +48,8 @@ export default function ChatMessages({ messages, isLoading, isLoadingHistory, us
           ))
         }
 
-      {isLoading && (
+      {/* Only show loading indicator if there are more than 1 message (not a new chat with just the first question) */}
+      {isLoading && messages.length > 1 && (
         <Message
           id="loading"
           role="assistant"

@@ -35,6 +35,9 @@ export default function ChatPage() {
   // Reference to the sidebar element
   const sidebarRef = useRef<HTMLDivElement>(null);
 
+  // Track if this is a new chat that was just created
+  const [isNewChat, setIsNewChat] = useState(false);
+
   // Fetch chat history when the component mounts or when the chat ID changes
   useEffect(() => {
     // Skip if not authenticated or no chat ID
@@ -43,7 +46,10 @@ export default function ChatPage() {
     }
 
     const fetchChatHistory = async () => {
-      setIsLoadingHistory(true);
+      // Only show loading state if it's not a new chat
+      if (!isNewChat) {
+        setIsLoadingHistory(true);
+      }
       setError(null);
       try {
         const chatHistory = await getChatHistory(currentChatId);
@@ -51,6 +57,8 @@ export default function ChatPage() {
           const frontendMessages = chatHistory.map(convertToFrontendMessage);
           setMessages(frontendMessages);
         }
+        // Reset the new chat flag after fetching
+        setIsNewChat(false);
       } catch (error) {
         console.error("Error fetching chat history:", error);
         setError(t.errorLoading);
@@ -60,7 +68,7 @@ export default function ChatPage() {
     };
 
     fetchChatHistory();
-  }, [currentChatId, status, language]); // Added language dependency to re-fetch when language changes
+  }, [currentChatId, status, language, isNewChat]); // Added isNewChat dependency
 
   // Update welcome message when language changes
   useEffect(() => {
@@ -181,6 +189,8 @@ export default function ChatPage() {
         // Update the current chat ID if this is a new chat
         if (!currentChatId && response.length > 0) {
           setCurrentChatId(response[0].chatId);
+          // Set the flag to indicate this is a new chat
+          setIsNewChat(true);
         }
 
         // Convert backend messages to frontend format and update the state

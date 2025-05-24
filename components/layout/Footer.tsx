@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {Bot} from "lucide-react";
+import {Bot, Scale} from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function Footer() {
@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <Bot className="h-6 w-6 text-primary" />
+              <Scale className="h-6 w-6 text-primary" />
               <span className="font-bold text-lg">{t.appName}</span>
             </div>
             <div className="flex flex-wrap justify-center gap-4">
