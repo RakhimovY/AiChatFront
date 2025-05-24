@@ -1,6 +1,6 @@
 # Google Authentication Implementation
 
-This document summarizes the changes made to implement Google authentication in the LegalGPT application.
+This document summarizes the changes made to implement Google authentication in the AIuris application.
 
 ## Backend Changes
 

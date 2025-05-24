@@ -2,10 +2,12 @@
 
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-import AccountContent from "@/components/account/AccountContent";
+import AccountSettingsContent from "@/components/settings/AccountSettingsContent";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
-export default function AccountPage() {
+export default function SettingsPage() {
   const { data: session, status } = useSession();
+  const { t } = useLanguage();
 
   // If the user is not authenticated, redirect to the login page
   if (status === "unauthenticated") {
@@ -21,13 +23,13 @@ export default function AccountPage() {
     );
   }
 
-  // For demo purposes, use a mock user if session is not available
   // Ensure user object has required non-nullable properties
   const user = {
-    name: session?.user?.name || "Демо Пользователь",
-    email: session?.user?.email || "demo@example.com",
-    image: session?.user?.image || undefined
+    name: session?.user?.name || "User",
+    email: session?.user?.email || "",
+    image: session?.user?.image || undefined,
+    country: session?.user?.country || ""
   };
 
-  return <AccountContent user={user} />;
+  return <AccountSettingsContent user={user} />;
 }

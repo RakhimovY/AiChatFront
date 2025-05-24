@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,13 +30,13 @@ export default function ForgotPasswordForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Произошла ошибка при запросе сброса пароля');
+        throw new Error(data.message || t.passwordResetError);
       }
 
       // If the request was successful, show the success message
       setSuccess(true);
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Произошла ошибка. Пожалуйста, попробуйте еще раз.");
+      setError(error instanceof Error ? error.message : t.generalError);
       console.error("Password reset error:", error);
     } finally {
       setIsLoading(false);
@@ -44,15 +46,15 @@ export default function ForgotPasswordForm() {
   if (success) {
     return (
       <div className="w-full max-w-md mx-auto p-6 bg-card rounded-lg shadow-sm border">
-        <h2 className="text-2xl font-bold mb-6 text-center">Сброс пароля</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">{t.resetPassword}</h2>
         <div className="bg-primary/10 text-primary text-sm p-4 rounded-md mb-6">
-          Инструкции по сбросу пароля отправлены на адрес {email}. Пожалуйста, проверьте вашу электронную почту.
+          {t.passwordResetSuccess.replace('{email}', email)}
         </div>
         <Link 
           href="/auth/login" 
           className="block w-full py-2 text-center bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
         >
-          Вернуться к входу
+          {t.backToLogin}
         </Link>
       </div>
     );
@@ -60,9 +62,9 @@ export default function ForgotPasswordForm() {
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-card rounded-lg shadow-sm border">
-      <h2 className="text-2xl font-bold mb-6 text-center">Сброс пароля</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">{t.resetPassword}</h2>
       <p className="text-muted-foreground mb-6">
-        Введите ваш email, и мы отправим вам инструкции по сбросу пароля.
+        {t.passwordResetInstructions}
       </p>
 
       {error && (
@@ -74,7 +76,7 @@ export default function ForgotPasswordForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">
-            Email
+            {t.email}
           </label>
           <input
             id="email"
@@ -83,7 +85,7 @@ export default function ForgotPasswordForm() {
             onChange={(e) => setEmail(e.target.value)}
             required
             className="w-full p-2 border rounded-md"
-            placeholder="Введите ваш email"
+            placeholder={t.enterEmail}
           />
         </div>
 
@@ -95,17 +97,17 @@ export default function ForgotPasswordForm() {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Отправка...
+              {t.sending}
             </>
           ) : (
-            "Отправить инструкции"
+            t.sendInstructions
           )}
         </button>
       </form>
 
       <div className="mt-6 text-center text-sm">
         <Link href="/auth/login" className="text-primary hover:underline">
-          Вернуться к входу
+          {t.backToLogin}
         </Link>
       </div>
     </div>

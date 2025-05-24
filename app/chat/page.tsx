@@ -1,42 +1,25 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Message } from "@/components/chat/types";
-import { getSimulatedResponse } from "@/components/chat/utils";
 import Sidebar from "@/components/chat/Sidebar";
 import MobileHeader from "@/components/chat/MobileHeader";
 import ChatMessages from "@/components/chat/ChatMessages";
 import ChatInput from "@/components/chat/ChatInput";
-import DemoLimitModal from "@/components/ui/DemoLimitModal";
-import DemoInfo from "@/components/ui/DemoInfo";
-import { useDemoStore, useInitializeDemoStore } from "@/store/demoStore";
 import { sendMessage, convertToFrontendMessage, getChatHistory } from "@/lib/chatApi";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function ChatPage() {
-  const searchParams = useSearchParams();
-  const isDemoMode = searchParams.get("mode") === "demo";
   const { data: session, status } = useSession();
-
-  // Initialize demo store if in demo mode
-  useInitializeDemoStore();
-
-  // Get demo store state and actions
-  const {
-    incrementRequestCount,
-    isLimitExceeded,
-    requestCount
-  } = useDemoStore();
+  const { language, t } = useLanguage();
 
   // State for messages, loading state, and sidebar
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: isDemoMode
-        ? "Здравствуйте! Вы используете демо-режим с ограничением в 10 запросов. Чем я могу вам помочь сегодня?"
-        : "Здравствуйте! Я ваш юридический ассистент. Чем я могу вам помочь сегодня?",
+      content: t.welcomeMessage,
       timestamp: new Date(),
     },
   ]);
@@ -46,14 +29,16 @@ export default function ChatPage() {
   const [currentChatId, setCurrentChatId] = useState<number | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(session?.user?.country || null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Reference to the sidebar element
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Fetch chat history when the component mounts or when the chat ID changes
   useEffect(() => {
-    // Skip if in demo mode or not authenticated
-    if (isDemoMode || status !== "authenticated" || !currentChatId) {
+    // Skip if not authenticated or no chat ID
+    if (status !== "authenticated" || !currentChatId) {
       return;
     }
 
@@ -68,14 +53,29 @@ export default function ChatPage() {
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);
-        setError("Не удалось загрузить историю чата. Пожалуйста, попробуйте еще раз.");
+        setError(t.errorLoading);
       } finally {
         setIsLoadingHistory(false);
       }
     };
 
     fetchChatHistory();
-  }, [currentChatId, isDemoMode, status]);
+  }, [currentChatId, status, language]); // Added language dependency to re-fetch when language changes
+
+  // Update welcome message when language changes
+  useEffect(() => {
+    // Only update if there's no active chat (showing welcome message)
+    if (!currentChatId && messages.length === 1 && messages[0].id === "welcome") {
+      setMessages([
+        {
+          id: "welcome",
+          role: "assistant",
+          content: t.welcomeMessage,
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  }, [language, t, currentChatId]);
 
   // Handle clicks outside the sidebar to close it on mobile
   useEffect(() => {
@@ -100,8 +100,8 @@ export default function ChatPage() {
 
   // Poll for new messages every 5 seconds
   useEffect(() => {
-    // Skip if in demo mode, not authenticated, or no chat ID
-    if (isDemoMode || status !== "authenticated" || !currentChatId || isLoading) {
+    // Skip if not authenticated, no chat ID, or loading
+    if (status !== "authenticated" || !currentChatId || isLoading) {
       return;
     }
 
@@ -127,25 +127,20 @@ export default function ChatPage() {
 
         if (isAuthError) {
           // For auth errors, set a specific error message but don't disrupt the experience
-          setError("Ошибка авторизации при обновлении чата. Пожалуйста, обновите страницу.");
+          setError(t.errorAuth);
         }
         // For other errors, don't show error messages to avoid disrupting the user experience
       }
     }, 5000); // Poll every 5 seconds
 
     return () => clearInterval(pollInterval);
-  }, [currentChatId, isDemoMode, status, isLoading, messages.length, error]);
+  }, [currentChatId, status, isLoading, messages.length, error, language]); // Added language dependency
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!input.trim() || isLoading) return;
-
-    // Check if demo limit is exceeded
-    if (isDemoMode && isLimitExceeded) {
-      return;
-    }
 
     // Generate a unique ID for the message
     const userMessageId = Date.now().toString();
@@ -162,46 +157,25 @@ export default function ChatPage() {
     setInput("");
     setIsLoading(true);
 
-    // Increment request count if in demo mode
-    if (isDemoMode) {
-      incrementRequestCount();
-    }
-
     setError(null);
     try {
-      // If in demo mode or not authenticated, use simulated response
-      if (isDemoMode || status !== "authenticated") {
-        setTimeout(() => {
-          // If demo limit was exceeded after incrementing, show a special message
-          if (isDemoMode && isLimitExceeded) {
-            const limitMessage: Message = {
-              id: `limit-${userMessageId}`,
-              role: "assistant",
-              content: "Вы достигли лимита в 10 запросов в демо-режиме. Пожалуйста, зарегистрируйтесь или выберите тариф, чтобы продолжить использование сервиса.",
-              timestamp: new Date(),
-            };
-
-            setMessages((prev) => [...prev, limitMessage]);
-          } else {
-            // Normal response
-            const assistantMessage: Message = {
-              id: `response-${userMessageId}`,
-              role: "assistant",
-              content: getSimulatedResponse(input),
-              timestamp: new Date(),
-            };
-
-            setMessages((prev) => [...prev, assistantMessage]);
-          }
-
-          setIsLoading(false);
-        }, 1500);
-      } else {
-        // Use the backend API for authenticated users
+      // Use the backend API for authenticated users
+      if (status === "authenticated") {
         const response = await sendMessage(
           currentChatId
-            ? { chatId: currentChatId, content: input }
-            : { content: input }
+            ? { 
+                chatId: currentChatId, 
+                content: input, 
+                country: selectedCountry, 
+                language,
+                document: selectedFile 
+              }
+            : { 
+                content: input, 
+                country: selectedCountry, 
+                language,
+                document: selectedFile 
+              }
         );
 
         // Update the current chat ID if this is a new chat
@@ -213,6 +187,24 @@ export default function ChatPage() {
         const frontendMessages = response.map(convertToFrontendMessage);
         setMessages(frontendMessages);
         setIsLoading(false);
+
+        // Clear the selected file after sending
+        setSelectedFile(null);
+      } else {
+        // For unauthenticated users, show an error message
+        setError(t.errorAuth);
+        setIsLoading(false);
+
+        // Add error message to chat
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `error-${userMessageId}`,
+            role: "assistant",
+            content: t.errorAuth,
+            timestamp: new Date(),
+          },
+        ]);
       }
     } catch (error: unknown) {
       console.error("Error sending message:", error);
@@ -223,9 +215,9 @@ export default function ChatPage() {
 
       // Set appropriate error state
       if (isAuthError) {
-        setError("Ошибка авторизации. Пожалуйста, обновите страницу или войдите в систему заново.");
+        setError(t.errorAuth);
       } else {
-        setError("Произошла ошибка при отправке сообщения. Пожалуйста, попробуйте еще раз.");
+        setError(t.errorSending);
       }
 
       // Add error message to chat
@@ -235,39 +227,95 @@ export default function ChatPage() {
           id: `error-${userMessageId}`,
           role: "assistant",
           content: isAuthError
-            ? "Извините, возникла проблема с авторизацией. Пожалуйста, обновите страницу или войдите в систему заново."
-            : "Извините, произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте еще раз.",
+            ? t.errorAuth
+            : t.errorSending,
           timestamp: new Date(),
         },
       ]);
+
+      // Clear the selected file on error
+      setSelectedFile(null);
     }
   };
 
-  // Clear chat history
+  // Clear chat history and start a new chat
   const clearChat = () => {
     setMessages([
       {
         id: "welcome",
         role: "assistant",
-        content: "Чат очищен. Чем я могу вам помочь?",
+        content: t.newChatMessage,
         timestamp: new Date(),
       },
     ]);
     // Reset the current chat ID to allow creating a new chat
     setCurrentChatId(null);
+    // Clear input field if there's any text
+    setInput("");
   };
 
   // Export chat history
   const exportChat = () => {
-    const chatText = messages
-      .map((msg) => `${msg.role === "user" ? "Вы" : "Ассистент"}: ${msg.content}`)
-      .join("\n\n");
+    // Get current date and time for the header
+    const now = new Date();
+    const dateStr = now.toLocaleDateString();
+    const timeStr = now.toLocaleTimeString();
 
+    // Create a header with metadata
+    const chatTitle = currentChatId 
+      ? messages.length > 0 && messages[0].role === "assistant" && messages[0].id === "welcome" 
+        ? messages[0].content.split('\n')[0] // Use first line of welcome message as title
+        : `Chat #${currentChatId}`
+      : t.newChat || "Новый чат";
+
+    // Use translation keys if available, otherwise use fallbacks
+    const exportedOn = "Экспортировано";
+    const messagesCount = "Количество сообщений";
+
+    const header = [
+      `AIuris - ${chatTitle}`,
+      `${exportedOn}: ${dateStr} ${timeStr}`,
+      `${messagesCount}: ${messages.length}`,
+      "----------------------------------------",
+      ""
+    ].join("\n");
+
+    // Format each message with timestamp and role
+    const formattedMessages = messages.map((msg) => {
+      const msgTime = msg.timestamp.toLocaleTimeString();
+      const msgDate = msg.timestamp.toLocaleDateString();
+      const role = msg.role === "user" ? t.user || "Вы" : t.assistant || "Ассистент";
+
+      return [
+        `[${msgDate} ${msgTime}] ${role}:`,
+        msg.content,
+        "----------------------------------------"
+      ].join("\n");
+    });
+
+    // Join all messages with a newline
+    const chatContent = formattedMessages.join("\n\n");
+
+    // Use translation keys if available, otherwise use fallbacks
+    const exportedWith = "Экспортировано с помощью";
+    const exportDate = "Дата экспорта";
+
+    // Add a footer
+    const footer = [
+      "",
+      `${exportedWith} AIuris`,
+      `${exportDate}: ${dateStr}`
+    ].join("\n");
+
+    // Combine header, content, and footer
+    const chatText = `${header}${chatContent}\n\n${footer}`;
+
+    // Create and download the file
     const blob = new Blob([chatText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `legal-gpt-chat-${new Date().toISOString().split("T")[0]}.txt`;
+    a.download = `aiuris-chat-${now.toISOString().split("T")[0]}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -277,9 +325,6 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-background">
-      {/* Demo limit modal */}
-      {isDemoMode && <DemoLimitModal />}
-
       {/* Sidebar */}
       <div ref={sidebarRef} className="h-full">
         <Sidebar 
@@ -300,9 +345,6 @@ export default function ChatPage() {
           exportChat={exportChat}
         />
 
-        {/* Demo mode info */}
-        {isDemoMode && <DemoInfo />}
-
         {/* Chat container */}
         <div className="flex-1 flex flex-col h-full overflow-hidden pt-16">
           {/* Error message */}
@@ -312,11 +354,11 @@ export default function ChatPage() {
             </div>
           )}
 
-          {/* Loading history indicator */}
-          {isLoadingHistory && (
+          {/* Loading history indicator - only show for existing chats */}
+          {isLoadingHistory && currentChatId && (
             <div className="flex justify-center items-center p-4">
               <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
-              <span className="ml-2 text-sm text-muted-foreground">Загрузка истории чата...</span>
+              <span className="ml-2 text-sm text-muted-foreground">{t.loadingHistory}</span>
             </div>
           )}
 
@@ -325,6 +367,7 @@ export default function ChatPage() {
             <ChatMessages
               messages={messages}
               isLoading={isLoading}
+              isLoadingHistory={isLoadingHistory && currentChatId !== null}
             />
           </div>
 
@@ -334,8 +377,12 @@ export default function ChatPage() {
               input={input}
               setInput={setInput}
               handleSubmit={handleSubmit}
-              isLoading={isLoading || isLoadingHistory}
-              disabled={(isDemoMode && isLimitExceeded) || status === "loading"}
+              isLoading={isLoading || (isLoadingHistory && currentChatId !== null)}
+              disabled={status === "loading"}
+              selectedCountry={selectedCountry}
+              onSelectCountry={setSelectedCountry}
+              onFileSelect={setSelectedFile}
+              maxFileSize={10 * 1024 * 1024} // 10MB max file size
             />
           </div>
         </div>

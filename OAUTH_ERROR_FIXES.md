@@ -13,7 +13,7 @@ This document explains the changes made to fix OAuth authentication errors, part
    - Redirects to custom error page with descriptive error messages
 
 3. **Created Custom Error Page**
-   - Added a new error page at `/app/auth/error/page.tsx`
+   - Added a new error page at `/app/auth/error/Page.tsx`
    - Displays user-friendly error messages based on error codes
    - Provides guidance on how to resolve authentication issues
 

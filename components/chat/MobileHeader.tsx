@@ -15,7 +15,7 @@ export default function MobileHeader({
     <Header
       isMobileMenuOpen={isSidebarOpen}
       setIsMobileMenuOpen={setIsSidebarOpen}
-      pageTitle="LegalGPT"
+      pageTitle="AIuris"
       pageRoute="/chat"
       exportChat={exportChat}
       showThemeToggle={true}

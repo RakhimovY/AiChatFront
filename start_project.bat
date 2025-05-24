@@ -1,5 +1,5 @@
 @echo off
-echo Starting LegalGPT in development mode...
+echo Starting AIuris in development mode...
 echo.
 echo Once the server starts, open your browser and go to:
 echo http://localhost:3000

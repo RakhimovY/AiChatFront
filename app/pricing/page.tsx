@@ -1,3 +1,5 @@
+"use client";
+
 import { Plan } from "@/components/pricing/types";
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
@@ -83,7 +85,7 @@ export default function PricingPage() {
     },
     {
       question: "Предоставляете ли вы юридические услуги?",
-      answer: "LegalGPT предоставляет информационные услуги и не заменяет консультацию с квалифицированным юристом. Мы рекомендуем обращаться к профессиональным юристам для решения конкретных правовых вопросов."
+      answer: "AIuris предоставляет информационные услуги и не заменяет консультацию с квалифицированным юристом. Мы рекомендуем обращаться к профессиональным юристам для решения конкретных правовых вопросов."
     }
   ];
 

@@ -1,15 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import AuthForm from "@/components/auth/AuthForm";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import LanguageSelector from "@/components/layout/LanguageSelector";
+import Navigation from "@/components/layout/Navigation";
 
 export default function RegisterPage() {
+  const { t } = useLanguage();
+
   return (
     <main className="flex flex-col min-h-screen bg-background">
-      <div className="container py-12">
-        <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-8">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Назад на главную
-        </Link>
+      {/* Navigation */}
+      <Navigation />
+
+      <div className="container py-12 mt-16">
 
         <div className="max-w-md mx-auto">
           <AuthForm type="register" />

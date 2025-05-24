@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   MessageSquare,
   FileText,
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 import Sidebar, { MenuItem, User } from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 type AccountContentProps = {
   user: {
@@ -22,8 +22,8 @@ type AccountContentProps = {
 };
 
 export default function AccountContent({ user }: AccountContentProps) {
-  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   // Reference to the sidebar element
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -50,11 +50,11 @@ export default function AccountContent({ user }: AccountContentProps) {
   }, [isMobileMenuOpen]);
 
   const menuItems: MenuItem[] = [
-    { icon: MessageSquare, label: "Чаты", href: "/chat" },
-    // { icon: FileText, label: "Документы", href: "/documents" },
-    { icon: CreditCard, label: "Подписка", href: "/billing" },
-    // { icon: Settings, label: "Настройки", href: "/settings" },
-    { icon: HelpCircle, label: "Помощь", href: "/support" },
+    { icon: MessageSquare, label: t.chats || "Чаты", href: "/chat" },
+    // { icon: FileText, label: t.documents || "Документы", href: "/documents" },
+    { icon: CreditCard, label: t.subscription || "Подписка", href: "/billing" },
+    { icon: Settings, label: t.settings || "Настройки", href: "/settings" },
+    { icon: HelpCircle, label: t.help || "Помощь", href: "/support" },
   ];
 
   return (
@@ -64,7 +64,7 @@ export default function AccountContent({ user }: AccountContentProps) {
         user={user}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
-        pageTitle="LegalGPT"
+        pageTitle="AIuris"
         pageRoute="/account"
       />
 
@@ -80,7 +80,7 @@ export default function AccountContent({ user }: AccountContentProps) {
 
         {/* Main content */}
         <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mb-6">Личный кабинет</h1>
+          <h1 className="text-2xl font-bold mb-6">{t.accountDashboard || "Личный кабинет"}</h1>
           <div className="flex items-center mb-6 p-4 border rounded-lg bg-primary/5">
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mr-4">
               {user.image ? (
@@ -105,9 +105,9 @@ export default function AccountContent({ user }: AccountContentProps) {
             <div className="border rounded-lg p-6 flex flex-col h-full">
               <div>
                 <MessageSquare className="h-8 w-8 text-primary mb-4" />
-                <h2 className="text-xl font-semibold mb-2">Начать чат</h2>
+                <h2 className="text-xl font-semibold mb-2">{t.startChat || "Начать чат"}</h2>
                 <p className="text-muted-foreground mb-4">
-                  Задайте вопрос юридическому ассистенту и получите мгновенный ответ.
+                  {t.chatDescription || "Задайте вопрос юридическому ассистенту и получите мгновенный ответ."}
                 </p>
               </div>
               <div className="mt-auto pt-2">
@@ -115,7 +115,7 @@ export default function AccountContent({ user }: AccountContentProps) {
                   href="/chat" 
                   className="text-primary hover:underline inline-flex items-center"
                 >
-                  Перейти к чату
+                  {t.goToChat || "Перейти к чату"}
                 </Link>
               </div>
             </div>
@@ -137,9 +137,9 @@ export default function AccountContent({ user }: AccountContentProps) {
             <div className="border rounded-lg p-6 flex flex-col h-full">
               <div>
                 <CreditCard className="h-8 w-8 text-primary mb-4" />
-                <h2 className="text-xl font-semibold mb-2">Управление подпиской</h2>
+                <h2 className="text-xl font-semibold mb-2">{t.manageSubscription || "Управление подпиской"}</h2>
                 <p className="text-muted-foreground mb-4">
-                  Просмотр и изменение вашего текущего тарифного плана.
+                  {t.subscriptionDescription || "Просмотр и изменение вашего текущего тарифного плана."}
                 </p>
               </div>
               <div className="mt-auto pt-2">
@@ -147,7 +147,25 @@ export default function AccountContent({ user }: AccountContentProps) {
                   href="/billing" 
                   className="text-primary hover:underline inline-flex items-center"
                 >
-                  Управление подпиской
+                  {t.manageSubscription || "Управление подпиской"}
+                </Link>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-6 flex flex-col h-full">
+              <div>
+                <Settings className="h-8 w-8 text-primary mb-4" />
+                <h2 className="text-xl font-semibold mb-2">{t.profileSettings || "Настройки профиля"}</h2>
+                <p className="text-muted-foreground mb-4">
+                  {t.settingsDescription || "Изменение личных данных, страны и других настроек вашего профиля."}
+                </p>
+              </div>
+              <div className="mt-auto pt-2">
+                <Link 
+                  href="/settings" 
+                  className="text-primary hover:underline inline-flex items-center"
+                >
+                  {t.goToSettings || "Перейти к настройкам"}
                 </Link>
               </div>
             </div>
@@ -155,9 +173,9 @@ export default function AccountContent({ user }: AccountContentProps) {
             <div className="border rounded-lg p-6 flex flex-col h-full">
               <div>
                 <HelpCircle className="h-8 w-8 text-primary mb-4" />
-                <h2 className="text-xl font-semibold mb-2">Центр поддержки</h2>
+                <h2 className="text-xl font-semibold mb-2">{t.supportCenter || "Центр поддержки"}</h2>
                 <p className="text-muted-foreground mb-4">
-                  Получите ответы на часто задаваемые вопросы или свяжитесь с нашей службой поддержки.
+                  {t.supportDescription || "Получите ответы на часто задаваемые вопросы или свяжитесь с нашей службой поддержки."}
                 </p>
               </div>
               <div className="mt-auto pt-2">
@@ -165,7 +183,7 @@ export default function AccountContent({ user }: AccountContentProps) {
                   href="/support" 
                   className="text-primary hover:underline inline-flex items-center"
                 >
-                  Перейти в центр поддержки
+                  {t.goToSupport || "Перейти в центр поддержки"}
                 </Link>
               </div>
             </div>

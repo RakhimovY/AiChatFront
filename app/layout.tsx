@@ -1,15 +1,11 @@
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/auth/SessionProvider";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
+import { Toaster } from "@/components/ui/use-toast";
 
 const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "LegalGPT - Юридический AI-ассистент",
-  description: "Интеллектуальный помощник по юридическим вопросам на базе искусственного интеллекта",
-};
 
 export default function RootLayout({
   children,
@@ -17,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
@@ -26,9 +22,12 @@ export default function RootLayout({
           disableTransitionOnChange={false}
         >
           <SessionProvider>
-            {children}
+            <LanguageProvider>
+              {children}
+            </LanguageProvider>
           </SessionProvider>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );

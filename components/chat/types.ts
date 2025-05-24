@@ -7,4 +7,6 @@ export type Message = {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  documentUrl?: string;
+  documentName?: string;
 };

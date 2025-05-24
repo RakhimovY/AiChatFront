@@ -1,3 +1,5 @@
+"use client";
+
 import { Linkedin, Mail, MessageSquare } from "lucide-react";
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
@@ -11,17 +13,17 @@ export default function AboutPage() {
       {/* About Section */}
       <section className="py-16">
         <div className="container max-w-4xl">
-          <h1 className="text-4xl font-bold mb-8 text-center">О проекте LegalGPT</h1>
+          <h1 className="text-4xl font-bold mb-8 text-center">О проекте AIuris</h1>
 
           <div className="prose prose-lg mx-auto">
             <p className="text-xl text-center mb-12">
-              LegalGPT создан с целью сделать юридическую помощь доступной для всех людей.
+              AIuris создан с целью сделать юридическую помощь доступной для всех людей.
             </p>
 
             <h2 className="text-2xl font-semibold mt-12 mb-6">Наша миссия</h2>
             <p>
               Мы верим, что каждый человек должен иметь доступ к качественной юридической информации и поддержке. 
-              LegalGPT использует передовые технологии искусственного интеллекта, чтобы предоставить быстрые и точные 
+              AIuris использует передовые технологии искусственного интеллекта, чтобы предоставить быстрые и точные 
               ответы на юридические вопросы, делая правовую помощь более доступной и понятной.
             </p>
 
@@ -45,7 +47,7 @@ export default function AboutPage() {
               <div>
                 <h3 className="text-xl font-semibold mb-2">Еркебулан Рахимов</h3>
                 <p className="mb-4">
-                  Основатель и разработчик LegalGPT. Еркебулан создал этот проект с целью демократизировать 
+                  Основатель и разработчик AIuris. Еркебулан создал этот проект с целью демократизировать 
                   доступ к юридической информации и помочь людям лучше понимать свои права и обязанности.
                 </p>
                 <div className="flex items-center space-x-4">
@@ -65,7 +67,7 @@ export default function AboutPage() {
             <h2 className="text-2xl font-semibold mt-12 mb-6">Связаться с нами</h2>
             <div className="grid md:grid-cols-3 gap-6">
               <a 
-                href="https://wa.me/77086934037?text=Здравствуйте!%20У%20меня%20вопрос%20о%20LegalGPT." 
+                href="https://wa.me/77086934037?text=Здравствуйте!%20У%20меня%20вопрос%20о%20AIuris." 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex flex-col items-center p-6 border rounded-lg hover:bg-secondary/50 transition-colors"

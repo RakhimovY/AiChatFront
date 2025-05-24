@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { signIn } from "next-auth/react";
+import {signIn, signOut} from "next-auth/react";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 type AuthFormProps = {
   type: "login" | "register";
@@ -14,6 +15,7 @@ interface AuthFormData {
   name: string;
   email: string;
   password: string;
+  country: string;
 }
 
 interface RegisterResponse {
@@ -28,23 +30,25 @@ interface RegisterResponse {
 export default function AuthForm({ type }: AuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<AuthFormData>({
     name: "",
     email: "",
     password: "",
+    country: "KZ", // Default country
   });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // Check for error parameters in the URL
   useEffect(() => {
     const errorParam = searchParams.get("error");
     if (errorParam === "session_expired") {
-      setError("Ваша сессия истекла. Пожалуйста, войдите снова.");
+      setError(t.sessionExpired);
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -54,12 +58,12 @@ export default function AuthForm({ type }: AuthFormProps) {
   // Validate password for registration
   const validatePassword = (password: string): string | null => {
     if (password.length < 12) {
-      return "Пароль должен содержать не менее 12 символов";
+      return t.passwordMinLength;
     }
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/;
     if (!passwordRegex.test(password)) {
-      return "Пароль должен содержать как минимум одну строчную букву, одну заглавную букву, одну цифру и один специальный символ";
+      return `${t.passwordRequirements} ${t.passwordLowercase}, ${t.passwordUppercase}, ${t.passwordNumber}, ${t.passwordSpecial}`;
     }
 
     return null;
@@ -67,27 +71,31 @@ export default function AuthForm({ type }: AuthFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
 
     try {
       if (type === "login") {
+        // Сначала выполняем выход, если есть параметр session_expired
+        if (searchParams.get("error") === "session_expired") {
+          await signOut({ redirect: false });
+        }
+
         // Handle login
         const result = await signIn("credentials", {
           redirect: false,
           email: formData.email,
           password: formData.password,
-          remember: rememberMe, // Pass the remember me preference
+          remember: rememberMe,
         });
 
         if (result?.error) {
-          setError("Неверный email или пароль");
+          setError(t.invalidCredentials);
         } else {
-          router.push("/account");
+          setError("");
+          router.replace("/chat");
           router.refresh();
         }
       } else {
-        // Validate password for registration
         const passwordError = validatePassword(formData.password);
         if (passwordError) {
           setError(passwordError);
@@ -107,7 +115,7 @@ export default function AuthForm({ type }: AuthFormProps) {
         const data: RegisterResponse = await response.json();
 
         if (!response.ok) {
-          setError(data.message || "Ошибка при регистрации");
+          setError(data.message || t.registrationError);
         } else {
           // Auto login after registration
           const result = await signIn("credentials", {
@@ -118,15 +126,15 @@ export default function AuthForm({ type }: AuthFormProps) {
           });
 
           if (result?.error) {
-            setError("Ошибка при автоматическом входе");
+            setError(t.autoLoginError);
           } else {
-            router.push("/account");
+            router.push("/chat");
             router.refresh();
           }
         }
       }
     } catch (error: unknown) {
-      setError("Произошла ошибка. Пожалуйста, попробуйте еще раз.");
+      setError(t.generalError);
       console.error("Auth error:", error);
     } finally {
       setIsLoading(false);
@@ -136,10 +144,10 @@ export default function AuthForm({ type }: AuthFormProps) {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/account" });
+      await signIn("google", { callbackUrl: "/chat" });
     } catch (error: unknown) {
       console.error("Google sign in error:", error);
-      setError("Ошибка при входе через Google");
+      setError(t.googleSignInError);
       setIsLoading(false);
     }
   };
@@ -147,7 +155,7 @@ export default function AuthForm({ type }: AuthFormProps) {
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-card rounded-lg shadow-sm border">
       <h2 className="text-2xl font-bold mb-6 text-center">
-        {type === "login" ? "Вход в аккаунт" : "Создание аккаунта"}
+        {type === "login" ? t.loginTitle : t.registerTitle}
       </h2>
 
       {error && (
@@ -160,7 +168,7 @@ export default function AuthForm({ type }: AuthFormProps) {
         {type === "register" && (
           <div className="space-y-2">
             <label htmlFor="name" className="text-sm font-medium">
-              Имя
+              {t.name}
             </label>
             <input
               id="name"
@@ -170,14 +178,55 @@ export default function AuthForm({ type }: AuthFormProps) {
               onChange={handleChange}
               required
               className="w-full p-2 border rounded-md"
-              placeholder="Введите ваше имя"
+              placeholder={t.enterName}
             />
+          </div>
+        )}
+
+        {type === "register" && (
+          <div className="space-y-2">
+            <label htmlFor="country" className="text-sm font-medium">
+              {t.country}
+            </label>
+            <select
+              id="country"
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-md"
+            >
+              <option value="KZ">Казахстан</option>
+              <option value="RU">Россия</option>
+              <option value="BY">Беларусь</option>
+              <option value="UA">Украина</option>
+              <option value="UZ">Узбекистан</option>
+              <option value="KG">Кыргызстан</option>
+              <option value="TJ">Таджикистан</option>
+              <option value="TM">Туркменистан</option>
+              <option value="AZ">Азербайджан</option>
+              <option value="AM">Армения</option>
+              <option value="GE">Грузия</option>
+              <option value="MD">Молдова</option>
+              <option value="US">США</option>
+              <option value="GB">Великобритания</option>
+              <option value="DE">Германия</option>
+              <option value="FR">Франция</option>
+              <option value="IT">Италия</option>
+              <option value="ES">Испания</option>
+              <option value="CN">Китай</option>
+              <option value="JP">Япония</option>
+              <option value="IN">Индия</option>
+              <option value="BR">Бразилия</option>
+              <option value="CA">Канада</option>
+              <option value="AU">Австралия</option>
+            </select>
           </div>
         )}
 
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">
-            Email
+            {t.email}
           </label>
           <input
             id="email"
@@ -187,14 +236,14 @@ export default function AuthForm({ type }: AuthFormProps) {
             onChange={handleChange}
             required
             className="w-full p-2 border rounded-md"
-            placeholder="Введите ваш email"
+            placeholder={t.enterEmail}
             autoComplete={type === "login" ? "username" : "email"}
           />
         </div>
 
         <div className="space-y-2">
           <label htmlFor="password" className="text-sm font-medium">
-            Пароль
+            {t.password}
           </label>
           <div className="relative">
             <input
@@ -205,7 +254,7 @@ export default function AuthForm({ type }: AuthFormProps) {
               onChange={handleChange}
               required
               className="w-full p-2 border rounded-md pr-10"
-              placeholder="Введите пароль"
+              placeholder={t.enterPassword}
               autoComplete={type === "login" ? "current-password" : "new-password"}
             />
             <button
@@ -222,13 +271,13 @@ export default function AuthForm({ type }: AuthFormProps) {
           </div>
           {type === "register" && (
             <div className="text-xs text-muted-foreground mt-1">
-              <p>Пароль должен содержать:</p>
+              <p>{t.passwordRequirements}</p>
               <ul className="list-disc list-inside">
-                <li>Минимум 12 символов</li>
-                <li>Хотя бы одну строчную букву (a-z)</li>
-                <li>Хотя бы одну заглавную букву (A-Z)</li>
-                <li>Хотя бы одну цифру (0-9)</li>
-                <li>Хотя бы один специальный символ (@$!%*?&)</li>
+                <li>{t.passwordMinLength}</li>
+                <li>{t.passwordLowercase}</li>
+                <li>{t.passwordUppercase}</li>
+                <li>{t.passwordNumber}</li>
+                <li>{t.passwordSpecial}</li>
               </ul>
             </div>
           )}
@@ -243,7 +292,7 @@ export default function AuthForm({ type }: AuthFormProps) {
                 className="mr-2"
               />
               <label htmlFor="rememberMe" className="text-sm">
-                Запомнить меня
+                {t.rememberMe}
               </label>
             </div>
           )}
@@ -260,14 +309,14 @@ export default function AuthForm({ type }: AuthFormProps) {
                 className="mr-2"
               />
               <label htmlFor="rememberMe" className="text-sm">
-                Запомнить меня
+                {t.rememberMe}
               </label>
             </div>
             <Link
               href="/auth/forgot-password"
               className="text-sm text-primary hover:underline"
             >
-              Забыли пароль?
+              {t.forgotPassword}
             </Link>
           </div>
         )}
@@ -280,12 +329,12 @@ export default function AuthForm({ type }: AuthFormProps) {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Загрузка...
+              {t.loading}
             </>
           ) : type === "login" ? (
-            "Войти"
+            t.login
           ) : (
-            "Зарегистрироваться"
+            t.register
           )}
         </button>
       </form>
@@ -297,7 +346,7 @@ export default function AuthForm({ type }: AuthFormProps) {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-card px-2 text-muted-foreground">
-              Или продолжить с
+              {t.continueWith}
             </span>
           </div>
         </div>
@@ -330,16 +379,16 @@ export default function AuthForm({ type }: AuthFormProps) {
       <div className="mt-6 text-center text-sm">
         {type === "login" ? (
           <>
-            Нет аккаунта?{" "}
+            {t.noAccount}{" "}
             <Link href="/auth/register" className="text-primary hover:underline">
-              Зарегистрироваться
+              {t.register}
             </Link>
           </>
         ) : (
           <>
-            Уже есть аккаунт?{" "}
+            {t.alreadyHaveAccount}{" "}
             <Link href="/auth/login" className="text-primary hover:underline">
-              Войти
+              {t.login}
             </Link>
           </>
         )}

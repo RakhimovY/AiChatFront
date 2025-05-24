@@ -80,7 +80,6 @@ export default function DashboardContent({ user }: DashboardContentProps) {
 
         {/* Main content */}
         <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mb-6">Личный кабинет</h1>
           <div className="flex items-center mb-6 p-4 border rounded-lg bg-primary/5">
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mr-4">
               {user.image ? (
