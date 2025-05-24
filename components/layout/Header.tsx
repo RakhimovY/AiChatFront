@@ -81,7 +81,7 @@ export default function Header({
       {/* Desktop Header - Only visible on desktop */}
       <header className="border-b hidden md:block fixed top-0 left-0 right-0 z-50 bg-background">
         <div className="container flex justify-between items-center py-2 md:py-4">
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/settings" className="flex items-center space-x-2">
             <Scale className="h-6 w-6 text-primary" />
             <span className="text-xl font-bold">AIuris</span>
           </Link>
