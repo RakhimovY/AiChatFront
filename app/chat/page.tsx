@@ -50,9 +50,6 @@ export default function ChatPage() {
         if (chatHistory.length > 0) {
           const frontendMessages = chatHistory.map(convertToFrontendMessage);
           setMessages(frontendMessages);
-        } else {
-          // If there's no history, set an empty messages array instead of showing welcome message
-          setMessages([]);
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);
@@ -357,8 +354,8 @@ export default function ChatPage() {
             </div>
           )}
 
-          {/* Loading history indicator */}
-          {isLoadingHistory && (
+          {/* Loading history indicator - only show for existing chats */}
+          {isLoadingHistory && currentChatId && (
             <div className="flex justify-center items-center p-4">
               <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
               <span className="ml-2 text-sm text-muted-foreground">{t.loadingHistory}</span>
@@ -370,6 +367,7 @@ export default function ChatPage() {
             <ChatMessages
               messages={messages}
               isLoading={isLoading}
+              isLoadingHistory={isLoadingHistory && currentChatId !== null}
             />
           </div>
 
@@ -379,7 +377,7 @@ export default function ChatPage() {
               input={input}
               setInput={setInput}
               handleSubmit={handleSubmit}
-              isLoading={isLoading || isLoadingHistory}
+              isLoading={isLoading || (isLoadingHistory && currentChatId !== null)}
               disabled={status === "loading"}
               selectedCountry={selectedCountry}
               onSelectCountry={setSelectedCountry}

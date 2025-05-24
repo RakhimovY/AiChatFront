@@ -37,6 +37,17 @@ export default function ChatInput({
     inputRef.current?.focus();
   }, []);
 
+  // Clear file input when message is sent (isLoading changes from true to false)
+  useEffect(() => {
+    if (!isLoading && selectedFile) {
+      setSelectedFile(null);
+      setFileError(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }, [isLoading]);
+
   // Handle textarea height adjustment
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
@@ -53,8 +64,24 @@ export default function ChatInput({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      handleFormSubmit(e);
     }
+  };
+
+  // Wrapper for handleSubmit that clears the file before submitting
+  const handleFormSubmit = (e: React.FormEvent) => {
+    // Clear the file immediately when submitting
+    if (selectedFile) {
+      setSelectedFile(null);
+      setFileError(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      if (onFileSelect) onFileSelect(null);
+    }
+
+    // Call the original handleSubmit
+    handleSubmit(e);
   };
 
   // Handle file selection
@@ -133,7 +160,7 @@ export default function ChatInput({
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleFormSubmit}>
         <div className="relative mb-2">
           <div className="flex flex-col w-full rounded-xl border bg-background shadow-md focus-within:ring-1 focus-within:ring-primary/50">
             {/* Textarea for user input */}
@@ -142,7 +169,7 @@ export default function ChatInput({
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder={disabled ? t.errorAuth : t.enterQuestion}
+              placeholder={ t.enterQuestion}
               className="flex-1 p-3 pt-4 pb-10 bg-transparent border-0 resize-none min-h-[50px] max-h-[200px] rounded-xl  focus:outline-none"
               disabled={isLoading || disabled}
             />
