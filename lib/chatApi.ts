@@ -8,6 +8,10 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
   chatId: number;
+  documentUrl?: string;
+  documentName?: string;
+  imageUrl?: string;
+  imageAlt?: string;
 }
 
 export interface MessageRequest {
@@ -15,7 +19,8 @@ export interface MessageRequest {
   content: string;
   country?: string | null;
   language?: string;
-  document?: File| null;
+  document?: File | null;
+  image?: File | null;
 }
 
 export interface ChatDTO {
@@ -134,8 +139,8 @@ export const sendMessage = async (message: MessageRequest): Promise<ChatMessage[
   try {
     let response;
 
-    // Check if there's a document to upload
-    if (message.document) {
+    // Use the unified /chat/ask endpoint for all types of messages
+    if (message.document || message.image) {
       // Create FormData for file upload
       const formData = new FormData();
 
@@ -145,21 +150,28 @@ export const sendMessage = async (message: MessageRequest): Promise<ChatMessage[
       if (message.country) formData.append('country', message.country);
       if (message.language) formData.append('language', message.language);
 
-      // Add document
-      formData.append('document', message.document);
+      // Add document if present
+      if (message.document) {
+        formData.append('document', message.document);
+      }
 
-      // Use retry mechanism with exponential backoff
+      // Add image if present
+      if (message.image) {
+        formData.append('image', message.image);
+      }
+
+      // Use the unified endpoint for all message types
       response = await retryWithBackoff(() => 
-        api.post<ChatMessage[]>('/chat/document', formData, {
+        api.post<ChatMessage[]>('/chat/ask', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         })
       );
     } else {
-      // Regular message without document
+      // Regular message without document or image
       response = await retryWithBackoff(() => 
-        api.post<ChatMessage[]>('/chat', message)
+        api.post<ChatMessage[]>('/chat/ask', message)
       );
     }
 
@@ -269,6 +281,10 @@ export const convertToFrontendMessage = (message: ChatMessage) => {
     role: message.role,
     content: message.content,
     timestamp: new Date(message.createdAt),
-    chatId: message.chatId
+    chatId: message.chatId,
+    documentUrl: message.documentUrl,
+    documentName: message.documentName,
+    imageUrl: message.imageUrl,
+    imageAlt: message.imageAlt
   };
 };

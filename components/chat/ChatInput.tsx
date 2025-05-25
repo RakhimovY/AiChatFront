@@ -1,6 +1,8 @@
 import { useRef, useEffect, useState } from "react";
 import { Send, Paperclip, X } from "lucide-react";
 import CountrySelector from "./CountrySelector";
+import ImageUploadButton from "./ImageUploadButton";
+import ImagePreview from "./ImagePreview";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 type ChatInputProps = {
@@ -12,7 +14,9 @@ type ChatInputProps = {
   selectedCountry: string | null;
   onSelectCountry: (country: string | null) => void;
   onFileSelect?: (file: File | null) => void;
+  onImageSelect?: (file: File | null) => void;
   maxFileSize?: number; // in bytes, default 10MB
+  maxImageSize?: number; // in bytes, default 50MB
 };
 
 export default function ChatInput({ 
@@ -24,13 +28,17 @@ export default function ChatInput({
   selectedCountry, 
   onSelectCountry,
   onFileSelect,
-  maxFileSize = 10 * 1024 * 1024 // Default 10MB
+  onImageSelect,
+  maxFileSize = 10 * 1024 * 1024, // Default 10MB
+  maxImageSize = 50 * 1024 * 1024 // Default 50MB
 }: ChatInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useLanguage();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   // Focus input on load
   useEffect(() => {
@@ -39,11 +47,20 @@ export default function ChatInput({
 
   // Clear file input when message is sent (isLoading changes from true to false)
   useEffect(() => {
-    if (!isLoading && selectedFile) {
-      setSelectedFile(null);
-      setFileError(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+    if (!isLoading) {
+      // Clear document file if selected
+      if (selectedFile) {
+        setSelectedFile(null);
+        setFileError(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+
+      // Clear image file if selected
+      if (selectedImage) {
+        setSelectedImage(null);
+        setImageError(null);
       }
     }
   }, [isLoading]);
@@ -68,9 +85,9 @@ export default function ChatInput({
     }
   };
 
-  // Wrapper for handleSubmit that clears the file before submitting
+  // Wrapper for handleSubmit that clears the file and image before submitting
   const handleFormSubmit = (e: React.FormEvent) => {
-    // Clear the file immediately when submitting
+    // Clear the document file immediately when submitting
     if (selectedFile) {
       setSelectedFile(null);
       setFileError(null);
@@ -78,6 +95,13 @@ export default function ChatInput({
         fileInputRef.current.value = '';
       }
       if (onFileSelect) onFileSelect(null);
+    }
+
+    // Clear the image file immediately when submitting
+    if (selectedImage) {
+      setSelectedImage(null);
+      setImageError(null);
+      if (onImageSelect) onImageSelect(null);
     }
 
     // Call the original handleSubmit
@@ -121,6 +145,17 @@ export default function ChatInput({
     fileInputRef.current?.click();
   };
 
+  // Handle image selection
+  const handleImageSelect = (file: File | null) => {
+    setSelectedImage(file);
+    setImageError(null);
+
+    // Call the parent component's callback if provided
+    if (onImageSelect) {
+      onImageSelect(file);
+    }
+  };
+
   return (
     <div>
       {/* Hidden file input */}
@@ -136,6 +171,13 @@ export default function ChatInput({
       {fileError && (
         <div className="text-destructive text-sm mb-2 p-2 bg-destructive/10 rounded-md">
           {fileError}
+        </div>
+      )}
+
+      {/* Image error message */}
+      {imageError && (
+        <div className="text-destructive text-sm mb-2 p-2 bg-destructive/10 rounded-md">
+          {imageError}
         </div>
       )}
 
@@ -160,6 +202,16 @@ export default function ChatInput({
         </div>
       )}
 
+      {/* Selected image preview */}
+      {selectedImage && (
+        <div className="mb-2">
+          <ImagePreview 
+            image={selectedImage} 
+            onRemove={() => handleImageSelect(null)} 
+          />
+        </div>
+      )}
+
       <form onSubmit={handleFormSubmit}>
         <div className="relative mb-2">
           <div className="flex flex-col w-full rounded-xl border bg-background shadow-md focus-within:ring-1 focus-within:ring-primary/50">
@@ -176,16 +228,26 @@ export default function ChatInput({
 
             {/* Buttons positioned at the bottom of the input container */}
             <div className="absolute bottom-1.5 left-2 right-2 flex justify-between items-center">
-              {/* File attachment button */}
-              <button
-                type="button"
-                onClick={handleAttachClick}
-                disabled={isLoading || disabled || !!selectedFile}
-                className="p-1.5 rounded-full hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                aria-label="Attach file"
-              >
-                <Paperclip className="h-4 w-4 text-muted-foreground" />
-              </button>
+              <div className="flex space-x-1">
+                {/* File attachment button */}
+                <button
+                  type="button"
+                  onClick={handleAttachClick}
+                  disabled={isLoading || disabled || !!selectedFile || !!selectedImage}
+                  className="p-1.5 rounded-full hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Attach file"
+                >
+                  <Paperclip className="h-4 w-4 text-muted-foreground" />
+                </button>
+
+                {/* Image upload button */}
+                <ImageUploadButton
+                  onImageSelect={handleImageSelect}
+                  disabled={isLoading || disabled || !!selectedFile || !!selectedImage}
+                  hasSelectedImage={!!selectedImage}
+                  maxFileSize={maxImageSize}
+                />
+              </div>
 
               {/* Send button */}
               <button

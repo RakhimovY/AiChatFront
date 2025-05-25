@@ -31,6 +31,7 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(session?.user?.country || null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   // Reference to the sidebar element
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -176,13 +177,15 @@ export default function ChatPage() {
                 content: input, 
                 country: selectedCountry, 
                 language,
-                document: selectedFile 
+                document: selectedFile,
+                image: selectedImage
               }
             : { 
                 content: input, 
                 country: selectedCountry, 
                 language,
-                document: selectedFile 
+                document: selectedFile,
+                image: selectedImage
               }
         );
 
@@ -198,8 +201,9 @@ export default function ChatPage() {
         setMessages(frontendMessages);
         setIsLoading(false);
 
-        // Clear the selected file after sending
+        // Clear the selected file and image after sending
         setSelectedFile(null);
+        setSelectedImage(null);
       } else {
         // For unauthenticated users, show an error message
         setError(t.errorAuth);
@@ -243,8 +247,9 @@ export default function ChatPage() {
         },
       ]);
 
-      // Clear the selected file on error
+      // Clear the selected file and image on error
       setSelectedFile(null);
+      setSelectedImage(null);
     }
   };
 
@@ -392,7 +397,9 @@ export default function ChatPage() {
               selectedCountry={selectedCountry}
               onSelectCountry={setSelectedCountry}
               onFileSelect={setSelectedFile}
+              onImageSelect={setSelectedImage}
               maxFileSize={10 * 1024 * 1024} // 10MB max file size
+              maxImageSize={50 * 1024 * 1024} // 50MB max image size
             />
           </div>
         </div>

@@ -1,92 +1,62 @@
-# AIuris - Юридический AI-ассистент
+# AI Chat Application
 
-Интеллектуальный помощник по юридическим вопросам на базе искусственного интеллекта.
+## Recent Updates
 
-## Описание
+### Unified Chat Endpoint
 
-AIuris - это веб-приложение, которое предоставляет юридические консультации с использованием искусственного интеллекта. Приложение позволяет пользователям получать ответы на юридические вопросы, составлять документы и анализировать правовые риски.
+The chat API has been unified to use a single endpoint for all types of messages:
 
-## Функциональность
+- `/api/chat/ask` now handles text messages, document uploads, and image uploads
+- The `/api/chat/document` and `/api/chat/image` endpoints have been removed
 
-- Юридические консультации по различным отраслям права
-- Составление юридических документов
-- Анализ правовых рисков
-- Система аутентификации пользователей
-- Различные тарифные планы
-- Адаптивный дизайн для мобильных устройств
-- Темная и светлая темы оформления
+This simplifies the API and makes it more consistent. All client code should be updated to use the unified endpoint.
 
-## Технологии
+## How to Use the Unified Endpoint
 
-- Next.js 14
-- React 18
-- TypeScript
-- Tailwind CSS
-- NextAuth.js для аутентификации
-- SWR для управления состоянием
-- Zustand для глобального состояния
+### Text Messages
 
-## Структура проекта
-
-```
-/
-├── app/                    # Next.js App Router
-│   ├── api/                # API Routes
-│   ├── auth/               # Authentication Routes
-│   ├── chat/               # Chat Interface
-│   ├── checkout/           # Payment System
-│   ├── dashboard/          # User Dashboard
-│   └── pricing/            # Pricing Page
-├── components/             # React Components
-│   ├── auth/               # Authentication Components
-│   ├── chat/               # Chat Components
-│   ├── checkout/           # Checkout Components
-│   ├── dashboard/          # Dashboard Components
-│   ├── landing/            # Landing Page Components
-│   ├── layout/             # Layout Components
-│   ├── pricing/            # Pricing Components
-│   ├── theme/              # Theme Components
-│   └── ui/                 # UI Components
-├── lib/                    # Utility Functions
-└── public/                 # Static Assets
+```typescript
+// Send a text message
+const response = await api.post('/chat/ask', {
+  content: 'Your message here',
+  chatId: 123, // optional
+  country: 'US', // optional
+  language: 'en' // optional
+});
 ```
 
-## Доступные страницы
+### Document Uploads
 
-- Главная страница (лендинг): `/`
-- Чат-интерфейс: `/chat`
-- Страница тарифов: `/pricing`
-- Страница оформления подписки: `/checkout`
-- Авторизация: `/auth/login`, `/auth/register`
-- Личный кабинет: `/dashboard`
+```typescript
+// Send a message with a document
+const formData = new FormData();
+formData.append('content', 'Your message here');
+formData.append('document', documentFile);
+if (chatId) formData.append('chatId', chatId.toString());
+if (country) formData.append('country', country);
+if (language) formData.append('language', language);
 
-## Установка и запуск
-
-1. Клонировать репозиторий:
-```bash
-git clone https://github.com/yourusername/aiuris.git
-cd aiuris
+const response = await api.post('/chat/ask', formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data',
+  },
+});
 ```
 
-2. Установить зависимости:
-```bash
-npm install
+### Image Uploads
+
+```typescript
+// Send a message with an image
+const formData = new FormData();
+formData.append('content', 'Your message here');
+formData.append('image', imageFile);
+if (chatId) formData.append('chatId', chatId.toString());
+if (country) formData.append('country', country);
+if (language) formData.append('language', language);
+
+const response = await api.post('/chat/ask', formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data',
+  },
+});
 ```
-
-3. Запустить в режиме разработки:
-```bash
-npm run dev
-```
-
-4. Открыть [http://localhost:3000](http://localhost:3000) в браузере.
-
-## Сборка для продакшена
-
-```bash
-npm run build
-npm start
-```
-
-## Лицензия
-
-MIT

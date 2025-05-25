@@ -9,4 +9,7 @@ export type Message = {
   timestamp: Date;
   documentUrl?: string;
   documentName?: string;
+  imageUrl?: string;
+  imageId?: string;
+  imageAlt?: string;
 };
