@@ -3,12 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-  MessageSquare, 
-  CreditCard, 
+import {
+  MessageSquare,
+  CreditCard,
   HelpCircle,
   Mail,
-  FileText
+  FileText, Settings
 } from "lucide-react";
 import Sidebar, { MenuItem, User } from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
@@ -53,7 +53,8 @@ export default function SupportContent({ user }: SupportContentProps) {
 
   const menuItems: MenuItem[] = [
     { icon: MessageSquare, label: t.chats || "Чаты", href: "/chat" },
-    { icon: CreditCard, label: t.subscription || "Подписка", href: "/billing" },
+    { icon: CreditCard, label: t.subscription || "Подписка", href: "/subscription" },
+    { icon: Settings, label: "Настройки", href: "/settings" },
     { icon: HelpCircle, label: t.help || "Помощь", href: "/support" },
   ];
 

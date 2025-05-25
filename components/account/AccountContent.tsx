@@ -52,7 +52,7 @@ export default function AccountContent({ user }: AccountContentProps) {
   const menuItems: MenuItem[] = [
     { icon: MessageSquare, label: t.chats || "Чаты", href: "/chat" },
     // { icon: FileText, label: t.documents || "Документы", href: "/documents" },
-    { icon: CreditCard, label: t.subscription || "Подписка", href: "/billing" },
+    { icon: CreditCard, label: t.subscription || "Подписка", href: "/subscription" },
     { icon: Settings, label: t.settings || "Настройки", href: "/settings" },
     { icon: HelpCircle, label: t.help || "Помощь", href: "/support" },
   ];
