@@ -71,17 +71,23 @@ export function useChat(options: UseChatOptions = {}) {
   // Update welcome message when language changes
   useEffect(() => {
     // Only update if there's no active chat (showing welcome message)
-    if (!currentChatId && messages.length === 1 && messages[0].id === "welcome") {
-      setMessages([
-        {
-          id: "welcome",
-          role: "assistant",
-          content: t.welcomeMessage,
-          timestamp: new Date(),
-        },
-      ]);
+    if (!currentChatId) {
+      // Check messages state without adding it as a dependency
+      const isWelcomeMessageOnly = 
+        messages.length === 1 && messages[0].id === "welcome";
+
+      if (isWelcomeMessageOnly) {
+        setMessages([
+          {
+            id: "welcome",
+            role: "assistant",
+            content: t.welcomeMessage,
+            timestamp: new Date(),
+          },
+        ]);
+      }
     }
-  }, [language, t, currentChatId, messages]);
+  }, [language, t, currentChatId]);
 
   // Poll for new messages
   useEffect(() => {
