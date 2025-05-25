@@ -71,26 +71,6 @@ export default function FileAttachment({
         </div>
       )}
 
-      {/* Selected file display */}
-      {selectedFile && (
-        <div className="mb-2 p-2 bg-muted rounded-md flex items-center justify-between">
-          <div className="flex items-center space-x-2 truncate">
-            <Paperclip className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm truncate">{selectedFile.name}</span>
-            <span className="text-xs text-muted-foreground">
-              ({Math.round(selectedFile.size / 1024)} KB)
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={handleRemoveFile}
-            className="text-muted-foreground hover:text-destructive"
-            aria-label="Remove file"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
 
       {/* Attach button */}
       <button

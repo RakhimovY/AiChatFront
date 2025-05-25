@@ -31,13 +31,6 @@ export default function ChatInput({
   const { t } = useLanguage();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // Clear file input when message is sent (isLoading changes from true to false)
-  useEffect(() => {
-    if (!isLoading && selectedFile) {
-      setSelectedFile(null);
-    }
-  }, [isLoading, selectedFile]);
-
   // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
