@@ -24,6 +24,12 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Handle chat deletion
+  const handleChatDeleted = (chatId: number) => {
+    // Update local state to remove the deleted chat
+    setChats(prevChats => prevChats.filter(chat => chat.id !== chatId));
+  };
+
   // Fetch user chats
   useEffect(() => {
     const fetchChats = async () => {
@@ -90,6 +96,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, clearChat, on
             onSelectChat={onSelectChat}
             clearChat={clearChat}
             closeSidebarOnMobile={closeSidebarOnMobile}
+            onChatDeleted={handleChatDeleted}
           />
 
           <div className="mt-6 mb-2">

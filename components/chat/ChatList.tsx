@@ -17,6 +17,7 @@ interface ChatListProps {
   onSelectChat: (chatId: number) => void;
   clearChat: () => void;
   closeSidebarOnMobile?: () => void;
+  onChatDeleted?: (chatId: number) => void;
 }
 
 /**
@@ -29,7 +30,8 @@ export default function ChatList({
   currentChatId,
   onSelectChat,
   clearChat,
-  closeSidebarOnMobile
+  closeSidebarOnMobile,
+  onChatDeleted
 }: ChatListProps) {
   const { t } = useLanguage();
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
@@ -65,6 +67,11 @@ export default function ChatList({
       // If the deleted chat was selected, clear the selection
       if (currentChatId === chatId) {
         clearChat();
+      }
+
+      // Notify parent component about the deletion
+      if (onChatDeleted) {
+        onChatDeleted(chatId);
       }
     } catch (error) {
       console.error("Error deleting chat:", error);
