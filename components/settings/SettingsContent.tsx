@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Settings, Save, User } from "lucide-react";
-import Sidebar, { MenuItem } from "@/components/layout/Sidebar";
+import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import axios from "axios";
 
@@ -54,10 +54,6 @@ export default function SettingsContent({ user }: SettingsContentProps) {
     };
   }, [isMobileMenuOpen]);
 
-  const menuItems: MenuItem[] = [
-    { icon: User, label: "Аккаунт", href: "/account" },
-    { icon: Settings, label: "Настройки", href: "/settings" },
-  ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -108,7 +104,6 @@ export default function SettingsContent({ user }: SettingsContentProps) {
     <div className="flex flex-col min-h-screen">
       {/* Header component for both mobile and desktop */}
       <Header
-        user={user}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
         pageTitle="Настройки"
@@ -118,8 +113,6 @@ export default function SettingsContent({ user }: SettingsContentProps) {
       <div className="flex flex-1 pt-16 md:pt-20">
         {/* Sidebar */}
         <Sidebar 
-          menuItems={menuItems}
-          user={user}
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
           activePage="/settings"

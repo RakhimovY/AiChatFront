@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { Search, Filter } from "lucide-react";
 import Link from "next/link";
+import { useWebStore } from "@/lib/store/webStore";
 
 // Template type definition
 interface Template {
@@ -44,12 +45,12 @@ export default function TemplateList({ initialTemplates = [] }: TemplateListProp
   // Filter templates when search query or category changes
   useEffect(() => {
     let result = templates;
-    
+
     // Filter by category
     if (selectedCategory) {
       result = result.filter(template => template.category === selectedCategory);
     }
-    
+
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -58,7 +59,7 @@ export default function TemplateList({ initialTemplates = [] }: TemplateListProp
         template.description.toLowerCase().includes(query)
       );
     }
-    
+
     setFilteredTemplates(result);
   }, [searchQuery, selectedCategory, templates]);
 
@@ -66,19 +67,14 @@ export default function TemplateList({ initialTemplates = [] }: TemplateListProp
   const fetchTemplates = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch('/api/web/templates');
-      
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
+      const webStore = useWebStore.getState();
+      const data = await webStore.fetchTemplates();
+
       // Extract categories
       const uniqueCategories = [...new Set(data.map((template: Template) => template.category))];
-      
+
       setCategories(uniqueCategories);
       setTemplates(data);
       setFilteredTemplates(data);
@@ -138,7 +134,7 @@ export default function TemplateList({ initialTemplates = [] }: TemplateListProp
             className="w-full pl-10 pr-4 py-2 border rounded-md bg-background"
           />
         </div>
-        
+
         <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
           <button
             onClick={() => handleCategoryChange(null)}
@@ -150,7 +146,7 @@ export default function TemplateList({ initialTemplates = [] }: TemplateListProp
           >
             Все категории
           </button>
-          
+
           {categories.map(category => (
             <button
               key={category}
@@ -185,7 +181,7 @@ export default function TemplateList({ initialTemplates = [] }: TemplateListProp
                   />
                 </div>
               )}
-              
+
               <div className="p-4">
                 <div className="inline-block px-2 py-1 text-xs rounded-full bg-secondary text-secondary-foreground mb-2">
                   {template.category}

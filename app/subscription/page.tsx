@@ -25,15 +25,14 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import subscriptionApi, { Subscription } from "@/lib/subscriptionApi";
 import SubscribeButton from "@/components/subscription/SubscribeButton";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import Header from "@/components/layout/Header";
-import Sidebar, { MenuItem } from "@/components/layout/Sidebar";
+import Sidebar from "@/components/layout/Sidebar";
+import AuthCheck from "@/components/common/AuthCheck";
 
 export default function SubscriptionPage() {
   const { status } = useSession();
   const router = useRouter();
   const { toast } = useToast();
-  const { t } = useLanguage();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState<string | null>(null);
@@ -57,11 +56,6 @@ export default function SubscriptionPage() {
     };
   }, [isMobileMenuOpen]);
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/login");
-    }
-  }, [status, router]);
 
   const [hasFetchedSubscriptions, setHasFetchedSubscriptions] = useState(false);
 
@@ -135,18 +129,8 @@ export default function SubscriptionPage() {
     return date.toLocaleDateString();
   };
 
-  const menuItems: MenuItem[] = [
-    { icon: MessageSquare, label: t.chats || "Чаты", href: "/chat" },
-    {
-      icon: CreditCard,
-      label: t.subscription || "Подписка",
-      href: "/subscription",
-    },
-    { icon: Settings, label: t.settings || "Настройки", href: "/settings" },
-    { icon: HelpCircle, label: t.help || "Помощь", href: "/support" },
-  ];
 
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
@@ -158,133 +142,134 @@ export default function SubscriptionPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header component for both mobile and desktop */}
-      <Header
-        isMobileMenuOpen={isMobileMenuOpen}
-        setIsMobileMenuOpen={setIsMobileMenuOpen}
-      />
-
-      <div className="flex flex-1 pt-16 md:pt-20">
-        {/* Sidebar */}
-        <Sidebar
-          menuItems={menuItems}
+    <AuthCheck>
+      <div className="flex flex-col min-h-screen">
+        {/* Header component for both mobile and desktop */}
+        <Header
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
-          activePage="/subscription"
         />
 
-        {/* Main content */}
-        <main className="flex-1 p-6">
-          {subscriptions.length === 0 ? (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>No Active Subscriptions</CardTitle>
-                  <CardDescription>
-                    You don't have any active subscriptions. Subscribe to access
-                    premium features.
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <SubscribeButton
-                    buttonText="Subscribe Now"
-                    className="w-full md:w-auto"
-                    planId="e545ed36-051e-48b5-aa98-082820de2381"
-                  />
-                </CardFooter>
-              </Card>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {subscriptions.map((subscription) => (
-                <Card key={subscription.id}>
+        <div className="flex flex-1 pt-16 md:pt-20">
+          {/* Sidebar */}
+          <Sidebar
+            isMobileMenuOpen={isMobileMenuOpen}
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+            activePage="/subscription"
+          />
+
+          {/* Main content */}
+          <main className="flex-1 p-6">
+            {subscriptions.length === 0 ? (
+              <div className="space-y-6">
+                <Card>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle>{subscription.planName}</CardTitle>
-                      <div className="flex items-center">
-                        {subscription.status === "active" ? (
-                          <>
-                            <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                            <span className="text-sm font-medium text-green-500">
-                              Active
-                            </span>
-                          </>
-                        ) : subscription.status === "canceled" ? (
-                          <>
-                            <XCircle className="h-5 w-5 text-amber-500 mr-2" />
-                            <span className="text-sm font-medium text-amber-500">
-                              Cancelling
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle className="h-5 w-5 text-destructive mr-2" />
-                            <span className="text-sm font-medium text-destructive">
-                              {subscription.status}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
+                    <CardTitle>No Active Subscriptions</CardTitle>
                     <CardDescription>
-                      Subscription ID: {subscription.polarSubscriptionId}
+                      You don't have any active subscriptions. Subscribe to access
+                      premium features.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          Current period:
-                        </span>
-                        <span>
-                          {formatDate(subscription.currentPeriodStart)} -{" "}
-                          {formatDate(subscription.currentPeriodEnd)}
-                        </span>
-                      </div>
-                      {subscription.cancelAtPeriodEnd && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            Cancellation status:
-                          </span>
-                          <span className="text-amber-500">
-                            Will be cancelled at the end of the current period
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
                   <CardFooter>
-                    {subscription.status === "active" &&
-                      !subscription.cancelAtPeriodEnd && (
-                        <Button
-                          variant="destructive"
-                          onClick={() =>
-                            handleCancelSubscription(
-                              subscription.polarSubscriptionId,
-                            )
-                          }
-                          disabled={
-                            isCancelling === subscription.polarSubscriptionId
-                          }
-                        >
-                          {isCancelling === subscription.polarSubscriptionId ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Cancelling...
-                            </>
-                          ) : (
-                            "Cancel Subscription"
-                          )}
-                        </Button>
-                      )}
+                    <SubscribeButton
+                      buttonText="Subscribe Now"
+                      className="w-full md:w-auto"
+                      planId="e545ed36-051e-48b5-aa98-082820de2381"
+                    />
                   </CardFooter>
                 </Card>
-              ))}
-            </div>
-          )}
-        </main>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {subscriptions.map((subscription) => (
+                  <Card key={subscription.id}>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle>{subscription.planName}</CardTitle>
+                        <div className="flex items-center">
+                          {subscription.status === "active" ? (
+                            <>
+                              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                              <span className="text-sm font-medium text-green-500">
+                                Active
+                              </span>
+                            </>
+                          ) : subscription.status === "canceled" ? (
+                            <>
+                              <XCircle className="h-5 w-5 text-amber-500 mr-2" />
+                              <span className="text-sm font-medium text-amber-500">
+                                Cancelling
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="h-5 w-5 text-destructive mr-2" />
+                              <span className="text-sm font-medium text-destructive">
+                                {subscription.status}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <CardDescription>
+                        Subscription ID: {subscription.polarSubscriptionId}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            Current period:
+                          </span>
+                          <span>
+                            {formatDate(subscription.currentPeriodStart)} -{" "}
+                            {formatDate(subscription.currentPeriodEnd)}
+                          </span>
+                        </div>
+                        {subscription.cancelAtPeriodEnd && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">
+                              Cancellation status:
+                            </span>
+                            <span className="text-amber-500">
+                              Will be cancelled at the end of the current period
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      {subscription.status === "active" &&
+                        !subscription.cancelAtPeriodEnd && (
+                          <Button
+                            variant="destructive"
+                            onClick={() =>
+                              handleCancelSubscription(
+                                subscription.polarSubscriptionId,
+                              )
+                            }
+                            disabled={
+                              isCancelling === subscription.polarSubscriptionId
+                            }
+                          >
+                            {isCancelling === subscription.polarSubscriptionId ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Cancelling...
+                              </>
+                            ) : (
+                              "Cancel Subscription"
+                            )}
+                          </Button>
+                        )}
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </main>
+        </div>
       </div>
-    </div>
+    </AuthCheck>
   );
 }

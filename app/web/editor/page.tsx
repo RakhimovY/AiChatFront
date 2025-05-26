@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Save } from "lucide-react";
 import DocumentEditor from "@/components/web/DocumentEditor";
+import { useWebStore } from "@/lib/store/webStore";
 
 export default function EditorPage() {
-  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const router = useRouter();
   const templateId = searchParams.get("templateId");
@@ -24,28 +23,24 @@ export default function EditorPage() {
   // Handle document save
   const handleSave = async (values: Record<string, any>) => {
     try {
-      const response = await fetch('/api/web/documents', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          templateId,
-          values
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+      const webStore = useWebStore.getState();
+      const document = {
+        templateId,
+        values
+      };
+
+      const savedDocument = await webStore.saveDocument(document);
+
+      if (!savedDocument) {
+        throw new Error("Failed to save document");
       }
-      
-      const data = await response.json();
+
       setSaveSuccess(true);
       setSaveError(null);
-      
+
       // Redirect to the document view page after a short delay
       setTimeout(() => {
-        router.push(`/web/documents/${data.id}`);
+        router.push(`/web/documents/${savedDocument.id}`);
       }, 1500);
     } catch (err) {
       console.error("Error saving document:", err);
@@ -64,13 +59,13 @@ export default function EditorPage() {
           <ChevronLeft className="h-4 w-4 mr-1" />
           Назад
         </Link>
-        
+
         {saveSuccess && (
           <div className="text-sm px-3 py-1 rounded-md bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400">
             Документ успешно сохранен
           </div>
         )}
-        
+
         {saveError && (
           <div className="text-sm px-3 py-1 rounded-md bg-red-100 text-red-800 dark:bg-red-800/20 dark:text-red-400">
             {saveError}

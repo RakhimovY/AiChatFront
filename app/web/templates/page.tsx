@@ -1,13 +1,10 @@
 "use client";
 
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import TemplateList from "@/components/web/TemplateList";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
 export default function TemplatesPage() {
-  const { t } = useLanguage();
-
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">

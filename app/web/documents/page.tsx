@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -11,6 +10,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
+import { useWebStore } from "@/lib/store/webStore";
 
 interface Document {
   id: string;
@@ -22,7 +22,6 @@ interface Document {
 }
 
 export default function DocumentsPage() {
-  const { t } = useLanguage();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,11 +52,8 @@ export default function DocumentsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/web/documents");
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-      const data = await response.json();
+      const webStore = useWebStore.getState();
+      const data = await webStore.fetchDocuments();
       setDocuments(data);
       setFilteredDocuments(data);
     } catch (err) {
@@ -86,12 +82,11 @@ export default function DocumentsPage() {
     setIsDeleting(true);
 
     try {
-      const response = await fetch(`/api/web/documents/${id}`, {
-        method: "DELETE",
-      });
+      const webStore = useWebStore.getState();
+      const success = await webStore.deleteDocument(id);
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+      if (!success) {
+        throw new Error("Failed to delete document");
       }
 
       setDocuments((prev) => prev.filter((doc) => doc.id !== id));

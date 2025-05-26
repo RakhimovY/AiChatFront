@@ -1,12 +1,9 @@
 "use client";
 
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import Link from "next/link";
 import { FileText, Edit, List } from "lucide-react";
 
 export default function WebPage() {
-  const { t } = useLanguage();
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-2">
