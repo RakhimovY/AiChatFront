@@ -1,10 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import LanguageSelector from "@/components/layout/LanguageSelector";
 import Navigation from "@/components/layout/Navigation";
 
 export default function ForgotPasswordPage() {

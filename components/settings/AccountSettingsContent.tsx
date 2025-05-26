@@ -1,17 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import axios from "axios";
 import {
-  Settings,
-  Save,
-  User,
-  MessageSquare,
   CreditCard,
-  HelpCircle
+  HelpCircle,
+  MessageSquare,
+  Save,
+  Settings,
 } from "lucide-react";
 import Sidebar, { MenuItem } from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
@@ -26,12 +24,13 @@ type AccountSettingsContentProps = {
   };
 };
 
-export default function AccountSettingsContent({ user }: AccountSettingsContentProps) {
-  const router = useRouter();
+export default function AccountSettingsContent({
+  user,
+}: AccountSettingsContentProps) {
   const { data: session, update } = useSession();
   const { t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'account' | 'settings'>('account');
+  const [activeTab, setActiveTab] = useState<"account" | "settings">("account");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -53,28 +52,37 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
       if (!isMobileMenuOpen || window.innerWidth >= 768) return;
 
       // Check if the click was outside the sidebar
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
         setIsMobileMenuOpen(false);
       }
     };
 
     // Add event listener
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
 
     // Clean up
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isMobileMenuOpen]);
 
   const menuItems: MenuItem[] = [
     { icon: MessageSquare, label: t.chats || "Чаты", href: "/chat" },
-    { icon: CreditCard, label: t.subscription || "Подписка", href: "/subscription" },
+    {
+      icon: CreditCard,
+      label: t.subscription || "Подписка",
+      href: "/subscription",
+    },
     { icon: Settings, label: t.settings || "Настройки", href: "/settings" },
     { icon: HelpCircle, label: t.help || "Помощь", href: "/support" },
   ];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -94,7 +102,7 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
           headers: {
             Authorization: `Bearer ${session?.accessToken}`,
           },
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -113,7 +121,11 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
       }
     } catch (error: any) {
       console.error("Error updating profile:", error);
-      setError(error.response?.data?.message || t.profileUpdateError || "Ошибка при обновлении профиля");
+      setError(
+        error.response?.data?.message ||
+          t.profileUpdateError ||
+          "Ошибка при обновлении профиля",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +144,7 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
 
       <div className="flex flex-1 pt-16 md:pt-20">
         {/* Sidebar */}
-        <Sidebar 
+        <Sidebar
           menuItems={menuItems}
           user={user}
           isMobileMenuOpen={isMobileMenuOpen}
@@ -146,21 +158,21 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
           <div className="mb-6 border-b">
             <div className="flex space-x-4">
               <button
-                onClick={() => setActiveTab('account')}
+                onClick={() => setActiveTab("account")}
                 className={`py-2 px-4 font-medium ${
-                  activeTab === 'account'
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground'
+                  activeTab === "account"
+                    ? "border-b-2 border-primary text-primary"
+                    : "text-muted-foreground"
                 }`}
               >
                 {t.accountDashboard || "Личный кабинет"}
               </button>
               <button
-                onClick={() => setActiveTab('settings')}
+                onClick={() => setActiveTab("settings")}
                 className={`py-2 px-4 font-medium ${
-                  activeTab === 'settings'
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground'
+                  activeTab === "settings"
+                    ? "border-b-2 border-primary text-primary"
+                    : "text-muted-foreground"
                 }`}
               >
                 {t.profileSettings || "Настройки профиля"}
@@ -169,15 +181,15 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
           </div>
 
           {/* Account Dashboard Tab */}
-          {activeTab === 'account' && (
+          {activeTab === "account" && (
             <>
               <div className="flex items-center mb-6 p-4 border rounded-lg bg-primary/5">
                 <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mr-4">
                   {user.image ? (
-                    <img 
-                      src={user.image} 
-                      alt={user.name} 
-                      className="h-16 w-16 rounded-full" 
+                    <img
+                      src={user.image}
+                      alt={user.name}
+                      className="h-16 w-16 rounded-full"
                     />
                   ) : (
                     <span className="text-primary text-2xl font-medium">
@@ -195,14 +207,17 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
                 <div className="border rounded-lg p-6 flex flex-col h-full">
                   <div>
                     <MessageSquare className="h-8 w-8 text-primary mb-4" />
-                    <h2 className="text-xl font-semibold mb-2">{t.startChat || "Начать чат"}</h2>
+                    <h2 className="text-xl font-semibold mb-2">
+                      {t.startChat || "Начать чат"}
+                    </h2>
                     <p className="text-muted-foreground mb-4">
-                      {t.chatDescription || "Задайте вопрос юридическому ассистенту и получите мгновенный ответ."}
+                      {t.chatDescription ||
+                        "Задайте вопрос юридическому ассистенту и получите мгновенный ответ."}
                     </p>
                   </div>
                   <div className="mt-auto pt-2">
-                    <Link 
-                      href="/chat" 
+                    <Link
+                      href="/chat"
                       className="text-primary hover:underline inline-flex items-center"
                     >
                       {t.goToChat || "Перейти к чату"}
@@ -213,14 +228,17 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
                 <div className="border rounded-lg p-6 flex flex-col h-full">
                   <div>
                     <CreditCard className="h-8 w-8 text-primary mb-4" />
-                    <h2 className="text-xl font-semibold mb-2">{t.manageSubscription || "Управление подпиской"}</h2>
+                    <h2 className="text-xl font-semibold mb-2">
+                      {t.manageSubscription || "Управление подпиской"}
+                    </h2>
                     <p className="text-muted-foreground mb-4">
-                      {t.subscriptionDescription || "Просмотр и изменение вашего текущего тарифного плана."}
+                      {t.subscriptionDescription ||
+                        "Просмотр и изменение вашего текущего тарифного плана."}
                     </p>
                   </div>
                   <div className="mt-auto pt-2">
-                    <Link 
-                      href="/subscription" 
+                    <Link
+                      href="/subscription"
                       className="text-primary hover:underline inline-flex items-center"
                     >
                       {t.manageSubscription || "Управление подпиской"}
@@ -231,14 +249,17 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
                 <div className="border rounded-lg p-6 flex flex-col h-full">
                   <div>
                     <HelpCircle className="h-8 w-8 text-primary mb-4" />
-                    <h2 className="text-xl font-semibold mb-2">{t.supportCenter || "Центр поддержки"}</h2>
+                    <h2 className="text-xl font-semibold mb-2">
+                      {t.supportCenter || "Центр поддержки"}
+                    </h2>
                     <p className="text-muted-foreground mb-4">
-                      {t.supportDescription || "Получите ответы на часто задаваемые вопросы или свяжитесь с нашей службой поддержки."}
+                      {t.supportDescription ||
+                        "Получите ответы на часто задаваемые вопросы или свяжитесь с нашей службой поддержки."}
                     </p>
                   </div>
                   <div className="mt-auto pt-2">
-                    <Link 
-                      href="/support" 
+                    <Link
+                      href="/support"
                       className="text-primary hover:underline inline-flex items-center"
                     >
                       {t.goToSupport || "Перейти в центр поддержки"}
@@ -250,7 +271,7 @@ export default function AccountSettingsContent({ user }: AccountSettingsContentP
           )}
 
           {/* Settings Tab */}
-          {activeTab === 'settings' && (
+          {activeTab === "settings" && (
             <>
               {error && (
                 <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4">

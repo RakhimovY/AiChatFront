@@ -1,11 +1,24 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { XCircle, MessageSquare, CreditCard, Settings, HelpCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import {
+  CreditCard,
+  HelpCircle,
+  MessageSquare,
+  Settings,
+  XCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import Header from "@/components/layout/Header";
 import Sidebar, { MenuItem } from "@/components/layout/Sidebar";
@@ -15,65 +28,58 @@ export default function SubscriptionCancelPage() {
   const router = useRouter();
   const { t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Reference to the sidebar element
   const sidebarRef = useRef<HTMLDivElement>(null);
 
-  // Handle clicks outside the sidebar to close it on mobile
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Only proceed if the sidebar is open and we're on mobile
       if (!isMobileMenuOpen || window.innerWidth >= 768) return;
-
-      // Check if the click was outside the sidebar
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
         setIsMobileMenuOpen(false);
       }
     };
-
-    // Add event listener
-    document.addEventListener('mousedown', handleClickOutside);
-
-    // Clean up
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isMobileMenuOpen]);
 
-  // Redirect to login if not authenticated
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/login');
+    if (status === "unauthenticated") {
+      router.push("/auth/login");
     }
   }, [status, router]);
 
-  // Redirect to subscription page after 5 seconds
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (status === "authenticated") {
       const timer = setTimeout(() => {
-        router.push('/subscription');
+        router.push("/subscription");
       }, 5000);
 
       return () => clearTimeout(timer);
     }
   }, [router, status]);
 
-  // Define menu items for the sidebar
   const menuItems: MenuItem[] = [
     { icon: MessageSquare, label: t.chats || "Чаты", href: "/chat" },
-    { icon: CreditCard, label: t.subscription || "Подписка", href: "/subscription" },
+    {
+      icon: CreditCard,
+      label: t.subscription || "Подписка",
+      href: "/subscription",
+    },
     { icon: Settings, label: t.settings || "Настройки", href: "/settings" },
     { icon: HelpCircle, label: t.help || "Помощь", href: "/support" },
   ];
 
-  // Ensure user object has required non-nullable properties
   const user = {
     name: session?.user?.name || "User",
     email: session?.user?.email || "",
-    image: session?.user?.image || undefined
+    image: session?.user?.image || undefined,
   };
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
@@ -89,15 +95,12 @@ export default function SubscriptionCancelPage() {
         user={user}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
-        pageTitle={t.subscription || "Подписка"}
-        pageRoute="/subscription"
       />
 
       <div className="flex flex-1 pt-16 md:pt-20">
         {/* Sidebar */}
-        <Sidebar 
+        <Sidebar
           menuItems={menuItems}
-          user={user}
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
           activePage="/subscription"
@@ -117,11 +120,12 @@ export default function SubscriptionCancelPage() {
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-muted-foreground">
-                No worries! You can subscribe anytime when you're ready to access our premium features.
+                No worries! You can subscribe anytime when you're ready to
+                access our premium features.
               </p>
             </CardContent>
             <CardFooter className="flex justify-center">
-              <Button onClick={() => router.push('/subscription')}>
+              <Button onClick={() => router.push("/subscription")}>
                 Return to Subscriptions
               </Button>
             </CardFooter>

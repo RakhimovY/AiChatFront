@@ -7,7 +7,6 @@ export default function LoginPage() {
 
   return (
     <main className="flex flex-col min-h-screen bg-background">
-      {/* Navigation */}
       <Navigation />
 
       <div className="container py-12 mt-16">

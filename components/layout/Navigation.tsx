@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Scale, Menu, X, MessageSquare } from "lucide-react";
+import { Scale, Menu, X, MessageSquare, FileText } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import LanguageSelector from "@/components/layout/LanguageSelector";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
@@ -73,13 +73,22 @@ export default function Navigation({ activePage }: NavigationProps) {
           <LanguageSelector />
           <ThemeToggle />
           {status === "authenticated" ? (
-            <Link 
-              href="/chat" 
-              className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2"
-            >
-              <MessageSquare className="h-4 w-4" />
-              {t.chat}
-            </Link>
+            <>
+              <Link 
+                href="/chat" 
+                className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2"
+              >
+                <MessageSquare className="h-4 w-4" />
+                {t.chat}
+              </Link>
+              <Link 
+                href="/web" 
+                className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                {t.documents}
+              </Link>
+            </>
           ) : (
             <>
               <Link 
@@ -146,14 +155,24 @@ export default function Navigation({ activePage }: NavigationProps) {
             </div>
             <div className="flex flex-col space-y-1 md:space-y-2 pt-1 md:pt-2">
               {status === "authenticated" ? (
-                <Link 
-                  href="/chat" 
-                  className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center flex items-center justify-center gap-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  {t.chat}
-                </Link>
+                <>
+                  <Link 
+                    href="/chat" 
+                    className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center flex items-center justify-center gap-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    {t.chat}
+                  </Link>
+                  <Link 
+                    href="/web" 
+                    className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-center flex items-center justify-center gap-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <FileText className="h-4 w-4" />
+                    {t.documents}
+                  </Link>
+                </>
               ) : (
                 <>
                   <Link 

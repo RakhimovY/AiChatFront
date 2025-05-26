@@ -9,7 +9,6 @@ import FAQ from "@/components/pricing/FAQ";
 import CTASection from "@/components/ui/CTASection";
 
 export default function PricingPage() {
-  // Define pricing plans
   const plans: Plan[] = [
     {
       id: "free",

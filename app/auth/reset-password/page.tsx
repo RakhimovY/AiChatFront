@@ -2,10 +2,8 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import LanguageSelector from "@/components/layout/LanguageSelector";
 import Navigation from "@/components/layout/Navigation";
 
 export default function ResetPasswordPage() {

@@ -1,24 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import {Bot, Menu, X, ArrowLeft, Download, Scale} from "lucide-react";
+import { ArrowLeft, Download, Menu, Scale, X } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import LanguageSelector from "@/components/layout/LanguageSelector";
+import { useSession } from "next-auth/react";
 
 type HeaderProps = {
-  // Common props
   user?: {
     name: string;
     email: string;
     image?: string;
   };
-  // Mobile header props
   isMobileMenuOpen?: boolean;
   setIsMobileMenuOpen?: (isOpen: boolean) => void;
-  // Page specific props
-  pageTitle?: string;
-  pageRoute: string;
-  // Optional actions
   exportChat?: () => void;
   showThemeToggle?: boolean;
   showUserInfo?: boolean;
@@ -26,11 +21,8 @@ type HeaderProps = {
 };
 
 export default function Header({
-  user,
   isMobileMenuOpen = false,
   setIsMobileMenuOpen,
-  pageTitle = "AIuris",
-  pageRoute,
   exportChat,
   showThemeToggle = true,
   showUserInfo = true,
@@ -41,6 +33,13 @@ export default function Header({
       setIsMobileMenuOpen(!isMobileMenuOpen);
     }
   };
+  const { data: session } = useSession();
+
+  const user = {
+    name: session?.user?.name || "User",
+    email: session?.user?.email || "",
+    image: session?.user?.image || undefined,
+  };
 
   return (
     <>
@@ -50,10 +49,15 @@ export default function Header({
           onClick={toggleMobileMenu}
           className="p-2 rounded-md hover:bg-secondary"
         >
-          {isMobileMenuOpen 
-            ? (showBackButton ? <ArrowLeft className="h-5 w-5" /> : <X className="h-5 w-5" />)
-            : <Menu className="h-5 w-5" />
-          }
+          {isMobileMenuOpen ? (
+            showBackButton ? (
+              <ArrowLeft className="h-5 w-5" />
+            ) : (
+              <X className="h-5 w-5" />
+            )
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
         </button>
         {/*<Link href={pageRoute} className="flex items-center space-x-2">*/}
         {/*  <Bot className="h-5 w-5 text-primary" />*/}
@@ -67,7 +71,7 @@ export default function Header({
           <LanguageSelector />
           {showThemeToggle && <ThemeToggle />}
           {exportChat && (
-            <button 
+            <button
               onClick={exportChat}
               className="p-2 rounded-md hover:bg-secondary"
               title="Export chat"
@@ -89,7 +93,7 @@ export default function Header({
             <LanguageSelector />
             {showThemeToggle && <ThemeToggle />}
             {exportChat && (
-              <button 
+              <button
                 onClick={exportChat}
                 className="p-2 rounded-md hover:bg-secondary"
                 title="Export chat"
@@ -106,10 +110,10 @@ export default function Header({
                 <Link href="/settings">
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer">
                     {user.image ? (
-                      <img 
-                        src={user.image} 
-                        alt={user.name} 
-                        className="h-8 w-8 rounded-full" 
+                      <img
+                        src={user.image}
+                        alt={user.name}
+                        className="h-8 w-8 rounded-full"
                       />
                     ) : (
                       <span className="text-primary font-medium">

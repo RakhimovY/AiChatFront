@@ -9,12 +9,10 @@ export default function SupportPage() {
   const { data: session, status } = useSession();
   const { t } = useLanguage();
 
-  // If the user is not authenticated, redirect to the login page
   if (status === "unauthenticated") {
     redirect("/auth/login");
   }
 
-  // Show loading state while checking authentication
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -23,11 +21,10 @@ export default function SupportPage() {
     );
   }
 
-  // Ensure user object has required non-nullable properties
   const user = {
     name: session?.user?.name || "User",
     email: session?.user?.email || "",
-    image: session?.user?.image || undefined
+    image: session?.user?.image || undefined,
   };
 
   return <SupportContent user={user} />;
