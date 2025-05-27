@@ -84,7 +84,7 @@ export default function Header({
               className="p-2 rounded-md hover:bg-secondary transition-colors duration-200"
               aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             >
-              <Menu className="h-5 w-5" />
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
             <Link href="/settings" className="flex items-center space-x-2 transition-transform duration-200 hover:scale-105">
               <Scale className="h-6 w-6 text-primary" />
@@ -104,29 +104,29 @@ export default function Header({
                 <Download className="h-5 w-5" />
               </button>
             )}
-            {showUserInfo && user && (
-              <>
-                <div className="text-sm text-right hidden sm:block">
-                  <div className="font-medium">{user.name}</div>
-                  <div className="text-muted-foreground">{user.email}</div>
-                </div>
-                <Link href="/settings">
-                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors duration-200">
-                    {user.image ? (
-                      <img
-                        src={user.image}
-                        alt={user.name}
-                        className="h-8 w-8 rounded-full"
-                      />
-                    ) : (
-                      <span className="text-primary font-medium">
-                        {user.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              </>
-            )}
+            {/*{showUserInfo && user && (*/}
+            {/*<>*/}
+                {/*<div className="text-sm text-right hidden sm:block">*/}
+                {/*  <div className="font-medium">{user.name}</div>*/}
+                {/*  <div className="text-muted-foreground">{user.email}</div>*/}
+                {/*</div>*/}
+                {/*<Link href="/settings">*/}
+                {/*  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors duration-200">*/}
+                {/*    {user.image ? (*/}
+                {/*      <img*/}
+                {/*        src={user.image}*/}
+                {/*        alt={user.name}*/}
+                {/*        className="h-8 w-8 rounded-full"*/}
+                {/*      />*/}
+                {/*    ) : (*/}
+                {/*      <span className="text-primary font-medium">*/}
+                {/*        {user.name.charAt(0).toUpperCase()}*/}
+                {/*      </span>*/}
+                {/*    )}*/}
+                {/*  </div>*/}
+                {/*</Link>*/}
+              {/*</>*/}
+            {/*)}*/}
           </div>
         </div>
       </header>

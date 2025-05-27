@@ -167,7 +167,7 @@ export default function ChatList({
         return (
           <div 
             key={chat.id} 
-            className={`group relative flex items-center w-full text-left px-3 py-2 text-sm rounded-md transition-all duration-200 hover:bg-primary/10 cursor-pointer ${
+            className={`group relative flex items-center w-full text-left px-3 py-2 text-sm rounded-md sidebar-content-transition hover:bg-primary/10 cursor-pointer ${
               currentChatId === chat.id 
                 ? "bg-primary/15 text-primary-foreground shadow-sm" 
                 : "text-foreground hover:text-primary-foreground"
@@ -180,24 +180,26 @@ export default function ChatList({
                    aria-hidden="true" />
             )}
 
-            <MessageSquare className={`h-4 w-4 mr-2.5 flex-shrink-0 ${
-              currentChatId === chat.id 
-                ? "text-primary" 
-                : isUnread 
-                  ? "text-primary/70" 
-                  : "text-muted-foreground group-hover:text-primary/70"
-            }`} />
+            <div className="w-4 h-4 mr-2.5 flex-shrink-0 flex items-center justify-center">
+              <MessageSquare className={`h-4 w-4 sidebar-content-transition ${
+                currentChatId === chat.id 
+                  ? "text-primary" 
+                  : isUnread 
+                    ? "text-primary/70" 
+                    : "text-muted-foreground group-hover:text-primary/70"
+              }`} />
+            </div>
 
-            <div className="flex flex-col flex-1 min-w-0">
-              <span className={`truncate ${isUnread ? "font-semibold" : "font-medium"}`}>
+            <div className="flex flex-col flex-1 min-w-0 sidebar-content-transition">
+              <span className={`truncate ${isUnread ? "font-semibold" : "font-medium"} sidebar-content-transition`}>
                 {formatChatTitle(chat)}
               </span>
-              <span className="text-xs text-muted-foreground truncate">{formatDate(chat.createdAt)}</span>
+              <span className="text-xs text-muted-foreground truncate sidebar-content-transition">{formatDate(chat.createdAt)}</span>
             </div>
 
             <button
               onClick={(e) => handleDeleteChat(chat.id, e)}
-              className="ml-2 p-1.5 rounded-full md:opacity-0 opacity-100 group-hover:opacity-100 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-opacity duration-200 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="ml-2 w-7 h-7 flex items-center justify-center rounded-full md:opacity-0 opacity-100 group-hover:opacity-100 hover:bg-destructive/10 text-muted-foreground hover:text-destructive sidebar-content-transition focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               title={t?.deleteChat || "Delete chat"}
               aria-label={t?.deleteChat || "Delete chat"}
             >

@@ -9,7 +9,6 @@ import { useChat } from "@/lib/hooks/useChat";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { AlertCircle, PlusCircle } from "lucide-react";
 
-// Error message component for better reusability
 const ErrorMessage = ({ message }: { message: string }) => (
   <div className="bg-destructive/10 text-destructive text-sm p-4 mb-4 rounded-md border border-destructive/20 shadow-sm flex items-center" role="alert" aria-live="assertive">
     <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -17,7 +16,6 @@ const ErrorMessage = ({ message }: { message: string }) => (
   </div>
 );
 
-// Loading indicator component
 const LoadingIndicator = ({ message }: { message: string }) => (
   <div className="flex justify-center items-center mb-4">
     <div className="flex items-center justify-center space-x-2 bg-muted/50 px-4 py-3 rounded-md shadow-sm">
@@ -25,18 +23,6 @@ const LoadingIndicator = ({ message }: { message: string }) => (
       <span className="text-sm font-medium text-muted-foreground">{message}</span>
     </div>
   </div>
-);
-
-// New Chat Button component
-const NewChatButton = ({ onClick, label }: { onClick: () => void; label: string }) => (
-  <button
-    onClick={onClick}
-    className="flex items-center justify-center space-x-2 text-sm w-full p-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all duration-200 shadow-sm hover:shadow"
-    aria-label={label}
-  >
-    <PlusCircle className="h-4 w-4 mr-1.5" />
-    <span>{label}</span>
-  </button>
 );
 
 export default function ChatPage() {
@@ -141,16 +127,6 @@ export default function ChatPage() {
               isLoadingHistory={isLoadingHistory && currentChatId !== null}
             />
           </div>
-
-          {/* New Chat Button - only shown when chat is not new */}
-          {messages.length > 1 || (messages.length === 1 && (messages[0].id !== "welcome" || messages[0].role !== "assistant")) ? (
-            <div className="mb-4 px-1">
-              <NewChatButton 
-                onClick={clearChat} 
-                label={t.startNewChat || "Start New Chat"} 
-              />
-            </div>
-          ) : null}
 
           {/* Chat input area */}
           <div className="border rounded-lg p-4 bg-background/50 backdrop-blur-sm">
