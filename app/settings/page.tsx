@@ -19,6 +19,11 @@ export default function SettingsPage() {
   const { data: session, status, update } = useSession();
   const { t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Set initial sidebar state based on screen width after component mounts
+  useEffect(() => {
+    setIsMobileMenuOpen(window.innerWidth >= 768);
+  }, []);
   const [activeTab, setActiveTab] = useState<"account" | "settings">("account");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -131,11 +136,13 @@ export default function SettingsPage() {
 
         <div className="flex flex-1 pt-16 md:pt-20">
           {/* Sidebar */}
-          <Sidebar
-            isMobileMenuOpen={isMobileMenuOpen}
-            setIsMobileMenuOpen={setIsMobileMenuOpen}
-            activePage="/settings"
-          />
+          <div ref={sidebarRef} className="h-full absolute md:relative top-0 left-0">
+            <Sidebar
+              isMobileMenuOpen={isMobileMenuOpen}
+              setIsMobileMenuOpen={setIsMobileMenuOpen}
+              activePage="/settings"
+            />
+          </div>
 
           {/* Main content */}
           <main className="flex-1 p-6">

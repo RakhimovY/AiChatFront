@@ -1,166 +1,101 @@
-import { CreditCard, Edit, FileText, HelpCircle, List, MessageSquare, Settings } from "lucide-react";
+import {FileText, HelpCircle, MessageSquare, Settings} from "lucide-react";
+import React from "react";
+import { Translation } from "@/lib/i18n";
 
 export type SubMenuItem = {
-  label: string;
-  href: string;
+    label: string;
+    href: string;
+    translationKey?: keyof Translation;
 };
 
 export type MenuItem = {
-  icon: React.ElementType;
-  label: string;
-  href: string;
-  subItems?: SubMenuItem[];
+    icon: React.ElementType;
+    label: string;
+    href: string;
+    translationKey?: keyof Translation;
+    subItems?: SubMenuItem[];
+    ariaLabel?: string;
 };
 
-// Menu items for the web section
-export const webMenuItems: MenuItem[] = [
-  {
-    icon: FileText,
-    label: "Документы",
-    href: "/web",
-    subItems: [
-      {
-        label: "Шаблоны",
-        href: "/web/templates",
-      },
-      {
-        label: "Редактор",
-        href: "/web/editor",
-      },
-      {
-        label: "Мои документы",
-        href: "/web/documents",
-      },
-    ],
-  },
-  {
-    icon: List,
-    label: "Каталог",
-    href: "/web/catalog",
-    subItems: [
-      {
-        label: "Категории",
-        href: "/web/catalog/categories",
-      },
-      {
-        label: "Новинки",
-        href: "/web/catalog/new",
-      },
-      {
-        label: "Популярное",
-        href: "/web/catalog/popular",
-      },
-    ],
-  },
-  {
-    icon: Settings,
-    label: "Управление",
-    href: "/web/management",
-    subItems: [
-      {
-        label: "Пользователи",
-        href: "/web/management/users",
-      },
-      {
-        label: "Права доступа",
-        href: "/web/management/permissions",
-      },
-      {
-        label: "Статистика",
-        href: "/web/management/statistics",
-      },
-    ],
-  },
-];
+/**
+ * Get menu items with translations applied
+ * @param path Current path for highlighting active items
+ * @param t Translation object from useLanguage hook
+ * @returns Array of menu items with translations applied
+ */
+export const getMenuItems = (path: string, t?: Translation | null): MenuItem[] => {
+    // Define base menu structure with translation keys
+    const menuItems: MenuItem[] = [
+        {
+            icon: MessageSquare,
+            label: t?.chat || "Чаты",
+            translationKey: "chat",
+            href: "/chat",
+        },
+        {
+            icon: FileText,
+            label: t?.documents || "Документы",
+            translationKey: "documents",
+            href: "/web",
+            subItems: [
+                {
+                    label: t?.templates || "Шаблоны",
+                    translationKey: "templates",
+                    href: "/web/templates",
+                },
+                {
+                    label: t?.editor || "Редактор",
+                    translationKey: "editor",
+                    href: "/web/editor",
+                },
+                {
+                    label: t?.myDocuments || "Мои документы",
+                    translationKey: "myDocuments",
+                    href: "/web/documents",
+                },
+            ],
+        },
+        {
+            icon: Settings,
+            label: t?.settings || "Настройки",
+            translationKey: "settings",
+            href: "/settings",
+            subItems: [
+                {
+                    label: t?.profile || "Профиль",
+                    translationKey: "profile",
+                    href: "/settings/profile",
+                },
+                {
+                    label: t?.security || "Безопасность",
+                    translationKey: "security",
+                    href: "/settings/security",
+                },
+                {
+                    label: t?.notifications || "Уведомления",
+                    translationKey: "notifications",
+                    href: "/settings/notifications",
+                },
+            ],
+        },
+        {
+            icon: HelpCircle,
+            label: t?.help || "Помощь",
+            translationKey: "help",
+            href: "/support",
+        },
+    ];
 
-// Menu items for the subscription section
-export const subscriptionMenuItems: MenuItem[] = [
-  { 
-    icon: MessageSquare, 
-    label: "Чаты", 
-    href: "/chat",
-    subItems: [
-      {
-        label: "Новый чат",
-        href: "/chat/new",
-      },
-      {
-        label: "История чатов",
-        href: "/chat/history",
-      },
-      {
-        label: "Избранное",
-        href: "/chat/favorites",
-      },
-    ],
-  },
-  {
-    icon: CreditCard,
-    label: "Подписка",
-    href: "/subscription",
-    subItems: [
-      {
-        label: "Мои подписки",
-        href: "/subscription",
-      },
-      {
-        label: "Тарифы",
-        href: "/subscription/plans",
-      },
-      {
-        label: "История платежей",
-        href: "/subscription/history",
-      },
-    ],
-  },
-  { 
-    icon: Settings, 
-    label: "Настройки", 
-    href: "/settings",
-    subItems: [
-      {
-        label: "Профиль",
-        href: "/settings/profile",
-      },
-      {
-        label: "Безопасность",
-        href: "/settings/security",
-      },
-      {
-        label: "Уведомления",
-        href: "/settings/notifications",
-      },
-    ],
-  },
-  { 
-    icon: HelpCircle, 
-    label: "Помощь", 
-    href: "/support",
-    subItems: [
-      {
-        label: "FAQ",
-        href: "/support/faq",
-      },
-      {
-        label: "Связаться с нами",
-        href: "/support/contact",
-      },
-      {
-        label: "Документация",
-        href: "/support/docs",
-      },
-    ],
-  },
-];
+    // Add aria-labels based on active state
+    return menuItems.map(item => {
+        const isActive = path === item.href || 
+            (item.subItems?.some(sub => path === sub.href) ?? false);
 
-// Combined menu items for all sections
-export const allMenuItems: MenuItem[] = [
-  ...webMenuItems,
-  ...subscriptionMenuItems,
-];
-
-// Function to get the appropriate menu items based on the current path
-export const getMenuItems = (path: string): MenuItem[] => {
-  // Always return all menu items for consistency across all pages
-  return allMenuItems;
+        return {
+            ...item,
+            ariaLabel: isActive 
+                ? `${item.label} (${t?.currentPage || "текущая страница"})` 
+                : item.label
+        };
+    });
 };

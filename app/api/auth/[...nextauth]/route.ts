@@ -6,14 +6,6 @@ import { JWT } from "next-auth/jwt";
 import axios from "axios";
 import {OAuthUserConfig} from "next-auth/providers/oauth";
 
-// Define user interface
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-  country?: string;
-}
-
 // Define login response interface
 interface LoginResponse {
   token: string;

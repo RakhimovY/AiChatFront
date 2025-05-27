@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Scale, Menu, X, MessageSquare, FileText } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -16,175 +16,260 @@ export default function Navigation({ activePage }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useLanguage();
   const { data: session, status } = useSession();
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Handle ESC key to close mobile menu
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isMobileMenuOpen]);
+
+  // Handle click outside to close mobile menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isMobileMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
 
   return (
-    <nav className="border-b fixed top-0 left-0 right-0 z-50 bg-background">
+    <nav className="border-b fixed top-0 left-0 right-0 z-50 bg-background" aria-label="Main navigation">
       <div className="container flex justify-between items-center py-4 mx-auto max-w-6xl">
-        <Link href="/" className="flex items-center space-x-2">
-          <Scale className="h-6 w-6 text-primary" />
+        <Link 
+          href="/" 
+          className="flex items-center space-x-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+          aria-label={t.appName}
+        >
+          <Scale className="h-6 w-6 text-primary" aria-hidden="true" />
           <span className="text-xl font-bold">{t.appName}</span>
         </Link>
 
         {/* Mobile menu button */}
         <button 
-          className="md:hidden"
+          ref={menuButtonRef}
+          className="md:hidden p-2 rounded-md hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label={isMobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
+          aria-label={isMobileMenuOpen ? t.closeMenu || "Close menu" : t.openMenu || "Open menu"}
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="mobile-menu"
         >
           {isMobileMenuOpen ? (
-            <X className="h-6 w-6" />
+            <X className="h-6 w-6" aria-hidden="true" />
           ) : (
-            <Menu className="h-6 w-6" />
+            <Menu className="h-6 w-6" aria-hidden="true" />
           )}
         </button>
 
         {/* Desktop navigation */}
-        <div className="hidden md:flex items-center space-x-4">
-          <Link 
-            href="/" 
-            className={`text-sm ${
-              activePage === "home" 
-                ? "text-foreground" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t.home}
-          </Link>
-          <Link 
-            href="/pricing" 
-            className={`text-sm ${
-              activePage === "pricing" 
-                ? "text-foreground" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t.pricing}
-          </Link>
-          <Link 
-            href="/about" 
-            className={`text-sm ${
-              activePage === "about" 
-                ? "text-foreground" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t.about}
-          </Link>
-          <LanguageSelector />
-          <ThemeToggle />
-          {status === "authenticated" ? (
-            <>
+        <div className="hidden md:flex items-center space-x-4" role="menubar" aria-label="Desktop navigation">
+          <ul className="flex items-center space-x-4">
+            <li role="none">
               <Link 
-                href="/chat" 
-                className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2"
+                href="/" 
+                role="menuitem"
+                className={`text-sm px-3 py-2 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  activePage === "home" 
+                    ? "text-foreground font-medium bg-accent/50" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                }`}
+                aria-current={activePage === "home" ? "page" : undefined}
               >
-                <MessageSquare className="h-4 w-4" />
-                {t.chat}
+                {t.home}
               </Link>
+            </li>
+            <li role="none">
               <Link 
-                href="/web" 
-                className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-2"
+                href="/pricing" 
+                role="menuitem"
+                className={`text-sm px-3 py-2 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  activePage === "pricing" 
+                    ? "text-foreground font-medium bg-accent/50" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                }`}
+                aria-current={activePage === "pricing" ? "page" : undefined}
               >
-                <FileText className="h-4 w-4" />
-                {t.documents}
+                {t.pricing}
               </Link>
-            </>
-          ) : (
-            <>
+            </li>
+            <li role="none">
               <Link 
-                href="/auth/login" 
-                className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                href="/about" 
+                role="menuitem"
+                className={`text-sm px-3 py-2 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  activePage === "about" 
+                    ? "text-foreground font-medium bg-accent/50" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                }`}
+                aria-current={activePage === "about" ? "page" : undefined}
               >
-                {t.login}
+                {t.about}
               </Link>
-              <Link 
-                href="/auth/register" 
-                className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                {t.register}
-              </Link>
-            </>
-          )}
+            </li>
+          </ul>
+
+          <div className="flex items-center space-x-3">
+            <LanguageSelector />
+            <ThemeToggle />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            {status === "authenticated" ? (
+              <>
+                <Link 
+                  href="/chat" 
+                  className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                  <span>{t.chat}</span>
+                </Link>
+                <Link 
+                  href="/web" 
+                  className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-2 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <FileText className="h-4 w-4" aria-hidden="true" />
+                  <span>{t.documents}</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link 
+                  href="/auth/login" 
+                  className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {t.login}
+                </Link>
+                <Link 
+                  href="/auth/register" 
+                  className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {t.register}
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Mobile navigation */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden border-t">
-          <div className="container py-3 md:py-4 flex flex-col space-y-2 md:space-y-4">
-            <Link 
-              href="/" 
-              className={`text-sm ${
-                activePage === "home" 
-                  ? "text-foreground" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              {t.home}
-            </Link>
-            <Link 
-              href="/pricing" 
-              className={`text-sm ${
-                activePage === "pricing" 
-                  ? "text-foreground" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              {t.pricing}
-            </Link>
-            <Link 
-              href="/about" 
-              className={`text-sm ${
-                activePage === "about" 
-                  ? "text-foreground" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              {t.about}
-            </Link>
-            <div className="flex items-center py-1 md:py-2">
-              <span className="text-sm text-muted-foreground mr-2">{t.selectLanguage}:</span>
-              <LanguageSelector isMobile={true} />
+      <div 
+        id="mobile-menu"
+        ref={mobileMenuRef}
+        className={`md:hidden border-t overflow-hidden transition-all duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        }`}
+        aria-hidden={!isMobileMenuOpen}
+      >
+        <div className="container py-4 px-4">
+          <nav aria-label="Mobile navigation">
+            <ul className="flex flex-col space-y-3">
+              <li>
+                <Link 
+                  href="/" 
+                  className={`text-sm block px-3 py-2.5 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    activePage === "home" 
+                      ? "text-foreground font-medium bg-accent/50" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  aria-current={activePage === "home" ? "page" : undefined}
+                >
+                  {t.home}
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/pricing" 
+                  className={`text-sm block px-3 py-2.5 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    activePage === "pricing" 
+                      ? "text-foreground font-medium bg-accent/50" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  aria-current={activePage === "pricing" ? "page" : undefined}
+                >
+                  {t.pricing}
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/about" 
+                  className={`text-sm block px-3 py-2.5 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    activePage === "about" 
+                      ? "text-foreground font-medium bg-accent/50" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  aria-current={activePage === "about" ? "page" : undefined}
+                >
+                  {t.about}
+                </Link>
+              </li>
+            </ul>
+
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center py-2 px-3 bg-accent/20 rounded-md">
+                <span className="text-sm text-muted-foreground mr-3">{t.selectLanguage}:</span>
+                <LanguageSelector isMobile={true} />
+              </div>
+              <div className="flex items-center py-2 px-3 bg-accent/20 rounded-md">
+                <span className="text-sm text-muted-foreground mr-3">{t.theme}:</span>
+                <ThemeToggle />
+              </div>
             </div>
-            <div className="flex items-center py-1 md:py-2">
-              <span className="text-sm text-muted-foreground mr-2">{t.theme}:</span>
-              <ThemeToggle />
-            </div>
-            <div className="flex flex-col space-y-1 md:space-y-2 pt-1 md:pt-2">
+
+            <div className="flex flex-col space-y-2 mt-4">
               {status === "authenticated" ? (
                 <>
                   <Link 
                     href="/chat" 
-                    className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center flex items-center justify-center gap-2"
+                    className="text-sm px-4 py-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center flex items-center justify-center gap-2 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <MessageSquare className="h-4 w-4" />
-                    {t.chat}
+                    <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                    <span>{t.chat}</span>
                   </Link>
                   <Link 
                     href="/web" 
-                    className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-center flex items-center justify-center gap-2"
+                    className="text-sm px-4 py-2.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-center flex items-center justify-center gap-2 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <FileText className="h-4 w-4" />
-                    {t.documents}
+                    <FileText className="h-4 w-4" aria-hidden="true" />
+                    <span>{t.documents}</span>
                   </Link>
                 </>
               ) : (
                 <>
                   <Link 
                     href="/auth/login" 
-                    className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-center"
+                    className="text-sm px-4 py-2.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {t.login}
                   </Link>
                   <Link 
                     href="/auth/register" 
-                    className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center"
+                    className="text-sm px-4 py-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {t.register}
@@ -192,9 +277,9 @@ export default function Navigation({ activePage }: NavigationProps) {
                 </>
               )}
             </div>
-          </div>
+          </nav>
         </div>
-      )}
+      </div>
     </nav>
   );
 }

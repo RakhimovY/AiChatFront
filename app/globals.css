@@ -94,19 +94,40 @@
 }
 
 .message {
-  @apply py-2 md:py-3 px-2 md:px-4 rounded-xl max-w-[90%] mb-4 relative;
+  @apply py-2 md:py-3 px-3 md:px-5 rounded-xl max-w-[90%] mb-4 relative transition-all duration-200;
 }
 
 .user-message {
-  @apply bg-primary/10 text-foreground ml-auto border border-primary/20 shadow-sm;
+  @apply bg-primary/10 text-foreground ml-auto border border-primary/20 shadow-sm hover:shadow-md hover:bg-primary/15;
+  border-bottom-right-radius: 0.5rem;
 }
 
 .assistant-message {
-  @apply bg-secondary/50 text-foreground border border-border shadow-sm;
+  @apply bg-secondary/50 text-foreground border border-border shadow-sm hover:shadow-md hover:bg-secondary/60;
+  border-bottom-left-radius: 0.5rem;
 }
 
 .message-input {
   @apply p-4 border-t border-border;
+}
+
+/* Message animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes highlight {
+  0% { background-color: rgba(var(--primary), 0.05); }
+  100% { background-color: transparent; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-highlight {
+  animation: highlight 2s ease-out forwards;
 }
 
 /* Improve chat input appearance in dark mode */

@@ -78,10 +78,19 @@ export default function Header({
       {/* Desktop Header - Only visible on desktop */}
       <header className="border-b hidden md:block fixed top-0 left-0 right-0 z-50 bg-background shadow-sm">
         <div className="container flex justify-between items-center py-3 md:py-4">
-          <Link href="/settings" className="flex items-center space-x-2 transition-transform duration-200 hover:scale-105">
-            <Scale className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">AIuris</span>
-          </Link>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={toggleMobileMenu}
+              className="p-2 rounded-md hover:bg-secondary transition-colors duration-200"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <Link href="/settings" className="flex items-center space-x-2 transition-transform duration-200 hover:scale-105">
+              <Scale className="h-6 w-6 text-primary" />
+              <span className="text-xl font-bold">AIuris</span>
+            </Link>
+          </div>
           <div className="flex items-center space-x-4">
             <LanguageSelector />
             {showThemeToggle && <ThemeToggle />}

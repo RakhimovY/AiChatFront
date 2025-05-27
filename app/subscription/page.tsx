@@ -38,6 +38,11 @@ export default function SubscriptionPage() {
   const [isCancelling, setIsCancelling] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Set initial sidebar state based on screen width after component mounts
+  useEffect(() => {
+    setIsMobileMenuOpen(window.innerWidth >= 768);
+  }, []);
+
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -152,11 +157,13 @@ export default function SubscriptionPage() {
 
         <div className="flex flex-1 pt-16 md:pt-20">
           {/* Sidebar */}
-          <Sidebar
-            isMobileMenuOpen={isMobileMenuOpen}
-            setIsMobileMenuOpen={setIsMobileMenuOpen}
-            activePage="/subscription"
-          />
+          <div ref={sidebarRef} className="h-full absolute md:relative top-0 left-0">
+            <Sidebar
+              isMobileMenuOpen={isMobileMenuOpen}
+              setIsMobileMenuOpen={setIsMobileMenuOpen}
+              activePage="/subscription"
+            />
+          </div>
 
           {/* Main content */}
           <main className="flex-1 p-6">

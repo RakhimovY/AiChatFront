@@ -130,6 +130,8 @@ export default function Message({ id, role, content, isLoading = false, document
       className={`message ${
         role === "user" ? "user-message" : "assistant-message"
       }`}
+      role={role === "assistant" ? "region" : undefined}
+      aria-label={role === "assistant" ? "Assistant's response" : "Your message"}
     >
       {isLoading ? (
         <div className="flex items-center space-x-2">
@@ -138,6 +140,10 @@ export default function Message({ id, role, content, isLoading = false, document
         </div>
       ) : (
         <div className="flex flex-col">
+          {/* Message role indicator */}
+          <div className="text-xs text-muted-foreground mb-1 px-1">
+            {role === "assistant" ? t.assistant || "Assistant" : t.you || "You"}
+          </div>
           <div className="flex items-start">
             <div className="flex-1 message-content">
               {formattedContent}
