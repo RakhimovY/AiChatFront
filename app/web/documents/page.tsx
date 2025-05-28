@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -11,6 +11,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useWebStore } from "@/lib/store/webStore";
+import Header from "@/components/layout/Header";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 interface Document {
   id: string;
@@ -29,10 +31,30 @@ export default function DocumentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { t } = useLanguage();
+  const isMobileMenuOpen = useWebStore((state) => state.isMobileMenuOpen);
+  const setIsMobileMenuOpen = useWebStore((state) => state.setIsMobileMenuOpen);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchDocuments();
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!isMobileMenuOpen || window.innerWidth >= 768) return;
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     if (searchQuery) {
@@ -121,163 +143,175 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Link
-          href="/web"
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Назад
-        </Link>
-      </div>
+    <div className="flex flex-col h-full">
+      {/* Header component for both mobile and desktop */}
+      <Header
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        pageTitle="Мои документы"
+        pageRoute="/web/documents"
+      />
 
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold">Мои документы</h1>
-        <p className="text-muted-foreground">
-          Управление созданными документами
-        </p>
-      </div>
+        <main className="flex-1 p-6">
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
+              <Link
+                href="/web"
+                className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Назад
+              </Link>
+            </div>
 
-      {/* Search and actions */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <input
-            type="text"
-            placeholder="Поиск документов..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="w-full pl-10 pr-4 py-2 border rounded-md bg-background"
-          />
-        </div>
+            <div className="flex flex-col space-y-2">
+              <h1 className="text-3xl font-bold">Мои документы</h1>
+              <p className="text-muted-foreground">
+                Управление созданными документами
+              </p>
+            </div>
 
-        <Link
-          href="/web/templates"
-          className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 whitespace-nowrap"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Создать документ
-        </Link>
-      </div>
+            {/* Search and actions */}
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Поиск документов..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="w-full pl-10 pr-4 py-2 border rounded-md bg-background"
+                />
+              </div>
 
-      {/* Error message */}
-      {error && (
-        <div className="text-center p-6 border rounded-lg bg-destructive/10 text-destructive">
-          <p>{error}</p>
-          <button
-            onClick={fetchDocuments}
-            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
-            Попробовать снова
-          </button>
-        </div>
-      )}
+              <Link
+                href="/web/templates"
+                className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 whitespace-nowrap"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Создать документ
+              </Link>
+            </div>
 
-      {/* Documents list */}
-      {filteredDocuments.length > 0 ? (
-        <div className="border rounded-md overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-muted">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Название
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium hidden md:table-cell">
-                  Шаблон
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium hidden md:table-cell">
-                  Дата создания
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium hidden sm:table-cell">
-                  Последнее изменение
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-medium">
-                  Действия
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {filteredDocuments.map((doc) => (
-                <tr key={doc.id} className="bg-card hover:bg-muted/50">
-                  <td className="px-4 py-3 text-sm">
-                    <Link
-                      href={`/web/documents/${doc.id}`}
-                      className="font-medium hover:underline flex items-center"
-                    >
-                      <FileText className="h-4 w-4 mr-2 text-primary" />
-                      {doc.title}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground hidden md:table-cell">
-                    {doc.templateName}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground hidden md:table-cell">
-                    {formatDate(doc.createdAt)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground hidden sm:table-cell">
-                    {formatDate(doc.updatedAt)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Link
-                        href={`/web/editor?documentId=${doc.id}`}
-                        className="p-1 text-muted-foreground hover:text-foreground"
-                        title="Редактировать"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Link>
+            {/* Error message */}
+            {error && (
+              <div className="text-center p-6 border rounded-lg bg-destructive/10 text-destructive">
+                <p>{error}</p>
+                <button
+                  onClick={fetchDocuments}
+                  className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                >
+                  Попробовать снова
+                </button>
+              </div>
+            )}
 
-                      {deleteConfirm === doc.id ? (
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => deleteDocument(doc.id)}
-                            className="p-1 text-destructive hover:text-destructive/80"
-                            disabled={isDeleting}
+            {/* Documents list */}
+            {filteredDocuments.length > 0 ? (
+              <div className="border rounded-md overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-muted">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium">
+                        Название
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium hidden md:table-cell">
+                        Шаблон
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium hidden md:table-cell">
+                        Дата создания
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium hidden sm:table-cell">
+                        Последнее изменение
+                      </th>
+                      <th className="px-4 py-3 text-right text-sm font-medium">
+                        Действия
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {filteredDocuments.map((doc) => (
+                      <tr key={doc.id} className="bg-card hover:bg-muted/50">
+                        <td className="px-4 py-3 text-sm">
+                          <Link
+                            href={`/document/documents/${doc.id}`}
+                            className="font-medium hover:underline flex items-center"
                           >
-                            {isDeleting ? "..." : "Да"}
-                          </button>
-                          <button
-                            onClick={cancelDelete}
-                            className="p-1 text-muted-foreground hover:text-foreground"
-                          >
-                            Нет
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => confirmDelete(doc.id)}
-                          className="p-1 text-muted-foreground hover:text-destructive"
-                          title="Удалить"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="text-center p-8 border rounded-lg bg-muted">
-          <p className="text-muted-foreground mb-4">
-            {searchQuery
-              ? "Документы не найдены. Попробуйте изменить параметры поиска."
-              : "У вас пока нет созданных документов."}
-          </p>
-          {!searchQuery && (
-            <Link
-              href="/web/templates"
-              className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Создать документ
-            </Link>
-          )}
-        </div>
-      )}
+                            <FileText className="h-4 w-4 mr-2 text-primary" />
+                            {doc.title}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground hidden md:table-cell">
+                          {doc.templateName}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground hidden md:table-cell">
+                          {formatDate(doc.createdAt)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground hidden sm:table-cell">
+                          {formatDate(doc.updatedAt)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right">
+                          <div className="flex items-center justify-end space-x-2">
+                            <Link
+                              href={`/document/editor?documentId=${doc.id}`}
+                              className="p-1 text-muted-foreground hover:text-foreground"
+                              title="Редактировать"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Link>
+
+                            {deleteConfirm === doc.id ? (
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  onClick={() => deleteDocument(doc.id)}
+                                  className="p-1 text-destructive hover:text-destructive/80"
+                                  disabled={isDeleting}
+                                >
+                                  {isDeleting ? "..." : "Да"}
+                                </button>
+                                <button
+                                  onClick={cancelDelete}
+                                  className="p-1 text-muted-foreground hover:text-foreground"
+                                >
+                                  Нет
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => confirmDelete(doc.id)}
+                                className="p-1 text-muted-foreground hover:text-destructive"
+                                title="Удалить"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center p-8 border rounded-lg bg-muted">
+                <p className="text-muted-foreground mb-4">
+                  {searchQuery
+                    ? "Документы не найдены. Попробуйте изменить параметры поиска."
+                    : "У вас пока нет созданных документов."}
+                </p>
+                {!searchQuery && (
+                  <Link
+                    href="/web/templates"
+                    className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Создать документ
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        </main>
     </div>
   );
 }

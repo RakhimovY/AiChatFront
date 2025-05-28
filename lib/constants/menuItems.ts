@@ -59,17 +59,17 @@ export const getMenuItems = (path: string, t?: Translation | null): MenuItem[] =
             icon: Settings,
             label: t?.accountDashboard || "Личный кабинет",
             translationKey: "accountDashboard",
-            href: "/settings",
+            href: "/account",
             subItems: [
                 {
                     label: t?.security || "Безопасность",
                     translationKey: "security",
-                    href: "/settings/security",
+                    href: "/account/security",
                 },
                 {
                     label: t?.notifications || "Уведомления",
                     translationKey: "notifications",
-                    href: "/settings/notifications",
+                    href: "/account/notifications",
                 },
             ],
         },

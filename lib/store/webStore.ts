@@ -44,6 +44,9 @@ interface WebState {
   isLoadingDocuments: boolean;
   documentsError: string | null;
 
+  // Sidebar state
+  isMobileMenuOpen: boolean;
+
   // Form state
   form: FormState;
 
@@ -57,6 +60,10 @@ interface WebState {
   setSelectedDocumentId: (id: string | null) => void;
   setIsLoadingDocuments: (isLoading: boolean) => void;
   setDocumentsError: (error: string | null) => void;
+
+  // Sidebar actions
+  setIsMobileMenuOpen: (isOpen: boolean) => void;
+  toggleMobileMenu: () => void;
 
   // Form actions
   setFormValues: (values: Record<string, any>) => void;
@@ -106,6 +113,9 @@ export const useWebStore = create<WebState>()(
       isLoadingDocuments: false,
       documentsError: null,
 
+      // Sidebar state
+      isMobileMenuOpen: false,
+
       // Form state
       form: initialFormState,
 
@@ -120,6 +130,10 @@ export const useWebStore = create<WebState>()(
       setSelectedDocumentId: (id) => set({ selectedDocumentId: id }),
       setIsLoadingDocuments: (isLoading) => set({ isLoadingDocuments: isLoading }),
       setDocumentsError: (error) => set({ documentsError: error }),
+
+      // Sidebar actions
+      setIsMobileMenuOpen: (isOpen) => set({ isMobileMenuOpen: isOpen }),
+      toggleMobileMenu: () => set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen })),
 
       // Form actions
       setFormValues: (values) => set(state => ({

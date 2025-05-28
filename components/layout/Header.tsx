@@ -5,6 +5,7 @@ import { ArrowLeft, Download, Menu, Scale, X } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import LanguageSelector from "@/components/layout/LanguageSelector";
 import { useSession } from "next-auth/react";
+import { useWebStore } from "@/lib/store/webStore";
 
 type HeaderProps = {
   isMobileMenuOpen?: boolean;
@@ -16,16 +17,26 @@ type HeaderProps = {
 };
 
 export default function Header({
-  isMobileMenuOpen = false,
-  setIsMobileMenuOpen,
+  isMobileMenuOpen: propIsMobileMenuOpen,
+  setIsMobileMenuOpen: propSetIsMobileMenuOpen,
   exportChat,
   showThemeToggle = true,
   showUserInfo = true,
   showBackButton = false,
 }: HeaderProps) {
+  // Use the store for sidebar state, but fall back to props if provided
+  // This allows the component to work both with the store and with props
+  const storeIsMobileMenuOpen = useWebStore((state) => state.isMobileMenuOpen);
+  const storeToggleMobileMenu = useWebStore((state) => state.toggleMobileMenu);
+
+  // Use store values by default, but allow override via props
+  const isMobileMenuOpen = propIsMobileMenuOpen !== undefined ? propIsMobileMenuOpen : storeIsMobileMenuOpen;
+
   const toggleMobileMenu = () => {
-    if (setIsMobileMenuOpen) {
-      setIsMobileMenuOpen(!isMobileMenuOpen);
+    if (propSetIsMobileMenuOpen) {
+      propSetIsMobileMenuOpen(!isMobileMenuOpen);
+    } else {
+      storeToggleMobileMenu();
     }
   };
   const { data: session } = useSession();
@@ -110,7 +121,7 @@ export default function Header({
                 {/*  <div className="font-medium">{user.name}</div>*/}
                 {/*  <div className="text-muted-foreground">{user.email}</div>*/}
                 {/*</div>*/}
-                {/*<Link href="/settings">*/}
+                {/*<Link href="/account">*/}
                 {/*  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors duration-200">*/}
                 {/*    {user.image ? (*/}
                 {/*      <img*/}

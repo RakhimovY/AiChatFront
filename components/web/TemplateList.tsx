@@ -29,7 +29,7 @@ export default function TemplateList({ initialTemplates = [] }: TemplateListProp
   const [isLoading, setIsLoading] = useState(initialTemplates.length === 0);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch templates if not provided
+  // Fetch templates if not provided - only on mount
   useEffect(() => {
     if (initialTemplates.length === 0) {
       fetchTemplates();
@@ -40,7 +40,7 @@ export default function TemplateList({ initialTemplates = [] }: TemplateListProp
       setTemplates(initialTemplates);
       setFilteredTemplates(initialTemplates);
     }
-  }, [initialTemplates]);
+  }, []); // Empty dependency array ensures this only runs once on mount
 
   // Filter templates when search query or category changes
   useEffect(() => {
@@ -169,7 +169,7 @@ export default function TemplateList({ initialTemplates = [] }: TemplateListProp
           {filteredTemplates.map(template => (
             <Link
               key={template.id}
-              href={`/web/editor?templateId=${template.id}`}
+              href={`/document/editor?templateId=${template.id}`}
               className="block border rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-card"
             >
               {template.previewImage && (

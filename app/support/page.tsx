@@ -31,7 +31,7 @@ export default function SupportPage() {
 
   return (
     <AuthCheck>
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col h-full">
         {/* Header component for both mobile and desktop */}
         <Header
           isMobileMenuOpen={isMobileMenuOpen}

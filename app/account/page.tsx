@@ -16,7 +16,6 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import AuthCheck from "@/components/common/AuthCheck";
 import {retryWithBackoff} from "@/lib/retryUtils";
 import api from "@/lib/api";
-import {ChatMessage} from "@/lib/chatApi";
 
 export default function SettingsPage() {
   const { data: session, status, update } = useSession();
@@ -134,7 +133,7 @@ export default function SettingsPage() {
 
   return (
       <AuthCheck>
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col h-full">
           {/* Header component for both mobile and desktop */}
           <Header
               isMobileMenuOpen={isMobileMenuOpen}
@@ -154,12 +153,6 @@ export default function SettingsPage() {
             </div>
 
             <main className="flex-1 p-6">
-              <div className="mb-6 border-b">
-                <h1 className="text-2xl font-bold py-2">
-                  {t.accountDashboard || "Личный кабинет"}
-                </h1>
-              </div>
-
               {/* Unified Personal Account Content */}
               {/* User Profile Section */}
               <div className="flex items-center mb-6 p-4 border rounded-lg bg-primary/5">

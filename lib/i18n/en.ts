@@ -132,7 +132,7 @@ export const en = {
   manageSubscription: "Manage Subscription",
   subscriptionDescription: "View and change your current subscription plan.",
   profileSettings: "Profile Settings",
-  settingsDescription: "Change your personal information, country, and other profile settings.",
+  settingsDescription: "Change your personal information, country, and other profile account.",
   goToSettings: "Go to Settings",
   supportCenter: "Support Center",
   supportDescription: "Get answers to frequently asked questions or contact our support team.",
