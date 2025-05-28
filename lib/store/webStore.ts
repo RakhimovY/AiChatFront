@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '../api';
+import {templates} from "@/lib/data/templates";
 
 // Types
 interface Template {
@@ -245,10 +246,11 @@ export const useWebStore = create<WebState>()(
         setTemplatesError(null);
 
         try {
-          const response = await api.get('/web/templates');
-
-          setTemplates(response.data);
-          return response.data;
+          // TODO: templates
+          // const response = await api.get('/web/templates');
+          // response.data
+          setTemplates(templates);
+          return templates;
         } catch (err) {
           const errorMessage = "Не удалось загрузить шаблоны. Пожалуйста, попробуйте позже.";
           setTemplatesError(errorMessage);

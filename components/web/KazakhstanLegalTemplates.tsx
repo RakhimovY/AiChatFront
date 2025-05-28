@@ -23,66 +23,87 @@ interface Template {
   previewImage?: string;
 }
 
-interface TemplateListProps {
+// Document types for Kazakhstan
+type DocumentType = 
+  | "employment" 
+  | "real-estate" 
+  | "rental" 
+  | "charter" 
+  | "protocol" 
+  | "power-of-attorney" 
+  | "consumer-claim" 
+  | "lawsuit";
+
+interface KazakhstanLegalTemplatesProps {
   initialTemplates?: Template[];
   title?: string;
 }
 
-export default function TemplateList({ initialTemplates = [], title }: TemplateListProps) {
+export default function KazakhstanLegalTemplates({ initialTemplates = [], title }: KazakhstanLegalTemplatesProps) {
   const { t } = useLanguage();
   const [templates, setTemplates] = useState<Template[]>(initialTemplates);
   const [filteredTemplates, setFilteredTemplates] = useState<Template[]>(templates);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedDocType, setSelectedDocType] = useState<DocumentType | null>(null);
   const [isLoading, setIsLoading] = useState(initialTemplates.length === 0);
   const [error, setError] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Map for category display names
-  const categoryDisplayNames: Record<string, string> = {
-    "kazakhstan-legal": t("Kazakhstan Legal Documents"),
-    "business": t("Business Documents"),
-    "personal": t("Personal Documents"),
-    "legal": t("Legal Documents"),
-    "finance": t("Financial Documents"),
-    "education": t("Educational Documents"),
-    "medical": t("Medical Documents"),
-  };
+  // Document type options with translations
+  const documentTypes = [
+    { value: "employment", label: t("Employment Contracts"), templateIds: ["employment"] },
+    { value: "real-estate", label: t("Sales Contracts"), templateIds: ["real-estate"] },
+    { value: "rental", label: t("Rental Agreements"), templateIds: ["rental"] },
+    { value: "charter", label: t("Company Charters"), templateIds: ["charter"] },
+    { value: "protocol", label: t("Meeting Protocols"), templateIds: ["protocol"] },
+    { value: "power-of-attorney", label: t("Powers of Attorney"), templateIds: ["power-of-attorney"] },
+    { value: "consumer-claim", label: t("Consumer Claims"), templateIds: ["consumer-claim"] },
+    { value: "lawsuit", label: t("Lawsuits"), templateIds: ["lawsuit"] },
+  ];
 
   // Fetch templates if not provided - only on mount
   useEffect(() => {
     if (initialTemplates.length === 0) {
       fetchTemplates();
     } else {
-      // Extract categories from provided templates
-      const uniqueCategories = [...new Set(initialTemplates.map(template => template.category))];
-      setCategories(uniqueCategories);
-      setTemplates(initialTemplates);
-      setFilteredTemplates(initialTemplates);
+      // Filter only Kazakhstan legal templates
+      const kazakhstanTemplates = initialTemplates.filter(
+        (template) => template.category === "kazakhstan-legal"
+      );
+      setTemplates(kazakhstanTemplates);
+      setFilteredTemplates(kazakhstanTemplates);
     }
-  }, []); // Empty dependency array ensures this only runs once on mount
+  }, [initialTemplates]);
 
-  // Filter templates when search query or category changes
+  // Filter templates when search query or document type changes
   useEffect(() => {
     let result = templates;
 
-    // Filter by category
-    if (selectedCategory) {
-      result = result.filter(template => template.category === selectedCategory);
+    // Filter by document type
+    if (selectedDocType) {
+      // Find the selected document type object
+      const docType = documentTypes.find(dt => dt.value === selectedDocType);
+
+      if (docType && docType.templateIds.length > 0) {
+        // Filter templates by matching template IDs
+        result = result.filter((template) => 
+          docType.templateIds.includes(template.id)
+        );
+      }
     }
 
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(template => 
-        template.title.toLowerCase().includes(query) || 
-        template.description.toLowerCase().includes(query)
+      result = result.filter(
+        (template) =>
+          template.title.toLowerCase().includes(query) ||
+          template.description.toLowerCase().includes(query)
       );
     }
 
     setFilteredTemplates(result);
-  }, [searchQuery, selectedCategory, templates]);
+  }, [searchQuery, selectedDocType, templates, documentTypes]);
 
   // Fetch templates from API
   const fetchTemplates = async () => {
@@ -92,12 +113,14 @@ export default function TemplateList({ initialTemplates = [], title }: TemplateL
     try {
       const webStore = useWebStore.getState();
       const data = await webStore.fetchTemplates();
-      // Extract categories
-      const uniqueCategories = [...new Set(data.map((template: Template) => template.category))];
 
-      setCategories(uniqueCategories);
-      setTemplates(data);
-      setFilteredTemplates(data);
+      // Filter only Kazakhstan legal templates
+      const kazakhstanTemplates = data.filter(
+        (template: Template) => template.category === "kazakhstan-legal"
+      );
+
+      setTemplates(kazakhstanTemplates);
+      setFilteredTemplates(kazakhstanTemplates);
     } catch (err) {
       setError("Не удалось загрузить шаблоны. Пожалуйста, попробуйте позже.");
       console.error("Error fetching templates:", err);
@@ -106,9 +129,9 @@ export default function TemplateList({ initialTemplates = [], title }: TemplateL
     }
   };
 
-  // Handle category selection
-  const handleCategoryChange = (category: string | null) => {
-    setSelectedCategory(category);
+  // Handle document type selection
+  const handleDocTypeChange = (docType: DocumentType | null) => {
+    setSelectedDocType(docType);
     setIsFilterOpen(false); // Close filter popover after selection
   };
 
@@ -124,9 +147,16 @@ export default function TemplateList({ initialTemplates = [], title }: TemplateL
 
   // Clear all filters
   const clearAllFilters = () => {
-    setSelectedCategory(null);
+    setSelectedDocType(null);
     setSearchQuery("");
     setIsFilterOpen(false);
+  };
+
+  // Get document type label
+  const getDocTypeLabel = (docType: DocumentType | null): string => {
+    if (!docType) return t("All document types");
+    const found = documentTypes.find(dt => dt.value === docType);
+    return found ? found.label : docType;
   };
 
   // Loading state
@@ -143,7 +173,7 @@ export default function TemplateList({ initialTemplates = [], title }: TemplateL
     return (
       <div className="text-center p-6 border rounded-lg bg-destructive/10 text-destructive">
         <p>{error}</p>
-        <button 
+        <button
           onClick={fetchTemplates}
           className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
         >
@@ -194,7 +224,7 @@ export default function TemplateList({ initialTemplates = [], title }: TemplateL
               >
                 <Filter className="h-4 w-4" />
                 <span className="hidden sm:inline">{t("Filter")}</span>
-                {selectedCategory && (
+                {selectedDocType && (
                   <Badge variant="secondary" className="ml-1">1</Badge>
                 )}
               </Button>
@@ -202,8 +232,8 @@ export default function TemplateList({ initialTemplates = [], title }: TemplateL
             <PopoverContent className="w-80 p-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium">{t("Categories")}</h4>
-                  {selectedCategory && (
+                  <h4 className="font-medium">{t("Document Types")}</h4>
+                  {selectedDocType && (
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -217,23 +247,23 @@ export default function TemplateList({ initialTemplates = [], title }: TemplateL
 
                 <div className="grid grid-cols-1 gap-2">
                   <Button
-                    variant={selectedCategory === null ? "default" : "outline"}
+                    variant={selectedDocType === null ? "default" : "outline"}
                     size="sm"
-                    onClick={() => handleCategoryChange(null)}
+                    onClick={() => handleDocTypeChange(null)}
                     className="justify-start"
                   >
-                    {t("All categories")}
+                    {t("All document types")}
                   </Button>
 
-                  {categories.map(category => (
+                  {documentTypes.map((docType) => (
                     <Button
-                      key={category}
-                      variant={selectedCategory === category ? "default" : "outline"}
+                      key={docType.value}
+                      variant={selectedDocType === docType.value ? "default" : "outline"}
                       size="sm"
-                      onClick={() => handleCategoryChange(category)}
+                      onClick={() => handleDocTypeChange(docType.value as DocumentType)}
                       className="justify-start"
                     >
-                      {categoryDisplayNames[category] || category}
+                      {docType.label}
                     </Button>
                   ))}
                 </div>
@@ -241,7 +271,7 @@ export default function TemplateList({ initialTemplates = [], title }: TemplateL
             </PopoverContent>
           </Popover>
 
-          {selectedCategory && (
+          {selectedDocType && (
             <Button 
               variant="outline" 
               size="icon"
@@ -255,12 +285,12 @@ export default function TemplateList({ initialTemplates = [], title }: TemplateL
       </div>
 
       {/* Active filters display */}
-      {selectedCategory && (
+      {selectedDocType && (
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary" className="flex items-center gap-1">
-            {categoryDisplayNames[selectedCategory] || selectedCategory}
+            {getDocTypeLabel(selectedDocType)}
             <button 
-              onClick={() => setSelectedCategory(null)}
+              onClick={() => setSelectedDocType(null)}
               className="ml-1 rounded-full hover:bg-muted p-0.5"
               aria-label={t("Remove filter")}
             >
@@ -273,14 +303,14 @@ export default function TemplateList({ initialTemplates = [], title }: TemplateL
       {/* Templates grid */}
       {filteredTemplates.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTemplates.map(template => (
+          {filteredTemplates.map((template) => (
             <TemplateCard key={template.id} template={template} />
           ))}
         </div>
       ) : (
         <div className="text-center p-8 border rounded-lg bg-muted">
           <p className="text-muted-foreground">{t("No templates found")}</p>
-          {(searchQuery || selectedCategory) && (
+          {(searchQuery || selectedDocType) && (
             <Button 
               variant="outline" 
               size="sm" 
