@@ -84,7 +84,7 @@ export default function Header({
               className="p-2 rounded-md hover:bg-secondary transition-colors duration-200"
               aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+             <Menu className="h-5 w-5" />
             </button>
             <Link href="/settings" className="flex items-center space-x-2 transition-transform duration-200 hover:scale-105">
               <Scale className="h-6 w-6 text-primary" />

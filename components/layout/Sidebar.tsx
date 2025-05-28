@@ -125,7 +125,7 @@ export default function Sidebar({
       className={`
         border-r bg-card fixed md:static inset-y-0 z-10 flex flex-col h-screen md:h-[calc(100dvh-5rem)]
         shadow-sm overflow-hidden sidebar-transition
-        ${isMobileMenuOpen ? "w-64" : "w-16"} 
+        ${isMobileMenuOpen ? "w-64" : "md:w-16 w-0"} 
       `}
       aria-label="Main navigation"
     >
@@ -190,7 +190,7 @@ export default function Sidebar({
                             [index]: !prev[index],
                           }))
                         }
-                        className="p-1.5 rounded-md hover:bg-accent/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="p-1 rounded-md hover:bg-accent/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         aria-label={isSubmenuOpen ? "Collapse submenu" : "Expand submenu"}
                         aria-expanded={isSubmenuOpen}
                         aria-controls={submenuId}
@@ -242,18 +242,18 @@ export default function Sidebar({
             })}
           </ul>
 
-          {/* Recent Chats Section - Only shown on chat page */}
-          <div className={`mt-8 space-y-3 sidebar-content-transition ${showRecentChats ? 'opacity-100 max-h-[2000px]' : 'opacity-0 max-h-0 overflow-hidden'}`}>
+          {/* Recent Chats Section - Only shown on chat page and when sidebar is open */}
+          <div className={`mt-8 space-y-3 sidebar-content-transition ${showRecentChats && isMobileMenuOpen ? 'opacity-100 max-h-[2000px]' : 'opacity-0 max-h-0 overflow-hidden'}`}>
             {/* Only show header and divider if there are chats and not in loading state */}
-            <div className={`flex items-center justify-between px-2.5 mb-2 sidebar-content-transition ${chats.length > 0 && !isLoading && !error && isMobileMenuOpen ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
-              <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
+            <div className={`flex items-center justify-between px-2.5 mb-2 sidebar-content-transition ${chats.length > 0 && !isLoading && !error ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
+              <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wider sidebar-content-transition whitespace-nowrap overflow-hidden">
                 {t?.recentChats || "Recent Chats"}
               </h3>
             </div>
 
-            <div className={`h-px bg-border/60 mx-2 my-1 sidebar-content-transition ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}></div>
-            <div className={`sidebar-content-transition ${isMobileMenuOpen ? "" : "flex flex-col items-center"}`}>
-              <div className={`${isMobileMenuOpen ? "w-full" : "w-12 overflow-hidden"}`}>
+            <div className={`h-px bg-border/60 mx-2 my-1 sidebar-content-transition opacity-100`}></div>
+            <div className="sidebar-content-transition">
+              <div className="w-full">
                 <ChatList
                   chats={chats}
                   isLoading={isLoading}

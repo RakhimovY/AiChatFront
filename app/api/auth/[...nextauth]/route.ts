@@ -156,7 +156,8 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user, account, trigger }: { token: JWT; user: any; account: any; trigger?: string }) {
+    async jwt({ token, user, account, trigger, session }: { token: JWT; user: any; account: any; trigger?: string; session?: any }) {
+      // Handle initial sign-in
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -176,6 +177,18 @@ export const authOptions: NextAuthOptions = {
           token.remember = user.remember;
         }
       }
+
+      // Handle session update
+      if (trigger === "update" && session) {
+        // Update token with the new session data
+        if (session.user) {
+          token.name = session.user.name || token.name;
+          token.email = session.user.email || token.email;
+          token.picture = session.user.image || token.picture;
+          token.country = session.user.country || token.country;
+        }
+      }
+
       return token;
     },
     async session({ session, token }: { session: any; token: JWT }) {
