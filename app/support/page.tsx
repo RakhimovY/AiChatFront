@@ -50,10 +50,6 @@ export default function SupportPage() {
 
           {/* Main content */}
           <main className="flex-1 p-6">
-            <h1 className="text-2xl font-bold mb-6">
-              {t.supportCenter || "Центр поддержки"}
-            </h1>
-
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div className="border rounded-lg p-6">
                 <Mail className="h-8 w-8 text-primary mb-4" />
@@ -130,25 +126,6 @@ export default function SupportPage() {
               <div className="border rounded-lg p-4">
                 <h3 className="font-semibold mb-2">{t.faqExport}</h3>
                 <p className="text-muted-foreground">{t.faqExportAnswer}</p>
-              </div>
-            </div>
-
-            <div className="mt-8 p-6 border rounded-lg bg-primary/5">
-              <div className="flex items-start">
-                <FileText className="h-8 w-8 text-primary mr-4 flex-shrink-0" />
-                <div>
-                  <h2 className="text-xl font-semibold mb-2">
-                    {t.documentation}
-                  </h2>
-                  <p className="text-muted-foreground mb-4">
-                    {t.documentationDescription}
-                  </p>
-                  <div className="flex items-center px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-md text-sm">
-                    <span className="text-yellow-800 dark:text-yellow-200">
-                      {t.documentationNotice}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
           </main>
