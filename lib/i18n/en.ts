@@ -3,6 +3,37 @@ export const en = {
   appName: "AIuris",
   appDescription: "Legal AI Assistant",
 
+  // Templates
+  searchTemplates: "Search templates...",
+  clearSearch: "Clear search",
+  filterTemplates: "Filter templates",
+  filter: "Filter",
+  categories: "Categories",
+  clearAll: "Clear all",
+  allCategories: "All categories",
+  clearFilters: "Clear filters",
+  removeFilter: "Remove filter",
+  noTemplatesFound: "No templates found",
+  kazakhstanLegalDocuments: "Kazakhstan Legal Documents",
+  businessDocuments: "Business Documents",
+  personalDocuments: "Personal Documents",
+  legalDocuments: "Legal Documents",
+  financialDocuments: "Financial Documents",
+  educationalDocuments: "Educational Documents",
+  medicalDocuments: "Medical Documents",
+
+  // Document types
+  documentTypes: "Document Types",
+  allDocumentTypes: "All document types",
+  employmentContracts: "Employment Contracts",
+  salesContracts: "Sales Contracts",
+  rentalAgreements: "Rental Agreements",
+  companyCharters: "Company Charters",
+  meetingProtocols: "Meeting Protocols",
+  powersOfAttorney: "Powers of Attorney",
+  consumerClaims: "Consumer Claims",
+  lawsuits: "Lawsuits",
+
   // Auth
   login: "Login",
   logout: "Logout",
@@ -118,14 +149,25 @@ export const en = {
   about: "About",
   theme: "Theme",
   chat: "Chat",
+  openMenu: "Open menu",
+  closeMenu: "Close menu",
 
   // Account
   accountDashboard: "Account Dashboard",
   chats: "Chats",
   documents: "Documents",
+  templates: "Templates",
+  editor: "Editor",
+  myDocuments: "My Documents",
+  profile: "Profile",
+  security: "Security",
+  notifications: "Notifications",
+  currentPage: "current page",
   subscription: "Subscription",
   settings: "Settings",
   help: "Help",
+  profileUpdatedSuccess: "Profile successfully updated",
+  profileUpdateError: "Error updating profile",
   startChat: "Start Chat",
   chatDescription: "Ask a question to the legal assistant and get an instant answer.",
   goToChat: "Go to Chat",
@@ -200,5 +242,30 @@ export const en = {
   // Footer
   privacyPolicy: "Privacy Policy",
   termsOfService: "Terms of Service",
-  allRightsReserved: "All rights reserved."
+  allRightsReserved: "All rights reserved.",
+
+  // Template Form
+  fillForm: "Fill Form",
+  documentPreview: "Document Preview",
+  help: "Help",
+  example: "Example",
+  selectDate: "Select date",
+  selectOption: "Select option",
+  creatingDocument: "Creating document...",
+  createDocument: "Create document",
+  preview: "Preview",
+  documentPreviewDescription: "This is how your document will look when generated",
+  backToForm: "Back to form",
+
+  // Form field groups
+  document: "Document",
+  parties: "Parties",
+  details: "Details",
+  dates: "Dates",
+  financial: "Financial",
+  other: "Other",
+
+  // Template List
+  errorLoadingTemplates: "Failed to load templates. Please try again later.",
+  tryAgain: "Try again"
 };

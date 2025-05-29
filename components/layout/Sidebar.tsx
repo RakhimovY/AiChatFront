@@ -45,14 +45,16 @@ export default function Sidebar({
   const [openSubmenus, setOpenSubmenus] = useState<Record<number, boolean>>({});
   const { data: session, status } = useSession();
   const { t } = useLanguage();
-  const [chats, setChats] = useState<Array<{ id: number; title: string | null; createdAt: string }>>([]);
+  const [chats, setChats] = useState<
+    Array<{ id: number; title: string | null; createdAt: string }>
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const items = getMenuItems(activePage, t);
 
   const handleChatDeleted = (chatId: number) => {
-    setChats(prevChats => prevChats.filter(chat => chat.id !== chatId));
+    setChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
   };
 
   // Fetch user chats if showRecentChats is true
@@ -67,13 +69,13 @@ export default function Sidebar({
       setError(null);
       try {
         // Add a small delay to ensure smooth transitions
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         const userChats = await getUserChats();
         // Ensure userChats is an array before setting state
         setChats(Array.isArray(userChats) ? userChats : []);
       } catch (error) {
         console.error("Error fetching chats:", error);
-        setError(t?.errorLoadingChats || "Error loading chats");
+        setError(t.errorLoadingChats || "Error loading chats");
       } finally {
         setIsLoading(false);
       }
@@ -88,7 +90,7 @@ export default function Sidebar({
   // Add CSS to document head to ensure transitions are applied consistently
   useEffect(() => {
     // Create a style element
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     // Add CSS rules for smoother transitions
     style.textContent = `
       .sidebar-transition {
@@ -108,7 +110,6 @@ export default function Sidebar({
     };
   }, []);
 
-
   const collapseSidebarOnMobile = () => {
     if (setIsMobileMenuOpen && window.innerWidth < 768) {
       setIsMobileMenuOpen(false);
@@ -123,14 +124,17 @@ export default function Sidebar({
     <aside
       ref={sidebarRef}
       className={`
-        border-r bg-card fixed md:static inset-y-0 z-10 flex flex-col h-screen md:h-[calc(100dvh-5rem)]
+        border-r bg-card fixed md:sticky inset-y-0 z-10 flex flex-col h-screen md:h-[calc(100dvh-5rem)] md:top-[80px] md:bottom-[0]
         shadow-sm overflow-hidden sidebar-transition
         ${isMobileMenuOpen ? "w-64" : "md:w-16 w-0"} 
       `}
       aria-label="Main navigation"
     >
       <div className="flex-1 overflow-y-auto min-h-0 flex flex-col py-16 md:py-0">
-        <nav className="p-3 space-y-2 flex-grow relative" aria-label="Sidebar navigation">
+        <nav
+          className="p-3 space-y-2 flex-grow relative"
+          aria-label="Sidebar navigation"
+        >
           {/* New Chat Button - Always visible */}
           {showRecentChats && (
             <button
@@ -139,10 +143,17 @@ export default function Sidebar({
               aria-label="Start a new chat"
             >
               <div className="w-5 flex-shrink-0 flex justify-center">
-                <PlusCircle className="h-5 w-5 sidebar-content-transition" aria-hidden="true" />
+                <PlusCircle
+                  className="h-5 w-5 sidebar-content-transition"
+                  aria-hidden="true"
+                />
               </div>
               <div className="overflow-hidden flex-1">
-                <span className={`sidebar-content-transition whitespace-nowrap overflow-hidden ${isMobileMenuOpen ? 'opacity-100 max-w-[150px]' : 'opacity-0 max-w-0'}`}>{t?.startNewChat || "New Chat"}</span>
+                <span
+                  className={`sidebar-content-transition whitespace-nowrap overflow-hidden ${isMobileMenuOpen ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0"}`}
+                >
+                  {t.startNewChat || "New Chat"}
+                </span>
               </div>
             </button>
           )}
@@ -151,7 +162,8 @@ export default function Sidebar({
               const Icon = item.icon;
               const isActive =
                 activePage === item.href ||
-                (item.subItems?.some((sub) => activePage === sub.href) ?? false);
+                (item.subItems?.some((sub) => activePage === sub.href) ??
+                  false);
               const hasSubItems = item.subItems && item.subItems.length > 0;
               const isSubmenuOpen = openSubmenus[index] || false;
               const menuId = `menu-${index}`;
@@ -178,9 +190,16 @@ export default function Sidebar({
                       aria-controls={hasSubItems ? submenuId : undefined}
                     >
                       <div className="w-5 flex-shrink-0 flex justify-center">
-                        <Icon className="h-5 w-5 sidebar-content-transition" aria-hidden="true" />
+                        <Icon
+                          className="h-5 w-5 sidebar-content-transition"
+                          aria-hidden="true"
+                        />
                       </div>
-                      <span className={`sidebar-content-transition whitespace-nowrap overflow-hidden ${isMobileMenuOpen ? 'opacity-100 max-w-[150px]' : 'opacity-0 max-w-0'}`}>{item.label}</span>
+                      <span
+                        className={`sidebar-content-transition whitespace-nowrap overflow-hidden ${isMobileMenuOpen ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0"}`}
+                      >
+                        {item.label}
+                      </span>
                     </Link>
                     {hasSubItems && isMobileMenuOpen && (
                       <button
@@ -191,14 +210,19 @@ export default function Sidebar({
                           }))
                         }
                         className="p-1 rounded-md hover:bg-accent/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        aria-label={isSubmenuOpen ? "Collapse submenu" : "Expand submenu"}
+                        aria-label={
+                          isSubmenuOpen ? "Collapse submenu" : "Expand submenu"
+                        }
                         aria-expanded={isSubmenuOpen}
                         aria-controls={submenuId}
                       >
                         {isSubmenuOpen ? (
                           <ChevronDown className="h-4 w-4" aria-hidden="true" />
                         ) : (
-                          <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                          <ChevronRight
+                            className="h-4 w-4"
+                            aria-hidden="true"
+                          />
                         )}
                       </button>
                     )}
@@ -208,7 +232,9 @@ export default function Sidebar({
                     <ul
                       id={submenuId}
                       className={`ml-6 pl-2 border-l space-y-1.5 overflow-hidden transition-all duration-300 ease-in-out ${
-                        isSubmenuOpen ? 'max-h-96 opacity-100 py-1' : 'max-h-0 opacity-0 py-0'
+                        isSubmenuOpen
+                          ? "max-h-96 opacity-100 py-1"
+                          : "max-h-0 opacity-0 py-0"
                       }`}
                       aria-labelledby={menuId}
                       role="menu"
@@ -243,15 +269,21 @@ export default function Sidebar({
           </ul>
 
           {/* Recent Chats Section - Only shown on chat page and when sidebar is open */}
-          <div className={`mt-8 space-y-3 sidebar-content-transition ${showRecentChats && isMobileMenuOpen ? 'opacity-100 max-h-[2000px]' : 'opacity-0 max-h-0 overflow-hidden'}`}>
+          <div
+            className={`mt-8 space-y-3 sidebar-content-transition ${showRecentChats && isMobileMenuOpen ? "opacity-100 max-h-[2000px]" : "opacity-0 max-h-0 overflow-hidden"}`}
+          >
             {/* Only show header and divider if there are chats and not in loading state */}
-            <div className={`flex items-center justify-between px-2.5 mb-2 sidebar-content-transition ${chats.length > 0 && !isLoading && !error ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
+            <div
+              className={`flex items-center justify-between px-2.5 mb-2 sidebar-content-transition ${chats.length > 0 && !isLoading && !error ? "opacity-100" : "opacity-0 h-0 overflow-hidden"}`}
+            >
               <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wider sidebar-content-transition whitespace-nowrap overflow-hidden">
-                {t?.recentChats || "Recent Chats"}
+                {t.recentChats || "Recent Chats"}
               </h3>
             </div>
 
-            <div className={`h-px bg-border/60 mx-2 my-1 sidebar-content-transition opacity-100`}></div>
+            <div
+              className={`h-px bg-border/60 mx-2 my-1 sidebar-content-transition opacity-100`}
+            ></div>
             <div className="sidebar-content-transition">
               <div className="w-full">
                 <ChatList
@@ -273,26 +305,35 @@ export default function Sidebar({
       {/* Footer with logout button and user info */}
       <div className="py-3 px-3 border-t mt-auto flex-shrink-0 sticky bottom-0 bg-card sidebar-transition">
         {/* User profile and subscription info  */}
-          <div className="space-y-2">
-            {/* Subscription link */}
-            <div className={`sidebar-content-transition ${status === "authenticated" ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
-              <SubscriptionInfo expanded={isMobileMenuOpen} />
-            </div>
-
-            {/* User profile link */}
-            <UserProfile session={session} expanded={isMobileMenuOpen} />
+        <div className="space-y-2">
+          {/* Subscription link */}
+          <div
+            className={`sidebar-content-transition ${status === "authenticated" ? "opacity-100" : "opacity-0 h-0 overflow-hidden"}`}
+          >
+            <SubscriptionInfo expanded={isMobileMenuOpen} />
           </div>
+
+          {/* User profile link */}
+          <UserProfile session={session} expanded={isMobileMenuOpen} />
+        </div>
 
         {/* Logout button - separated from navigation */}
         <button
-            onClick={handleSignOut}
-            className="flex items-center gap-2 p-2.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground w-full text-left transition-colors duration-200 mb-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary h-10"
-            aria-label="Logout"
+          onClick={handleSignOut}
+          className="flex items-center gap-2 p-2.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground w-full text-left transition-colors duration-200 mb-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary h-10"
+          aria-label="Logout"
         >
           <div className="w-5 flex-shrink-0 flex justify-center">
-            <LogOut className="h-5 w-5 sidebar-content-transition" aria-hidden="true" />
+            <LogOut
+              className="h-5 w-5 sidebar-content-transition"
+              aria-hidden="true"
+            />
           </div>
-          <span className={`sidebar-content-transition whitespace-nowrap overflow-hidden ${isMobileMenuOpen ? 'opacity-100 max-w-[150px]' : 'opacity-0 max-w-0'}`}>{t?.logout || "Logout"}</span>
+          <span
+            className={`sidebar-content-transition whitespace-nowrap overflow-hidden ${isMobileMenuOpen ? "opacity-100 max-w-[150px]" : "opacity-0 max-w-0"}`}
+          >
+            {t.logout || "Logout"}
+          </span>
         </button>
       </div>
     </aside>

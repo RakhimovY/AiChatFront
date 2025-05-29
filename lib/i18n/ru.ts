@@ -3,6 +3,37 @@ export const ru = {
   appName: "AIuris",
   appDescription: "Юридический AI-ассистент",
 
+  // Templates
+  searchTemplates: "Поиск шаблонов...",
+  clearSearch: "Очистить поиск",
+  filterTemplates: "Фильтровать шаблоны",
+  filter: "Фильтр",
+  categories: "Категории",
+  clearAll: "Очистить все",
+  allCategories: "Все категории",
+  clearFilters: "Очистить фильтры",
+  removeFilter: "Удалить фильтр",
+  noTemplatesFound: "Шаблоны не найдены",
+  kazakhstanLegalDocuments: "Юридические документы Казахстана",
+  businessDocuments: "Бизнес документы",
+  personalDocuments: "Личные документы",
+  legalDocuments: "Юридические документы",
+  financialDocuments: "Финансовые документы",
+  educationalDocuments: "Образовательные документы",
+  medicalDocuments: "Медицинские документы",
+
+  // Document types
+  documentTypes: "Типы документов",
+  allDocumentTypes: "Все типы документов",
+  employmentContracts: "Трудовые договоры",
+  salesContracts: "Договоры купли-продажи",
+  rentalAgreements: "Договоры аренды",
+  companyCharters: "Уставы компаний",
+  meetingProtocols: "Протоколы собраний",
+  powersOfAttorney: "Доверенности",
+  consumerClaims: "Претензии потребителей",
+  lawsuits: "Исковые заявления",
+
   // Auth
   login: "Войти",
   logout: "Выйти",
@@ -135,6 +166,8 @@ export const ru = {
   subscription: "Подписка",
   settings: "Настройки",
   help: "Помощь",
+  profileUpdatedSuccess: "Профиль успешно обновлен",
+  profileUpdateError: "Ошибка при обновлении профиля",
   startChat: "Начать чат",
   chatDescription: "Задайте вопрос юридическому ассистенту и получите мгновенный ответ.",
   goToChat: "Перейти к чату",
@@ -209,5 +242,30 @@ export const ru = {
   // Footer
   privacyPolicy: "Политика конфиденциальности",
   termsOfService: "Условия использования",
-  allRightsReserved: "Все права защищены."
+  allRightsReserved: "Все права защищены.",
+
+  // Template Form
+  fillForm: "Заполнить форму",
+  documentPreview: "Предпросмотр документа",
+  help: "Помощь",
+  example: "Пример",
+  selectDate: "Выберите дату",
+  selectOption: "Выберите опцию",
+  creatingDocument: "Создание документа...",
+  createDocument: "Создать документ",
+  preview: "Предпросмотр",
+  documentPreviewDescription: "Так будет выглядеть ваш документ после генерации",
+  backToForm: "Вернуться к форме",
+
+  // Form field groups
+  document: "Документ",
+  parties: "Стороны",
+  details: "Детали",
+  dates: "Даты",
+  financial: "Финансы",
+  other: "Другое",
+
+  // Template List
+  errorLoadingTemplates: "Не удалось загрузить шаблоны. Пожалуйста, попробуйте позже.",
+  tryAgain: "Попробовать снова"
 };

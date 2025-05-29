@@ -3,6 +3,25 @@ export const kk = {
   appName: "AIuris",
   appDescription: "Заңгерлік AI-көмекші",
 
+  // Templates
+  searchTemplates: "Үлгілерді іздеу...",
+  clearSearch: "Іздеуді тазалау",
+  filterTemplates: "Үлгілерді сүзу",
+  filter: "Сүзгі",
+  categories: "Санаттар",
+  clearAll: "Барлығын тазалау",
+  allCategories: "Барлық санаттар",
+  clearFilters: "Сүзгілерді тазалау",
+  removeFilter: "Сүзгіні жою",
+  noTemplatesFound: "Үлгілер табылмады",
+  kazakhstanLegalDocuments: "Қазақстан заңды құжаттары",
+  businessDocuments: "Бизнес құжаттары",
+  personalDocuments: "Жеке құжаттар",
+  legalDocuments: "Заңды құжаттар",
+  financialDocuments: "Қаржылық құжаттар",
+  educationalDocuments: "Білім беру құжаттары",
+  medicalDocuments: "Медициналық құжаттар",
+
   // Auth
   login: "Кіру",
   logout: "Шығу",

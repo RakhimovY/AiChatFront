@@ -51,14 +51,14 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
 
   // Document type options with translations
   const documentTypes = [
-    { value: "employment", label: t("Employment Contracts"), templateIds: ["employment"] },
-    { value: "real-estate", label: t("Sales Contracts"), templateIds: ["real-estate"] },
-    { value: "rental", label: t("Rental Agreements"), templateIds: ["rental"] },
-    { value: "charter", label: t("Company Charters"), templateIds: ["charter"] },
-    { value: "protocol", label: t("Meeting Protocols"), templateIds: ["protocol"] },
-    { value: "power-of-attorney", label: t("Powers of Attorney"), templateIds: ["power-of-attorney"] },
-    { value: "consumer-claim", label: t("Consumer Claims"), templateIds: ["consumer-claim"] },
-    { value: "lawsuit", label: t("Lawsuits"), templateIds: ["lawsuit"] },
+    { value: "employment", label: t.employmentContracts, templateIds: ["employment"] },
+    { value: "real-estate", label: t.salesContracts, templateIds: ["real-estate"] },
+    { value: "rental", label: t.rentalAgreements, templateIds: ["rental"] },
+    { value: "charter", label: t.companyCharters, templateIds: ["charter"] },
+    { value: "protocol", label: t.meetingProtocols, templateIds: ["protocol"] },
+    { value: "power-of-attorney", label: t.powersOfAttorney, templateIds: ["power-of-attorney"] },
+    { value: "consumer-claim", label: t.consumerClaims, templateIds: ["consumer-claim"] },
+    { value: "lawsuit", label: t.lawsuits, templateIds: ["lawsuit"] },
   ];
 
   // Fetch templates if not provided - only on mount
@@ -154,7 +154,7 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
 
   // Get document type label
   const getDocTypeLabel = (docType: DocumentType | null): string => {
-    if (!docType) return t("All document types");
+    if (!docType) return t.allDocumentTypes;
     const found = documentTypes.find(dt => dt.value === docType);
     return found ? found.label : docType;
   };
@@ -198,7 +198,7 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             type="text"
-            placeholder={t("Search templates...")}
+            placeholder={t.searchTemplates}
             value={searchQuery}
             onChange={handleSearchChange}
             className="w-full pl-10 pr-10"
@@ -207,7 +207,7 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
             <button 
               onClick={clearSearch}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label={t("Clear search")}
+              aria-label={t.clearSearch}
             >
               <X className="h-4 w-4" />
             </button>
@@ -220,10 +220,10 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
               <Button 
                 variant="outline" 
                 className="flex items-center gap-2"
-                aria-label={t("Filter templates")}
+                aria-label={t.filterTemplates}
               >
                 <Filter className="h-4 w-4" />
-                <span className="hidden sm:inline">{t("Filter")}</span>
+                <span className="hidden sm:inline">{t.filter}</span>
                 {selectedDocType && (
                   <Badge variant="secondary" className="ml-1">1</Badge>
                 )}
@@ -232,7 +232,7 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
             <PopoverContent className="w-80 p-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium">{t("Document Types")}</h4>
+                  <h4 className="font-medium">{t.documentTypes}</h4>
                   {selectedDocType && (
                     <Button 
                       variant="ghost" 
@@ -240,7 +240,7 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
                       onClick={clearAllFilters}
                       className="h-8 text-xs"
                     >
-                      {t("Clear all")}
+                      {t.clearAll}
                     </Button>
                   )}
                 </div>
@@ -252,7 +252,7 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
                     onClick={() => handleDocTypeChange(null)}
                     className="justify-start"
                   >
-                    {t("All document types")}
+                    {t.allDocumentTypes}
                   </Button>
 
                   {documentTypes.map((docType) => (
@@ -276,7 +276,7 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
               variant="outline" 
               size="icon"
               onClick={clearAllFilters}
-              aria-label={t("Clear filters")}
+              aria-label={t.clearFilters}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -292,7 +292,7 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
             <button 
               onClick={() => setSelectedDocType(null)}
               className="ml-1 rounded-full hover:bg-muted p-0.5"
-              aria-label={t("Remove filter")}
+              aria-label={t.removeFilter}
             >
               <X className="h-3 w-3" />
             </button>
@@ -309,7 +309,7 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
         </div>
       ) : (
         <div className="text-center p-8 border rounded-lg bg-muted">
-          <p className="text-muted-foreground">{t("No templates found")}</p>
+          <p className="text-muted-foreground">{t.noTemplatesFound}</p>
           {(searchQuery || selectedDocType) && (
             <Button 
               variant="outline" 
@@ -317,7 +317,7 @@ export default function KazakhstanLegalTemplates({ initialTemplates = [], title 
               onClick={clearAllFilters}
               className="mt-4"
             >
-              {t("Clear filters")}
+              {t.clearFilters}
             </Button>
           )}
         </div>

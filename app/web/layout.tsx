@@ -23,7 +23,7 @@ export default function WebLayout({ children }: { children: React.ReactNode }) {
           setIsMobileMenuOpen={setIsMobileMenuOpen}
           activePage={pathname}
         />
-        <div className="flex-1">
+        <div className="flex-1 md:ml-16">
           <div className="max-w-6xl mx-auto">{children}</div>
         </div>
       </div>

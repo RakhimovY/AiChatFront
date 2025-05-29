@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FileText, Mail, MessageSquare } from "lucide-react";
+import { Mail, MessageSquare } from "lucide-react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { useSession } from "next-auth/react";
 import AuthCheck from "@/components/common/AuthCheck";
 
 export default function SupportPage() {
@@ -42,14 +41,16 @@ export default function SupportPage() {
 
         <div className="flex flex-1 pt-16 md:pt-20">
           {/* Sidebar */}
-          <Sidebar
-            isMobileMenuOpen={isMobileMenuOpen}
-            setIsMobileMenuOpen={setIsMobileMenuOpen}
-            activePage="/support"
-          />
+          <div ref={sidebarRef}>
+            <Sidebar
+              isMobileMenuOpen={isMobileMenuOpen}
+              setIsMobileMenuOpen={setIsMobileMenuOpen}
+              activePage="/support"
+            />
+          </div>
 
           {/* Main content */}
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-6 md:ml-16">
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div className="border rounded-lg p-6">
                 <Mail className="h-8 w-8 text-primary mb-4" />

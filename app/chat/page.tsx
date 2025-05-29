@@ -7,10 +7,14 @@ import ChatMessages from "@/components/chat/ChatMessages";
 import ChatInput from "@/components/chat/ChatInput";
 import { useChat } from "@/lib/hooks/useChat";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { AlertCircle, PlusCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 const ErrorMessage = ({ message }: { message: string }) => (
-  <div className="bg-destructive/10 text-destructive text-sm p-4 mb-4 rounded-md border border-destructive/20 shadow-sm flex items-center" role="alert" aria-live="assertive">
+  <div
+    className="bg-destructive/10 text-destructive text-sm p-4 mb-4 rounded-md border border-destructive/20 shadow-sm flex items-center"
+    role="alert"
+    aria-live="assertive"
+  >
     <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
     <span>{message}</span>
   </div>
@@ -19,8 +23,13 @@ const ErrorMessage = ({ message }: { message: string }) => (
 const LoadingIndicator = ({ message }: { message: string }) => (
   <div className="flex justify-center items-center mb-4">
     <div className="flex items-center justify-center space-x-2 bg-muted/50 px-4 py-3 rounded-md shadow-sm">
-      <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" aria-hidden="true"></div>
-      <span className="text-sm font-medium text-muted-foreground">{message}</span>
+      <div
+        className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"
+        aria-hidden="true"
+      ></div>
+      <span className="text-sm font-medium text-muted-foreground">
+        {message}
+      </span>
     </div>
   </div>
 );
@@ -89,7 +98,7 @@ export default function ChatPage() {
 
       <div className="flex flex-1 pt-16 md:pt-20">
         {/* Sidebar container with ref for click-outside detection */}
-        <aside ref={sidebarRef} className="h-full absolute md:relative top-0 left-0 z-10">
+        <aside ref={sidebarRef}>
           <Sidebar
             isMobileMenuOpen={isSidebarOpen}
             setIsMobileMenuOpen={setIsSidebarOpen}
@@ -102,19 +111,24 @@ export default function ChatPage() {
         </aside>
 
         {/* Main chat area */}
-        <main className="flex-1 flex flex-col overflow-hidden p-3" aria-label="Chat interface">
-          {(error || isLoadingHistory && currentChatId) && <div className="mb-6">
-            {/* Error message display */}
-            {error && <ErrorMessage message={error}/>}
+        <main
+          className="flex-1 flex flex-col overflow-hidden p-3 md:ml-16"
+          aria-label="Chat interface"
+        >
+          {(error || (isLoadingHistory && currentChatId)) && (
+            <div className="mb-6">
+              {/* Error message display */}
+              {error && <ErrorMessage message={error} />}
 
-            {/* Loading history indicator */}
-            {isLoadingHistory && currentChatId && (
-                <LoadingIndicator message={t.loadingHistory}/>
-            )}
-          </div>}
+              {/* Loading history indicator */}
+              {isLoadingHistory && currentChatId && (
+                <LoadingIndicator message={t.loadingHistory} />
+              )}
+            </div>
+          )}
 
           {/* Chat messages container */}
-          <div 
+          <div
             className="flex-1 overflow-y-auto scroll-smooth mb-4 border rounded-lg shadow-sm bg-background/50 chat-messages"
             aria-live="polite"
             aria-atomic="false"
