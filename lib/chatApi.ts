@@ -1,5 +1,3 @@
-import api from './api';
-import axios from 'axios';
 import { apiCache } from './apiCache';
 import { retryWithBackoff } from './retryUtils';
 import { createMessageFormData } from './formUtils';
@@ -19,7 +17,7 @@ export interface MessageRequest {
   content: string;
   country?: string | null;
   language?: string;
-  document?: File| null;
+  document?: File | null;
 }
 
 export interface ChatDTO {
@@ -38,7 +36,6 @@ export interface Chat {
 
 // API functions
 
-
 /**
  * Send a message with a document attachment
  */
@@ -47,15 +44,18 @@ const sendDocumentMessage = async (message: MessageRequest): Promise<ChatMessage
   const formData = createMessageFormData(message);
 
   // Use retry mechanism with exponential backoff
-  const response = await retryWithBackoff(() => 
-    api.post<ChatMessage[]>('/chat/document', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+  const response = await retryWithBackoff(() =>
+    fetch('/api/chat/document', {
+      method: 'POST',
+      body: formData
     })
   );
 
-  return response.data;
+  if (!response.ok) {
+    throw new Error('Failed to send document message');
+  }
+
+  return response.json();
 };
 
 /**
@@ -63,11 +63,21 @@ const sendDocumentMessage = async (message: MessageRequest): Promise<ChatMessage
  */
 const sendTextMessage = async (message: MessageRequest): Promise<ChatMessage[]> => {
   // Regular message without document
-  const response = await retryWithBackoff(() => 
-    api.post<ChatMessage[]>('/chat', message)
+  const response = await retryWithBackoff(() =>
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(message)
+    })
   );
 
-  return response.data;
+  if (!response.ok) {
+    throw new Error('Failed to send text message');
+  }
+
+  return response.json();
 };
 
 /**
@@ -114,10 +124,15 @@ export const getChatHistory = async (chatId: number): Promise<ChatMessage[]> => 
     return await getWithCache(
       cacheKey,
       async () => {
-        const response = await retryWithBackoff(() => 
-          api.get<ChatMessage[]>(`/chat/${chatId}`)
+        const response = await retryWithBackoff(() =>
+          fetch(`/api/chat/${chatId}`)
         );
-        return response.data;
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch chat history');
+        }
+
+        return response.json();
       },
       5 * 60 * 1000, // Cache for 5 minutes
       `Using cached chat history for chat ${chatId}`
@@ -136,17 +151,23 @@ export const getUserChats = async (): Promise<Chat[]> => {
     return await getWithCache(
       cacheKey,
       async () => {
-        const response = await retryWithBackoff(() => 
-          api.get<ChatDTO[]>('/chat')
+        const response = await retryWithBackoff(() =>
+          fetch('/api/chat')
         );
 
+        if (!response.ok) {
+          throw new Error('Failed to fetch user chats');
+        }
+
+        const data = await response.json();
+
         // Ensure the response data is an array
-        if (!Array.isArray(response.data)) {
+        if (!Array.isArray(data)) {
           return [];
         }
 
         // Convert ChatDTO objects to Chat objects
-        return response.data.map(chatDTO => ({
+        return data.map(chatDTO => ({
           id: chatDTO.id,
           title: chatDTO.title,
           createdAt: chatDTO.createdAt,
@@ -166,9 +187,15 @@ export const getUserChats = async (): Promise<Chat[]> => {
 // Function to delete a chat
 export const deleteChat = async (chatId: number): Promise<void> => {
   try {
-    await retryWithBackoff(() => 
-      api.delete(`/chat/${chatId}`)
+    const response = await retryWithBackoff(() =>
+      fetch(`/api/chat/${chatId}`, {
+        method: 'DELETE'
+      })
     );
+
+    if (!response.ok) {
+      throw new Error('Failed to delete chat');
+    }
 
     // Invalidate relevant cache entries
     apiCache.invalidate(`chat_history_${chatId}`);

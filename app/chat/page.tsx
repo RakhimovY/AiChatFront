@@ -112,7 +112,7 @@ export default function ChatPage() {
 
         {/* Main chat area */}
         <main
-          className="flex-1 flex flex-col overflow-hidden p-3 md:ml-16"
+          className="flex-1 flex flex-col overflow-hidden p-3"
           aria-label="Chat interface"
         >
           {(error || (isLoadingHistory && currentChatId)) && (

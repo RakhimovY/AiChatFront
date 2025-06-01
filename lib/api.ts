@@ -1,30 +1,62 @@
 import axios from 'axios';
-import { signOut } from 'next-auth/react';
+import { getSession } from 'next-auth/react';
 
-// Create an axios instance with the base URL and timeout configuration
+// Create axios instance with default config
 const api = axios.create({
-  baseURL: '/api', // Use relative URL to route through Next.js API routes
-  // Set a longer timeout (2 minutes) for AI responses which might take time
-  timeout: 120000,
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// Add a response interceptor to handle token expiration
+// Add request interceptor for authentication
+api.interceptors.request.use(async (config) => {
+  const session = await getSession();
+
+  if (session?.accessToken) {
+    config.headers.Authorization = `Bearer ${session.accessToken}`;
+  }
+
+  return config;
+});
+
+// Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // If the error is unauthorized (401), it's due to token expiration
-    if (error.response?.status === 401) {
-      console.error('Authentication error:', error);
+    const originalRequest = error.config;
 
-      // Add a custom property to the error to indicate it's an auth error
-      error.isSessionExpired = true;
+    // Handle 401 Unauthorized errors
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-      // Sign out the user and redirect to login page with a message
-      await signOut({
-        redirect: true,
-        callbackUrl: '/auth/login?error=session_expired'
-      });
+      try {
+        // Try to refresh the token
+        const session = await getSession();
+        if (session?.refreshToken) {
+          // Call your refresh token endpoint
+          const response = await axios.post('/api/auth/refresh', {
+            refreshToken: session.refreshToken,
+          });
+
+          const { accessToken } = response.data;
+
+          // Update the original request with the new token
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        // If refresh fails, redirect to login
+        window.location.href = '/auth/login';
+        return Promise.reject(refreshError);
+      }
     }
+
+    // Handle other errors
+    if (error.response?.data?.error) {
+      error.message = error.response.data.error;
+    }
+
     return Promise.reject(error);
   }
 );

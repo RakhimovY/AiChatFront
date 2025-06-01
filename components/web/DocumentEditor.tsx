@@ -1,478 +1,485 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { Save, AlertCircle } from "lucide-react";
+import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { DatePicker } from "@/components/ui/date-picker";
+import { useToast } from "@/components/ui/use-toast-hook";
+import { useRouter } from "next/navigation";
+import { documentService } from "@/lib/services/documentService";
+import type { Template, Document, DocumentValues } from "@/types/document";
 import DocumentPreview from "./DocumentPreview";
-
-// Field type definitions
-interface FieldBase {
-  id: string;
-  name: string;
-  label: string;
-  required: boolean;
-  description?: string;
-}
-
-interface TextField extends FieldBase {
-  type: "text" | "email" | "number" | "tel";
-  placeholder?: string;
-  defaultValue?: string;
-  maxLength?: number;
-}
-
-interface TextareaField extends FieldBase {
-  type: "textarea";
-  placeholder?: string;
-  defaultValue?: string;
-  rows?: number;
-}
-
-interface SelectField extends FieldBase {
-  type: "select";
-  options: { value: string; label: string }[];
-  defaultValue?: string;
-}
-
-interface DateField extends FieldBase {
-  type: "date";
-  defaultValue?: string;
-}
-
-interface CheckboxField extends FieldBase {
-  type: "checkbox";
-  defaultValue?: boolean;
-}
-
-interface RadioField extends FieldBase {
-  type: "radio";
-  options: { value: string; label: string }[];
-  defaultValue?: string;
-}
-
-type Field = TextField | TextareaField | SelectField | DateField | CheckboxField | RadioField;
-
-// Template type definition
-interface Template {
-  id: string;
-  title: string;
-  description: string;
-  fields: Field[];
-  content: string; // Template content with placeholders
-}
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { Save, AlertCircle, History, Download, Eye, EyeOff } from "lucide-react";
 
 interface DocumentEditorProps {
   templateId?: string;
+  documentId?: string;
   initialTemplate?: Template;
-  initialValues?: Record<string, any>;
-  onSave?: (values: Record<string, any>) => void;
+  initialValues?: DocumentValues;
+  onSave?: (document: Document) => void;
 }
 
 export default function DocumentEditor({
   templateId,
+  documentId,
   initialTemplate,
-  initialValues = {},
-  onSave
+  initialValues,
+  onSave,
 }: DocumentEditorProps) {
   const { t } = useLanguage();
+  const router = useRouter();
+  const { toast } = useToast();
   const [template, setTemplate] = useState<Template | null>(initialTemplate || null);
-  const [values, setValues] = useState<Record<string, any>>(initialValues);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(!initialTemplate && !!templateId);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isDirty, setIsDirty] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showVersions, setShowVersions] = useState(false);
+  const [versions, setVersions] = useState<Document[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
 
-  // Fetch template if not provided
-  useEffect(() => {
-    if (!initialTemplate && templateId) {
-      fetchTemplate(templateId);
-    }
-  }, [initialTemplate, templateId]);
+  const validationSchema = React.useMemo(() => {
+    if (!template) return z.object({});
 
-  // Fetch template from API
-  const fetchTemplate = async (id: string) => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch(`/api/web/templates/${id}`);
-      
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setTemplate(data);
-      
-      // Initialize values with default values from template
-      const defaultValues: Record<string, any> = {};
-      data.fields.forEach((field: Field) => {
-        if ('defaultValue' in field && field.defaultValue !== undefined) {
-          defaultValues[field.id] = field.defaultValue;
-        }
-      });
-      
-      setValues({ ...defaultValues, ...initialValues });
-    } catch (err) {
-      setError("Не удалось загрузить шаблон. Пожалуйста, попробуйте позже.");
-      console.error("Error fetching template:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle field change
-  const handleChange = (fieldId: string, value: any) => {
-    setValues(prev => ({ ...prev, [fieldId]: value }));
-    setIsDirty(true);
-    
-    // Clear error for this field if it exists
-    if (errors[fieldId]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[fieldId];
-        return newErrors;
-      });
-    }
-  };
-
-  // Validate form
-  const validateForm = (): boolean => {
-    if (!template) return false;
-    
-    const newErrors: Record<string, string> = {};
-    
-    template.fields.forEach(field => {
-      if (field.required) {
-        const value = values[field.id];
-        
-        if (value === undefined || value === null || value === '') {
-          newErrors[field.id] = "Это поле обязательно для заполнения";
-        }
+    const schema: Record<string, z.ZodTypeAny> = {};
+    template.fields.forEach((field) => {
+      switch (field.type) {
+        case "text":
+        case "textarea":
+          schema[field.id] = field.required
+            ? z.string().min(1, { message: `${field.label} is required` })
+            : z.string().optional();
+          break;
+        case "select":
+          schema[field.id] = field.required
+            ? z.string().min(1, { message: `${field.label} is required` })
+            : z.string().optional();
+          break;
+        case "checkbox":
+          schema[field.id] = field.required
+            ? z.boolean().refine((val) => val === true, {
+              message: `${field.label} is required`,
+            })
+            : z.boolean().optional();
+          break;
+        case "radio":
+          schema[field.id] = field.required
+            ? z.string().min(1, { message: `${field.label} is required` })
+            : z.string().optional();
+          break;
+        case "date":
+          schema[field.id] = field.required
+            ? z.string()
+              .min(1, { message: `${field.label} is required` })
+              .regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Date must be in YYYY-MM-DD format" })
+            : z.string()
+              .optional()
+              .transform((val) => val || undefined)
+              .refine((val): val is string | undefined => !val || /^\d{4}-\d{2}-\d{2}$/.test(val), {
+                message: "Date must be in YYYY-MM-DD format",
+                path: [field.id],
+              });
+          break;
+        default:
+          schema[field.id] = z.string().optional();
       }
     });
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    return z.object(schema);
+  }, [template]);
 
-  // Handle save
-  const handleSave = async () => {
-    if (!validateForm()) return;
-    
-    setIsSaving(true);
-    
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<DocumentValues>({
+    resolver: zodResolver(validationSchema),
+    defaultValues: initialValues || {},
+  });
+
+  const fetchTemplate = useCallback(async () => {
+    if (!templateId) return;
     try {
-      if (onSave) {
-        await onSave(values);
-      } else {
-        // Default save behavior if no onSave provided
-        const response = await fetch('/api/web/documents', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            templateId: template?.id,
-            values
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
-      }
-      
-      setIsDirty(false);
+      setLoading(true);
+      const fetchedTemplate = await documentService.getTemplate(templateId);
+      setTemplate(fetchedTemplate);
     } catch (err) {
-      console.error("Error saving document:", err);
-      setError("Не удалось сохранить документ. Пожалуйста, попробуйте позже.");
+      setError("Failed to load template");
+      toast({
+        title: "Error",
+        description: "Failed to load template",
+        variant: "destructive",
+      });
     } finally {
-      setIsSaving(false);
+      setLoading(false);
+    }
+  }, [templateId]);
+
+  useEffect(() => {
+    if (!initialTemplate && templateId) {
+      fetchTemplate();
+    }
+  }, [templateId, initialTemplate, fetchTemplate]);
+
+  const onSubmit = async (data: DocumentValues) => {
+    try {
+      setLoading(true);
+      let document: Document;
+      if (documentId) {
+        document = await documentService.updateDocument(documentId, {
+          templateId: template!.id,
+          values: data,
+        });
+      } else {
+        document = await documentService.createDocument(
+          template!.id,
+          data,
+          template!.title
+        );
+      }
+      onSave?.(document);
+      toast({
+        title: "Success",
+        description: "Document saved successfully",
+      });
+      router.push(`/documents/${document.id}`);
+    } catch (err) {
+      setError("Failed to save document");
+      toast({
+        title: "Error",
+        description: "Failed to save document",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Toggle preview
-  const togglePreview = () => {
-    setShowPreview(prev => !prev);
-  };
+  // Fetch document versions
+  const fetchVersions = async () => {
+    if (!documentId) return;
 
-  // Render field based on type
-  const renderField = (field: Field) => {
-    const hasError = !!errors[field.id];
-    
-    switch (field.type) {
-      case 'text':
-      case 'email':
-      case 'number':
-      case 'tel':
-        return (
-          <div key={field.id} className="space-y-2">
-            <label htmlFor={field.id} className="block text-sm font-medium">
-              {field.label} {field.required && <span className="text-destructive">*</span>}
-            </label>
-            {field.description && (
-              <p className="text-xs text-muted-foreground">{field.description}</p>
-            )}
-            <input
-              type={field.type}
-              id={field.id}
-              value={values[field.id] || ''}
-              onChange={(e) => handleChange(field.id, e.target.value)}
-              placeholder={field.placeholder}
-              maxLength={field.maxLength}
-              className={`w-full px-3 py-2 border rounded-md ${
-                hasError ? 'border-destructive' : 'border-input'
-              }`}
-            />
-            {hasError && (
-              <p className="text-xs text-destructive flex items-center">
-                <AlertCircle className="h-3 w-3 mr-1" />
-                {errors[field.id]}
-              </p>
-            )}
-          </div>
-        );
-        
-      case 'textarea':
-        return (
-          <div key={field.id} className="space-y-2">
-            <label htmlFor={field.id} className="block text-sm font-medium">
-              {field.label} {field.required && <span className="text-destructive">*</span>}
-            </label>
-            {field.description && (
-              <p className="text-xs text-muted-foreground">{field.description}</p>
-            )}
-            <textarea
-              id={field.id}
-              value={values[field.id] || ''}
-              onChange={(e) => handleChange(field.id, e.target.value)}
-              placeholder={field.placeholder}
-              rows={field.rows || 4}
-              className={`w-full px-3 py-2 border rounded-md ${
-                hasError ? 'border-destructive' : 'border-input'
-              }`}
-            />
-            {hasError && (
-              <p className="text-xs text-destructive flex items-center">
-                <AlertCircle className="h-3 w-3 mr-1" />
-                {errors[field.id]}
-              </p>
-            )}
-          </div>
-        );
-        
-      case 'select':
-        return (
-          <div key={field.id} className="space-y-2">
-            <label htmlFor={field.id} className="block text-sm font-medium">
-              {field.label} {field.required && <span className="text-destructive">*</span>}
-            </label>
-            {field.description && (
-              <p className="text-xs text-muted-foreground">{field.description}</p>
-            )}
-            <select
-              id={field.id}
-              value={values[field.id] || ''}
-              onChange={(e) => handleChange(field.id, e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md ${
-                hasError ? 'border-destructive' : 'border-input'
-              }`}
-            >
-              <option value="">Выберите...</option>
-              {field.options.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {hasError && (
-              <p className="text-xs text-destructive flex items-center">
-                <AlertCircle className="h-3 w-3 mr-1" />
-                {errors[field.id]}
-              </p>
-            )}
-          </div>
-        );
-        
-      case 'date':
-        return (
-          <div key={field.id} className="space-y-2">
-            <label htmlFor={field.id} className="block text-sm font-medium">
-              {field.label} {field.required && <span className="text-destructive">*</span>}
-            </label>
-            {field.description && (
-              <p className="text-xs text-muted-foreground">{field.description}</p>
-            )}
-            <input
-              type="date"
-              id={field.id}
-              value={values[field.id] || ''}
-              onChange={(e) => handleChange(field.id, e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md ${
-                hasError ? 'border-destructive' : 'border-input'
-              }`}
-            />
-            {hasError && (
-              <p className="text-xs text-destructive flex items-center">
-                <AlertCircle className="h-3 w-3 mr-1" />
-                {errors[field.id]}
-              </p>
-            )}
-          </div>
-        );
-        
-      case 'checkbox':
-        return (
-          <div key={field.id} className="space-y-2">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id={field.id}
-                checked={!!values[field.id]}
-                onChange={(e) => handleChange(field.id, e.target.checked)}
-                className={`h-4 w-4 mr-2 ${
-                  hasError ? 'border-destructive' : 'border-input'
-                }`}
-              />
-              <label htmlFor={field.id} className="text-sm font-medium">
-                {field.label} {field.required && <span className="text-destructive">*</span>}
-              </label>
-            </div>
-            {field.description && (
-              <p className="text-xs text-muted-foreground ml-6">{field.description}</p>
-            )}
-            {hasError && (
-              <p className="text-xs text-destructive flex items-center ml-6">
-                <AlertCircle className="h-3 w-3 mr-1" />
-                {errors[field.id]}
-              </p>
-            )}
-          </div>
-        );
-        
-      case 'radio':
-        return (
-          <div key={field.id} className="space-y-2">
-            <div className="block text-sm font-medium">
-              {field.label} {field.required && <span className="text-destructive">*</span>}
-            </div>
-            {field.description && (
-              <p className="text-xs text-muted-foreground">{field.description}</p>
-            )}
-            <div className="space-y-1">
-              {field.options.map(option => (
-                <div key={option.value} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={`${field.id}-${option.value}`}
-                    name={field.id}
-                    value={option.value}
-                    checked={values[field.id] === option.value}
-                    onChange={() => handleChange(field.id, option.value)}
-                    className={`h-4 w-4 mr-2 ${
-                      hasError ? 'border-destructive' : 'border-input'
-                    }`}
-                  />
-                  <label htmlFor={`${field.id}-${option.value}`} className="text-sm">
-                    {option.label}
-                  </label>
-                </div>
-              ))}
-            </div>
-            {hasError && (
-              <p className="text-xs text-destructive flex items-center">
-                <AlertCircle className="h-3 w-3 mr-1" />
-                {errors[field.id]}
-              </p>
-            )}
-          </div>
-        );
-        
-      default:
-        return null;
+    try {
+      const data = await documentService.getDocumentVersions(documentId);
+      setVersions(data);
+    } catch (err) {
+      console.error("Error fetching versions:", err);
+      toast({
+        title: "Error",
+        description: "Failed to load document versions",
+        variant: "destructive"
+      });
     }
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+  // Handle export
+  const handleExport = async (format: 'pdf' | 'docx') => {
+    if (!template || isExporting) return;
+
+    setIsExporting(true);
+
+    try {
+      const values = watch();
+      const blob = await documentService.exportDocument(template.id, values, format);
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `${template.title}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Success",
+        description: "Document exported successfully"
+      });
+    } catch (err) {
+      console.error("Error exporting document:", err);
+      toast({
+        title: "Error",
+        description: "Failed to export document",
+        variant: "destructive"
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Handle version restore
+  const handleVersionRestore = async (versionId: string) => {
+    if (!documentId) return;
+
+    try {
+      const document = await documentService.restoreDocumentVersion(documentId, versionId);
+      setValue('templateId', document.templateId);
+      setValue('values', document.values);
+      setShowVersions(false);
+      toast({
+        title: "Success",
+        description: "Version restored successfully"
+      });
+    } catch (err) {
+      console.error("Error restoring version:", err);
+      toast({
+        title: "Error",
+        description: "Failed to restore version",
+        variant: "destructive"
+      });
+    }
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
-  // Error state
   if (error) {
-    return (
-      <div className="text-center p-6 border rounded-lg bg-destructive/10 text-destructive">
-        <p>{error}</p>
-        {templateId && (
-          <button 
-            onClick={() => fetchTemplate(templateId)}
-            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
-            Попробовать снова
-          </button>
-        )}
-      </div>
-    );
+    return <div className="text-red-500">{error}</div>;
   }
 
-  // No template state
   if (!template) {
-    return (
-      <div className="text-center p-6 border rounded-lg bg-muted">
-        <p className="text-muted-foreground">Шаблон не найден</p>
-      </div>
-    );
+    return <div>No template selected</div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col space-y-2">
-        <h2 className="text-2xl font-semibold">{template.title}</h2>
-        <p className="text-muted-foreground">{template.description}</p>
+    <div className="space-y-4 max-w-5xl mx-auto px-2 sm:px-4 md:px-8 py-4">
+      <div className="mb-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <div>
+          <h1 className="text-2xl font-bold leading-tight mb-1">{template.title}</h1>
+          <p className="text-muted-foreground text-sm">{"Заполните поля для создания документа"}</p>
+        </div>
+        <div className="hidden lg:flex space-x-2">
+          {documentId && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowVersions(!showVersions);
+                if (!showVersions) {
+                  fetchVersions();
+                }
+              }}
+            >
+              <History className="h-4 w-4 mr-2" />
+              {t.versions || "Версии"}
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            onClick={() => setShowPreview(!showPreview)}
+          >
+            {showPreview ? (
+              <>
+                <EyeOff className="h-4 w-4 mr-2" />
+                {t.hidePreview || "Скрыть предпросмотр"}
+              </>
+            ) : (
+              <>
+                <Eye className="h-4 w-4 mr-2" />
+                {t.showPreview || "Показать предпросмотр"}
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => handleExport('pdf')}
+            disabled={isExporting}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            PDF
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => handleExport('docx')}
+            disabled={isExporting}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            DOCX
+          </Button>
+        </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Form */}
-        <div className={`space-y-6 ${showPreview ? 'lg:w-1/2' : 'w-full'}`}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {template.fields.map(renderField)}
-          </div>
-          
-          <div className="flex justify-between items-center pt-4 border-t">
-            <button
-              type="button"
-              onClick={togglePreview}
-              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80"
-            >
-              {showPreview ? "Скрыть предпросмотр" : "Показать предпросмотр"}
-            </button>
-            
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={!isDirty || isSaving}
-              className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {isSaving ? "Сохранение..." : "Сохранить"}
-            </button>
+      {showVersions && (
+        <div className="border rounded-lg p-4 bg-background/80 backdrop-blur">
+          <h2 className="text-lg font-semibold mb-4">{"Версии документа"}</h2>
+          <div className="space-y-2">
+            {versions.map(version => (
+              <div
+                key={version.id}
+                className="flex justify-between items-center p-2 hover:bg-muted rounded"
+              >
+                <div>
+                  <p className="font-medium">{"Версия"} {version.version}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(version.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleVersionRestore(version.id)}
+                >
+                  {"Восстановить"}
+                </Button>
+              </div>
+            ))}
           </div>
         </div>
-        
-        {/* Preview */}
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <form
+          className="space-y-4 bg-background/80 rounded-xl p-4 shadow-md"
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          {template.fields.map((field) => (
+            <div key={field.id} className="space-y-1">
+              <label className="text-sm font-medium block mb-1">
+                {field.label}
+                {field.required && <span className="text-red-500">*</span>}
+              </label>
+              {field.type === "text" && (
+                <Input
+                  {...register(field.id)}
+                  placeholder={field.placeholder}
+                  disabled={loading}
+                  className={errors[field.id] ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+              )}
+              {field.type === "textarea" && (
+                <Textarea
+                  {...register(field.id)}
+                  placeholder={field.placeholder}
+                  disabled={loading}
+                  className={errors[field.id] ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+              )}
+              {field.type === "select" && (
+                <Select
+                  onValueChange={(value) => setValue(field.id, value)}
+                  defaultValue={watch(field.id)}
+                  disabled={loading}
+                >
+                  <SelectTrigger className={errors[field.id] ? "border-red-500 focus-visible:ring-red-500" : ""}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {field.options?.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {field.type === "checkbox" && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={watch(field.id)}
+                    onCheckedChange={(checked) => setValue(field.id, checked)}
+                    disabled={loading}
+                  />
+                  <span>{field.label}</span>
+                </div>
+              )}
+              {field.type === "radio" && (
+                <RadioGroup
+                  onValueChange={(value) => setValue(field.id, value)}
+                  defaultValue={watch(field.id)}
+                  disabled={loading}
+                  className={errors[field.id] ? "border border-red-500 rounded-md p-2" : ""}
+                >
+                  {field.options?.map((option) => (
+                    <div key={option.value} className="flex items-center space-x-2">
+                      <RadioGroupItem value={option.value} id={`${field.id}-${option.value}`} />
+                      <label htmlFor={`${field.id}-${option.value}`}>{option.label}</label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
+              {field.type === "date" && (
+                <DatePicker
+                  date={watch(field.id) ? new Date(watch(field.id)) : undefined}
+                  onSelect={(date) => setValue(field.id, date)}
+                  disabled={loading}
+                  className={errors[field.id] ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+              )}
+              {errors[field.id] && (
+                <p className="text-xs text-red-500 mt-1 animate-shake">{errors[field.id]?.message?.toString()}</p>
+              )}
+            </div>
+          ))}
+          <div className="block lg:hidden fixed bottom-0 left-0 w-full bg-background/90 border-t z-50 flex gap-2 px-4 py-2 shadow-lg">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={() => setShowPreview(!showPreview)}
+            >
+              {showPreview ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+              {showPreview ? "Скрыть предпросмотр" : "Показать предпросмотр"}
+            </Button>
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={loading}
+            >
+              {loading ? <span className="animate-spin mr-2 w-4 h-4 border-2 border-t-transparent border-white rounded-full inline-block" /> : <Save className="h-4 w-4 mr-2" />}
+              {t.save || "Сохранить"}
+            </Button>
+          </div>
+          <div className="hidden lg:flex gap-2 justify-end pt-2">
+            <Button
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? <span className="animate-spin mr-2 w-4 h-4 border-2 border-t-transparent border-white rounded-full inline-block" /> : <Save className="h-4 w-4 mr-2" />}
+              {t.save || "Сохранить"}
+            </Button>
+          </div>
+        </form>
+
         {showPreview && (
-          <div className="lg:w-1/2 border rounded-md p-4 bg-card">
-            <h3 className="text-lg font-medium mb-4">Предпросмотр документа</h3>
-            <DocumentPreview template={template} values={values} />
+          <div className="border rounded-xl p-4 bg-background/80 shadow-md min-h-[300px] max-h-[80vh] overflow-auto">
+            <DocumentPreview
+              template={template}
+              values={watch()}
+            />
           </div>
         )}
+      </div>
+      {/* Кнопки экспорта для мобильных */}
+      <div className="flex lg:hidden gap-2 mt-4">
+        <Button
+          variant="outline"
+          onClick={() => handleExport('pdf')}
+          disabled={isExporting}
+          className="flex-1"
+        >
+          <Download className="h-4 w-4 mr-2" /> PDF
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => handleExport('docx')}
+          disabled={isExporting}
+          className="flex-1"
+        >
+          <Download className="h-4 w-4 mr-2" /> DOCX
+        </Button>
       </div>
     </div>
   );

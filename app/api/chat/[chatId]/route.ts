@@ -3,15 +3,15 @@ import { withAuth, createSuccessResponse, createErrorResponse, isAuthError } fro
 
 /**
  * Handler for GET /api/chat/[chatId]
- * This endpoint forwards the request to get chat history for a specific chat
+ * This endpoint forwards the request to get chat history
  */
 export async function GET(
   req: NextRequest,
-  context: { params: { chatId: string } }
+  { params }: { params: { chatId: string } }
 ) {
   return withAuth(req, async (token) => {
     try {
-      const chatId = context.params.chatId;
+      const chatId = params.chatId;
 
       // Forward the request to the backend
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/${chatId}`, {
@@ -45,15 +45,15 @@ export async function GET(
 
 /**
  * Handler for DELETE /api/chat/[chatId]
- * This endpoint forwards the request to delete a specific chat
+ * This endpoint forwards the request to delete a chat
  */
 export async function DELETE(
   req: NextRequest,
-  context: { params: { chatId: string } }
+  { params }: { params: { chatId: string } }
 ) {
   return withAuth(req, async (token) => {
     try {
-      const chatId = context.params.chatId;
+      const chatId = params.chatId;
 
       // Forward the request to the backend
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/${chatId}`, {
@@ -69,8 +69,8 @@ export async function DELETE(
         return createErrorResponse('Unauthorized', 401);
       }
 
-      // Return the response from the backend (empty response for DELETE)
-      return createSuccessResponse(null, response.status);
+      // Return success response
+      return createSuccessResponse({ success: true }, response.status);
     } catch (error) {
       console.error('Error deleting chat:', error);
 

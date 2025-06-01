@@ -22,7 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast-hook";
 import subscriptionApi, { Subscription } from "@/lib/subscriptionApi";
 import SubscribeButton from "@/components/subscription/SubscribeButton";
 import Header from "@/components/layout/Header";

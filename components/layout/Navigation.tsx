@@ -7,10 +7,18 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import LanguageSelector from "@/components/layout/LanguageSelector";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useSession } from "next-auth/react";
+import NavLink from "./NavLink";
+import NavButton from "./NavButton";
 
 type NavigationProps = {
   activePage?: "home" | "pricing" | "about";
 };
+
+const navigationItems = [
+  { href: "/", label: "home" },
+  { href: "/pricing", label: "pricing" },
+  { href: "/about", label: "about" },
+] as const;
 
 export default function Navigation({ activePage }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -53,11 +61,13 @@ export default function Navigation({ activePage }: NavigationProps) {
     };
   }, [isMobileMenuOpen]);
 
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
   return (
     <nav className="border-b fixed top-0 left-0 right-0 z-50 bg-background" aria-label="Main navigation">
       <div className="container flex justify-between items-center py-4 mx-auto max-w-6xl">
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="flex items-center space-x-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
           aria-label={t.appName}
         >
@@ -66,7 +76,7 @@ export default function Navigation({ activePage }: NavigationProps) {
         </Link>
 
         {/* Mobile menu button */}
-        <button 
+        <button
           ref={menuButtonRef}
           className="md:hidden p-2 rounded-md hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -84,48 +94,16 @@ export default function Navigation({ activePage }: NavigationProps) {
         {/* Desktop navigation */}
         <div className="hidden md:flex items-center space-x-4" role="menubar" aria-label="Desktop navigation">
           <ul className="flex items-center space-x-4">
-            <li role="none">
-              <Link 
-                href="/" 
-                role="menuitem"
-                className={`text-sm px-3 py-2 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                  activePage === "home" 
-                    ? "text-foreground font-medium bg-accent/50" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-                }`}
-                aria-current={activePage === "home" ? "page" : undefined}
-              >
-                {t.home}
-              </Link>
-            </li>
-            <li role="none">
-              <Link 
-                href="/pricing" 
-                role="menuitem"
-                className={`text-sm px-3 py-2 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                  activePage === "pricing" 
-                    ? "text-foreground font-medium bg-accent/50" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-                }`}
-                aria-current={activePage === "pricing" ? "page" : undefined}
-              >
-                {t.pricing}
-              </Link>
-            </li>
-            <li role="none">
-              <Link 
-                href="/about" 
-                role="menuitem"
-                className={`text-sm px-3 py-2 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                  activePage === "about" 
-                    ? "text-foreground font-medium bg-accent/50" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-                }`}
-                aria-current={activePage === "about" ? "page" : undefined}
-              >
-                {t.about}
-              </Link>
-            </li>
+            {navigationItems.map(({ href, label }) => (
+              <li key={href} role="none">
+                <NavLink
+                  href={href}
+                  isActive={activePage === label}
+                >
+                  {t[label]}
+                </NavLink>
+              </li>
+            ))}
           </ul>
 
           <div className="flex items-center space-x-3">
@@ -136,35 +114,33 @@ export default function Navigation({ activePage }: NavigationProps) {
           <div className="flex items-center space-x-2">
             {status === "authenticated" ? (
               <>
-                <Link 
-                  href="/chat" 
-                  className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                <NavButton
+                  href="/chat"
+                  icon={MessageSquare}
                 >
-                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                  <span>{t.chat}</span>
-                </Link>
-                <Link 
-                  href="/web" 
-                  className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-2 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  {t.chat}
+                </NavButton>
+                <NavButton
+                  href="/web"
+                  variant="secondary"
+                  icon={FileText}
                 >
-                  <FileText className="h-4 w-4" aria-hidden="true" />
-                  <span>{t.documents}</span>
-                </Link>
+                  {t.documents}
+                </NavButton>
               </>
             ) : (
               <>
-                <Link 
-                  href="/auth/login" 
-                  className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                <NavButton
+                  href="/auth/login"
+                  variant="secondary"
                 >
                   {t.login}
-                </Link>
-                <Link 
-                  href="/auth/register" 
-                  className="text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                </NavButton>
+                <NavButton
+                  href="/auth/register"
                 >
                   {t.register}
-                </Link>
+                </NavButton>
               </>
             )}
           </div>
@@ -172,59 +148,28 @@ export default function Navigation({ activePage }: NavigationProps) {
       </div>
 
       {/* Mobile navigation */}
-      <div 
+      <div
         id="mobile-menu"
         ref={mobileMenuRef}
-        className={`md:hidden border-t overflow-hidden transition-all duration-300 ease-in-out ${
-          isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-        }`}
+        className={`md:hidden border-t overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}
         aria-hidden={!isMobileMenuOpen}
       >
         <div className="container py-4 px-4">
           <nav aria-label="Mobile navigation">
             <ul className="flex flex-col space-y-3">
-              <li>
-                <Link 
-                  href="/" 
-                  className={`text-sm block px-3 py-2.5 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                    activePage === "home" 
-                      ? "text-foreground font-medium bg-accent/50" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  aria-current={activePage === "home" ? "page" : undefined}
-                >
-                  {t.home}
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/pricing" 
-                  className={`text-sm block px-3 py-2.5 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                    activePage === "pricing" 
-                      ? "text-foreground font-medium bg-accent/50" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  aria-current={activePage === "pricing" ? "page" : undefined}
-                >
-                  {t.pricing}
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/about" 
-                  className={`text-sm block px-3 py-2.5 rounded-md transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                    activePage === "about" 
-                      ? "text-foreground font-medium bg-accent/50" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  aria-current={activePage === "about" ? "page" : undefined}
-                >
-                  {t.about}
-                </Link>
-              </li>
+              {navigationItems.map(({ href, label }) => (
+                <li key={href}>
+                  <NavLink
+                    href={href}
+                    isActive={activePage === label}
+                    onClick={closeMobileMenu}
+                    isMobile
+                  >
+                    {t[label]}
+                  </NavLink>
+                </li>
+              ))}
             </ul>
 
             <div className="mt-4 space-y-3">
@@ -241,39 +186,41 @@ export default function Navigation({ activePage }: NavigationProps) {
             <div className="flex flex-col space-y-2 mt-4">
               {status === "authenticated" ? (
                 <>
-                  <Link 
-                    href="/chat" 
-                    className="text-sm px-4 py-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center flex items-center justify-center gap-2 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                  <NavButton
+                    href="/chat"
+                    icon={MessageSquare}
+                    onClick={closeMobileMenu}
+                    isMobile
                   >
-                    <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                    <span>{t.chat}</span>
-                  </Link>
-                  <Link 
-                    href="/web" 
-                    className="text-sm px-4 py-2.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-center flex items-center justify-center gap-2 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    {t.chat}
+                  </NavButton>
+                  <NavButton
+                    href="/web"
+                    variant="secondary"
+                    icon={FileText}
+                    onClick={closeMobileMenu}
+                    isMobile
                   >
-                    <FileText className="h-4 w-4" aria-hidden="true" />
-                    <span>{t.documents}</span>
-                  </Link>
+                    {t.documents}
+                  </NavButton>
                 </>
               ) : (
                 <>
-                  <Link 
-                    href="/auth/login" 
-                    className="text-sm px-4 py-2.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                  <NavButton
+                    href="/auth/login"
+                    variant="secondary"
+                    onClick={closeMobileMenu}
+                    isMobile
                   >
                     {t.login}
-                  </Link>
-                  <Link 
-                    href="/auth/register" 
-                    className="text-sm px-4 py-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                  </NavButton>
+                  <NavButton
+                    href="/auth/register"
+                    onClick={closeMobileMenu}
+                    isMobile
                   >
                     {t.register}
-                  </Link>
+                  </NavButton>
                 </>
               )}
             </div>

@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast-hook';
 import { Polar } from "@polar-sh/sdk";
 
 interface SubscribeButtonProps {
@@ -14,10 +14,10 @@ interface SubscribeButtonProps {
   className?: string;
 }
 
-export default function SubscribeButton({ 
-  planId, 
-  buttonText = 'Subscribe', 
-  className = '' 
+export default function SubscribeButton({
+  planId,
+  buttonText = 'Subscribe',
+  className = ''
 }: SubscribeButtonProps) {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
@@ -73,9 +73,9 @@ export default function SubscribeButton({
   };
 
   return (
-    <Button 
-      onClick={handleSubscribe} 
-      disabled={isLoading || !session} 
+    <Button
+      onClick={handleSubscribe}
+      disabled={isLoading || !session}
       className={className}
     >
       {isLoading ? (

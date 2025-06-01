@@ -267,5 +267,11 @@ export const ru = {
 
   // Template List
   errorLoadingTemplates: "Не удалось загрузить шаблоны. Пожалуйста, попробуйте позже.",
-  tryAgain: "Попробовать снова"
+  tryAgain: "Попробовать снова",
+
+  // Document Editor UI
+  versions: "Версии",
+  hidePreview: "Скрыть предпросмотр",
+  showPreview: "Показать предпросмотр",
+  save: "Сохранить"
 };

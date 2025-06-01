@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/card";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast-hook";
 import subscriptionApi from "@/lib/subscriptionApi";
 import AuthCheck from "@/components/common/AuthCheck";
 
