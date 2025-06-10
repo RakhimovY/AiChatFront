@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getSession } from 'next-auth/react';
+import { getSession, signOut } from 'next-auth/react';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -27,28 +27,38 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Handle 401 Unauthorized errors
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    if (error.response?.status === 401) {
+      if (!originalRequest._retry) {
+        originalRequest._retry = true;
 
-      try {
-        // Try to refresh the token
-        const session = await getSession();
-        if (session?.refreshToken) {
-          // Call your refresh token endpoint
-          const response = await axios.post('/api/auth/refresh', {
-            refreshToken: session.refreshToken,
-          });
+        try {
+          // Try to refresh the token
+          const session = await getSession();
+          if (session?.refreshToken) {
+            // Call your refresh token endpoint
+            const response = await axios.post('/api/auth/refresh', {
+              refreshToken: session.refreshToken,
+            });
 
-          const { accessToken } = response.data;
+            const { accessToken } = response.data;
 
-          // Update the original request with the new token
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return api(originalRequest);
+            // Update the original request with the new token
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            return api(originalRequest);
+          } else {
+            // No refresh token available, sign out
+            await signOut({ redirect: true, callbackUrl: "/auth/login" });
+            return Promise.reject(error);
+          }
+        } catch (refreshError) {
+          // If refresh fails, log out and redirect to login
+          await signOut({ redirect: true, callbackUrl: "/auth/login" });
+          return Promise.reject(refreshError);
         }
-      } catch (refreshError) {
-        // If refresh fails, redirect to login
-        window.location.href = '/auth/login';
-        return Promise.reject(refreshError);
+      } else {
+        // This request has already been retried and still got 401, sign out
+        await signOut({ redirect: true, callbackUrl: "/auth/login" });
+        return Promise.reject(error);
       }
     }
 
@@ -60,5 +70,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 export default api;
