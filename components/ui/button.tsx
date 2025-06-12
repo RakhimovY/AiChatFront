@@ -26,29 +26,77 @@ const buttonVariants = cva(
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
       },
+      isLoading: {
+        true: "relative text-transparent transition-none hover:text-transparent",
+        false: "",
+      },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
+      isLoading: false,
     },
   }
 )
 
+export type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>
+export type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>
+
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-  VariantProps<typeof buttonVariants> {
+    VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  isLoading?: boolean
+  loadingText?: string
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ 
+    className, 
+    variant, 
+    size, 
+    asChild = false, 
+    isLoading = false,
+    loadingText,
+    children,
+    disabled,
+    ...props 
+  }, ref) => {
     const Comp = asChild ? Slot : "button"
+    const isDisabled = disabled || isLoading
+
+    if (asChild) {
+      return (
+        <Comp
+          className={cn(buttonVariants({ variant, size, isLoading, className }))}
+          ref={ref}
+          disabled={isDisabled}
+          aria-disabled={isDisabled}
+          aria-busy={isLoading}
+          {...props}
+        >
+          {children}
+        </Comp>
+      )
+    }
+
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(buttonVariants({ variant, size, isLoading, className }))}
         ref={ref}
+        disabled={isDisabled}
+        aria-disabled={isDisabled}
+        aria-busy={isLoading}
         {...props}
-      />
+      >
+        {children}
+        {isLoading && (
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            {loadingText && <span className="sr-only">{loadingText}</span>}
+          </span>
+        )}
+      </Comp>
     )
   }
 )

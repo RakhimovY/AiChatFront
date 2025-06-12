@@ -1,6 +1,27 @@
 import { NextRequest } from 'next/server';
 import { withAuth, createSuccessResponse, createErrorResponse, isAuthError } from '@/lib/apiUtils';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const DEFAULT_HEADERS = {
+  'Content-Type': 'application/json'
+};
+
+const handleApiResponse = async (response: Response) => {
+  if (response.status === 401) {
+    return createErrorResponse('Unauthorized', 401);
+  }
+  const data = await response.json();
+  return createSuccessResponse(data, response.status);
+};
+
+const handleApiError = (error: unknown, errorMessage: string) => {
+  console.error(errorMessage, error);
+  if (isAuthError(error)) {
+    return createErrorResponse('Unauthorized', 401);
+  }
+  return createErrorResponse(errorMessage, 500);
+};
+
 /**
  * Handler for GET /api/user
  * This endpoint retrieves user information
@@ -8,30 +29,15 @@ import { withAuth, createSuccessResponse, createErrorResponse, isAuthError } fro
 export async function GET(req: NextRequest) {
   return withAuth(req, async (token) => {
     try {
-      // Forward the request to the backend
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
-        method: 'GET',
+      const response = await fetch(`${API_URL}/user`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          ...DEFAULT_HEADERS,
+          'Authorization': `Bearer ${token}`
         }
       });
-
-      if (response.status === 401) {
-        return createErrorResponse('Unauthorized', 401);
-      }
-
-      const data = await response.json();
-
-      return createSuccessResponse(data, response.status);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Error retrieving user information:', error);
-
-      if (isAuthError(error)) {
-        return createErrorResponse('Unauthorized', 401);
-      }
-
-      return createErrorResponse('Failed to retrieve user information', 500);
+      return handleApiError(error, 'Failed to retrieve user information');
     }
   });
 }

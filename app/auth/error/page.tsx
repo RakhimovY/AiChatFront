@@ -8,6 +8,11 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import LanguageSelector from "@/components/layout/LanguageSelector";
 import Navigation from "@/components/layout/Navigation";
 
+interface ErrorMessage {
+  message: string;
+  actions: string[];
+}
+
 export default function ErrorPage() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
@@ -15,44 +20,31 @@ export default function ErrorPage() {
   const { t } = useLanguage();
 
   useEffect(() => {
-    // Set error message based on error code
-    switch (error) {
-      case "CredentialsSignin":
-        setErrorMessage(t.errorInvalidCredentials);
-        break;
-      case "GoogleCredentialsNotConfigured":
-        setErrorMessage(t.errorGoogleConfig);
-        break;
-      case "InvalidBackendResponse":
-        setErrorMessage(t.errorBackendAuth);
-        break;
-      case "BackendUnavailable":
-        setErrorMessage(t.errorBackendUnavailable);
-        break;
-      case "GoogleAuthFailed":
-        setErrorMessage(t.errorGoogleAuth);
-        break;
-      case "OAuthAccountNotLinked":
-        setErrorMessage(t.errorAccountLinked);
-        break;
-      case "OAuthSignin":
-        setErrorMessage(t.errorOAuthInit);
-        break;
-      case "OAuthCallback":
-        setErrorMessage(t.errorOAuthCallback);
-        break;
-      default:
-        setErrorMessage(t.errorGenericAuth);
-    }
+    const errorMessages: Record<string, string> = {
+      CredentialsSignin: t.errorInvalidCredentials,
+      GoogleCredentialsNotConfigured: t.errorGoogleConfig,
+      InvalidBackendResponse: t.errorBackendAuth,
+      BackendUnavailable: t.errorBackendUnavailable,
+      GoogleAuthFailed: t.errorGoogleAuth,
+      OAuthAccountNotLinked: t.errorAccountLinked,
+      OAuthSignin: t.errorOAuthInit,
+      OAuthCallback: t.errorOAuthCallback,
+    };
+
+    setErrorMessage(errorMessages[error || ""] || t.errorGenericAuth);
   }, [error, t]);
+
+  const actions = [
+    t.checkCredentials,
+    t.tryAnotherMethod,
+    t.checkConnection,
+    t.tryLater
+  ];
 
   return (
     <main className="flex flex-col min-h-screen bg-background">
-      {/* Navigation */}
-      <Navigation />
-
+      <Navigation activePage="home" />
       <div className="container py-12 mt-16">
-
         <div className="max-w-md mx-auto p-6 bg-card rounded-lg shadow-sm border">
           <div className="flex items-center justify-center mb-6">
             <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
@@ -71,10 +63,9 @@ export default function ErrorPage() {
               {t.tryFollowingActions}
             </p>
             <ul className="text-sm space-y-2 list-disc list-inside">
-              <li>{t.checkCredentials}</li>
-              <li>{t.tryAnotherMethod}</li>
-              <li>{t.checkConnection}</li>
-              <li>{t.tryLater}</li>
+              {actions.map((action, index) => (
+                <li key={index}>{action}</li>
+              ))}
             </ul>
           </div>
 

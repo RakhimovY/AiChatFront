@@ -1,5 +1,33 @@
-import {NextRequest} from "next/server";
-import {createErrorResponse, createSuccessResponse, isAuthError, withAuth,} from "@/lib/apiUtils";
+import { NextRequest } from "next/server";
+import { createErrorResponse, createSuccessResponse, isAuthError, withAuth } from "@/lib/apiUtils";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const DEFAULT_HEADERS = {
+  'Content-Type': 'application/json'
+};
+
+const handleApiResponse = async (response: Response) => {
+  if (response.status === 401) {
+    return createErrorResponse('Unauthorized', 401);
+  }
+  if (response.status === 400) {
+    const errorData = await response.json();
+    return createErrorResponse(errorData.error || 'Invalid request', 400);
+  }
+  if (response.status === 404) {
+    return createErrorResponse('Template not found', 404);
+  }
+  const data = await response.json();
+  return createSuccessResponse(data, response.status);
+};
+
+const handleApiError = (error: unknown, errorMessage: string) => {
+  console.error(errorMessage, error);
+  if (isAuthError(error)) {
+    return createErrorResponse('Unauthorized', 401);
+  }
+  return createErrorResponse(errorMessage, 500);
+};
 
 /**
  * Handler for GET /api/web/documents
@@ -8,34 +36,15 @@ import {createErrorResponse, createSuccessResponse, isAuthError, withAuth,} from
 export async function GET(req: NextRequest) {
   return withAuth(req, async (token) => {
     try {
-      // Forward the request to the backend
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/web/documents`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      // Check if response is 401 Unauthorized
-      if (response.status === 401) {
-        return createErrorResponse("Unauthorized", 401);
-      }
-      // Get the response data
-      const data = await response.json();
-
-      // Return the response from the backend
-      return createSuccessResponse(data, response.status);
+      const response = await fetch(`${API_URL}/web/documents`, {
+        headers: {
+          ...DEFAULT_HEADERS,
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return handleApiResponse(response);
     } catch (error) {
-      console.error("Error fetching documents:", error);
-
-      if (isAuthError(error)) {
-        return createErrorResponse("Unauthorized", 401);
-      }
-
-      return createErrorResponse("Failed to fetch documents", 500);
+      return handleApiError(error, 'Failed to fetch documents');
     }
   });
 }
@@ -47,51 +56,18 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   return withAuth(req, async (token) => {
     try {
-      // Get the request body
       const body = await req.json();
-
-      // Forward the request to the backend
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/web/documents`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
+      const response = await fetch(`${API_URL}/web/documents`, {
+        method: 'POST',
+        headers: {
+          ...DEFAULT_HEADERS,
+          'Authorization': `Bearer ${token}`
         },
-      );
-
-      // Check if response is 401 Unauthorized
-      if (response.status === 401) {
-        return createErrorResponse("Unauthorized", 401);
-      }
-
-      // Check if response is 400 Bad Request
-      if (response.status === 400) {
-        const errorData = await response.json();
-        return createErrorResponse(errorData.error || "Invalid request", 400);
-      }
-
-      // Check if response is 404 Not Found
-      if (response.status === 404) {
-        return createErrorResponse("Template not found", 404);
-      }
-
-      // Get the response data
-      const data = await response.json();
-
-      // Return the response from the backend
-      return createSuccessResponse(data, response.status);
+        body: JSON.stringify(body)
+      });
+      return handleApiResponse(response);
     } catch (error) {
-      console.error("Error creating document:", error);
-
-      if (isAuthError(error)) {
-        return createErrorResponse("Unauthorized", 401);
-      }
-
-      return createErrorResponse("Failed to create document", 500);
+      return handleApiError(error, 'Failed to create document');
     }
   });
 }

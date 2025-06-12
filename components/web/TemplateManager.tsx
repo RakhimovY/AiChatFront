@@ -5,286 +5,211 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast-hook";
-import type { Template, Field, TextField, SelectField, DateField, CheckboxField, RadioField } from "@/types/document";
-import { Plus, Trash2, Save } from "lucide-react";
+import type { Template, Field, TextField } from "@/types/document";
+import { Plus, Save } from "lucide-react";
+import FieldEditor from "./FieldEditor";
 
-interface TemplateManagerProps {
-    template?: Template;
-    onSave?: (template: Template) => void;
-}
+type TemplateManagerProps = {
+  template?: Template;
+  onSave?: (template: Template) => void;
+};
 
-export function TemplateManager({ template, onSave }: TemplateManagerProps) {
-    const router = useRouter();
-    const { toast } = useToast();
-    const [loading, setLoading] = React.useState(false);
-    const [title, setTitle] = React.useState(template?.title || "");
-    const [description, setDescription] = React.useState(template?.description || "");
-    const [category, setCategory] = React.useState(template?.category || "");
-    const [content, setContent] = React.useState(template?.content || "");
-    const [fields, setFields] = React.useState<Field[]>(template?.fields || []);
+const TemplateManager = ({ template, onSave }: TemplateManagerProps) => {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [loading, setLoading] = React.useState(false);
+  const [title, setTitle] = React.useState(template?.title || "");
+  const [description, setDescription] = React.useState(template?.description || "");
+  const [category, setCategory] = React.useState(template?.category || "");
+  const [content, setContent] = React.useState(template?.content || "");
+  const [fields, setFields] = React.useState<Field[]>(template?.fields || []);
 
-    const handleAddField = () => {
-        const newField: TextField = {
-            id: `field_${Date.now()}`,
-            name: "",
-            label: "",
-            type: "text",
-            required: false,
-        };
-        setFields([...fields, newField]);
+  const handleAddField = React.useCallback(() => {
+    const newField: TextField = {
+      id: `field_${Date.now()}`,
+      name: "",
+      label: "",
+      type: "text",
+      required: false,
     };
+    setFields(prev => [...prev, newField]);
+  }, []);
 
-    const handleRemoveField = (index: number) => {
-        setFields(fields.filter((_, i) => i !== index));
-    };
+  const handleRemoveField = React.useCallback((index: number) => {
+    setFields(prev => prev.filter((_, i) => i !== index));
+  }, []);
 
-    const handleFieldChange = (index: number, field: Partial<Field>) => {
-        const newFields = [...fields];
-        const currentField = newFields[index];
+  const handleFieldChange = React.useCallback((index: number, field: Partial<Field>) => {
+    setFields(prev => {
+      const newFields = [...prev];
+      const currentField = newFields[index];
+      newFields[index] = { ...currentField, ...field };
+      return newFields;
+    });
+  }, []);
 
-        // Create a new field object based on the type
-        let updatedField: Field;
-        switch (field.type || currentField.type) {
-            case "select":
-                updatedField = {
-                    ...currentField,
-                    ...field,
-                    type: "select",
-                    options: (field as Partial<SelectField>).options || (currentField as SelectField).options || [],
-                } as SelectField;
-                break;
-            case "date":
-                updatedField = {
-                    ...currentField,
-                    ...field,
-                    type: "date",
-                } as DateField;
-                break;
-            case "checkbox":
-                updatedField = {
-                    ...currentField,
-                    ...field,
-                    type: "checkbox",
-                } as CheckboxField;
-                break;
-            case "radio":
-                updatedField = {
-                    ...currentField,
-                    ...field,
-                    type: "radio",
-                    options: (field as Partial<RadioField>).options || (currentField as RadioField).options || [],
-                } as RadioField;
-                break;
-            default:
-                updatedField = {
-                    ...currentField,
-                    ...field,
-                    type: "text",
-                } as TextField;
-        }
+  const handleSubmit = React.useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-        newFields[index] = updatedField;
-        setFields(newFields);
-    };
+    try {
+      const templateData: Partial<Template> = {
+        title,
+        description,
+        category,
+        content,
+        fields,
+      };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+      const url = template?.id 
+        ? `/api/web/templates/${template.id}`
+        : '/api/web/templates';
+      
+      const method = template?.id ? 'PUT' : 'POST';
 
-        try {
-            const templateData: Partial<Template> = {
-                title,
-                description,
-                category,
-                content,
-                fields,
-            };
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(templateData),
+      });
 
-            if (template?.id) {
-                // Update existing template
-                const response = await fetch(`/api/web/templates/${template.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(templateData),
-                });
+      if (!response.ok) {
+        throw new Error(`Failed to ${template?.id ? 'update' : 'create'} template`);
+      }
 
-                if (!response.ok) {
-                    throw new Error('Failed to update template');
-                }
+      const savedTemplate = await response.json();
+      onSave?.(savedTemplate);
+      
+      toast({
+        title: "Success",
+        description: `Template ${template?.id ? 'updated' : 'created'} successfully`,
+      });
 
-                const updatedTemplate = await response.json();
-                onSave?.(updatedTemplate);
-                toast({
-                    title: "Success",
-                    description: "Template updated successfully",
-                });
-            } else {
-                // Create new template
-                const response = await fetch('/api/web/templates', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(templateData),
-                });
+      router.push("/templates");
+    } catch (error) {
+      console.error("Error saving template:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save template. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [template?.id, title, description, category, content, fields, onSave, router, toast]);
 
-                if (!response.ok) {
-                    throw new Error('Failed to create template');
-                }
+  const handleTitleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+  }, []);
 
-                const newTemplate = await response.json();
-                onSave?.(newTemplate);
-                toast({
-                    title: "Success",
-                    description: "Template created successfully",
-                });
-            }
+  const handleDescriptionChange = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
+  }, []);
 
-            router.push("/templates");
-        } catch (error) {
-            console.error("Error saving template:", error);
-            toast({
-                title: "Error",
-                description: "Failed to save template",
-                variant: "destructive",
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleCategoryChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setCategory(e.target.value);
+  }, []);
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-                <div>
-                    <label className="text-sm font-medium">Title</label>
-                    <Input
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        required
-                        disabled={loading}
-                    />
-                </div>
+  const handleContentChange = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value);
+  }, []);
 
-                <div>
-                    <label className="text-sm font-medium">Description</label>
-                    <Textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                        disabled={loading}
-                    />
-                </div>
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="template-title" className="text-sm font-medium">Title</label>
+          <Input
+            id="template-title"
+            value={title}
+            onChange={handleTitleChange}
+            required
+            disabled={loading}
+            aria-label="Template title"
+          />
+        </div>
 
-                <div>
-                    <label className="text-sm font-medium">Category</label>
-                    <Input
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        required
-                        disabled={loading}
-                    />
-                </div>
+        <div>
+          <label htmlFor="template-description" className="text-sm font-medium">Description</label>
+          <Textarea
+            id="template-description"
+            value={description}
+            onChange={handleDescriptionChange}
+            required
+            disabled={loading}
+            aria-label="Template description"
+          />
+        </div>
 
-                <div>
-                    <label className="text-sm font-medium">Content</label>
-                    <Textarea
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        required
-                        disabled={loading}
-                        className="min-h-[200px]"
-                    />
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Use {"{{field_name}}"} to insert field values
-                    </p>
-                </div>
-            </div>
+        <div>
+          <label htmlFor="template-category" className="text-sm font-medium">Category</label>
+          <Input
+            id="template-category"
+            value={category}
+            onChange={handleCategoryChange}
+            required
+            disabled={loading}
+            aria-label="Template category"
+          />
+        </div>
 
-            <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-medium">Fields</h3>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleAddField}
-                        disabled={loading}
-                    >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Field
-                    </Button>
-                </div>
+        <div>
+          <label htmlFor="template-content" className="text-sm font-medium">Content</label>
+          <Textarea
+            id="template-content"
+            value={content}
+            onChange={handleContentChange}
+            required
+            disabled={loading}
+            className="min-h-[200px]"
+            aria-label="Template content"
+          />
+        </div>
+      </div>
 
-                {fields.map((field, index) => (
-                    <div key={field.id} className="grid grid-cols-2 gap-4 p-4 border rounded-lg">
-                        <div>
-                            <label className="text-sm font-medium">Name</label>
-                            <Input
-                                value={field.name}
-                                onChange={(e) => handleFieldChange(index, { name: e.target.value })}
-                                required
-                                disabled={loading}
-                            />
-                        </div>
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-medium">Fields</h3>
+          <Button
+            type="button"
+            onClick={handleAddField}
+            disabled={loading}
+            aria-label="Add new field"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Field
+          </Button>
+        </div>
 
-                        <div>
-                            <label className="text-sm font-medium">Label</label>
-                            <Input
-                                value={field.label}
-                                onChange={(e) => handleFieldChange(index, { label: e.target.value })}
-                                required
-                                disabled={loading}
-                            />
-                        </div>
+        <div className="space-y-4">
+          {fields.map((field, index) => (
+            <FieldEditor
+              key={field.id}
+              field={field}
+              index={index}
+              onFieldChange={handleFieldChange}
+              onRemove={handleRemoveField}
+              disabled={loading}
+            />
+          ))}
+        </div>
+      </div>
 
-                        <div>
-                            <label className="text-sm font-medium">Type</label>
-                            <Select
-                                value={field.type}
-                                onValueChange={(value) => handleFieldChange(index, { type: value as Field["type"] })}
-                                disabled={loading}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="text">Text</SelectItem>
-                                    <SelectItem value="textarea">Textarea</SelectItem>
-                                    <SelectItem value="select">Select</SelectItem>
-                                    <SelectItem value="date">Date</SelectItem>
-                                    <SelectItem value="checkbox">Checkbox</SelectItem>
-                                    <SelectItem value="radio">Radio</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          disabled={loading}
+          aria-label="Save template"
+        >
+          <Save className="h-4 w-4 mr-2" />
+          {loading ? "Saving..." : "Save Template"}
+        </Button>
+      </div>
+    </form>
+  );
+};
 
-                        <div className="flex items-end">
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleRemoveField(index)}
-                                disabled={loading}
-                            >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Remove
-                            </Button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <div className="flex justify-end">
-                <Button type="submit" disabled={loading}>
-                    <Save className="h-4 w-4 mr-2" />
-                    {loading ? "Saving..." : "Save Template"}
-                </Button>
-            </div>
-        </form>
-    );
-} 
+export default TemplateManager; 

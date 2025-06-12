@@ -43,7 +43,7 @@ export default function Message({
   return (
     <div
       className={cn(
-        "flex w-full gap-4 p-4",
+        "flex w-full gap-4 p-4 rounded-xl",
         role === "assistant" ? "bg-muted/50" : "bg-background"
       )}
     >

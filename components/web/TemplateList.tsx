@@ -15,18 +15,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import TemplateCard from "./TemplateCard";
 
-interface TemplateListProps {
+type TemplateListProps = {
   onSelect?: (template: Template) => void;
-}
+};
 
-export function TemplateList({ onSelect }: TemplateListProps) {
+type Category = string;
+
+const TemplateList = ({ onSelect }: TemplateListProps) => {
   const router = useRouter();
   const { toast } = useToast();
   const [templates, setTemplates] = React.useState<Template[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
 
   const categories = React.useMemo(() => {
     const uniqueCategories = new Set(templates.map(t => t.category));
@@ -34,9 +37,11 @@ export function TemplateList({ onSelect }: TemplateListProps) {
   }, [templates]);
 
   const filteredTemplates = React.useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
     return templates.filter(template => {
-      const matchesSearch = template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        template.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = query === "" || 
+        template.title.toLowerCase().includes(query) ||
+        template.description.toLowerCase().includes(query);
       const matchesCategory = !selectedCategory || template.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
@@ -51,20 +56,20 @@ export function TemplateList({ onSelect }: TemplateListProps) {
       console.error("Error fetching templates:", error);
       toast({
         title: "Error",
-        description: "Failed to load templates",
+        description: "Failed to load templates. Please try again later.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   React.useEffect(() => {
     fetchTemplates();
   }, [fetchTemplates]);
 
-  const handleDelete = async (templateId: string) => {
-    if (!confirm("Are you sure you want to delete this template?")) {
+  const handleDelete = React.useCallback(async (templateId: string) => {
+    if (!window.confirm("Are you sure you want to delete this template?")) {
       return;
     }
 
@@ -77,7 +82,7 @@ export function TemplateList({ onSelect }: TemplateListProps) {
         throw new Error('Failed to delete template');
       }
 
-      setTemplates(templates.filter(t => t.id !== templateId));
+      setTemplates(prev => prev.filter(t => t.id !== templateId));
       toast({
         title: "Success",
         description: "Template deleted successfully",
@@ -86,21 +91,40 @@ export function TemplateList({ onSelect }: TemplateListProps) {
       console.error("Error deleting template:", error);
       toast({
         title: "Error",
-        description: "Failed to delete template",
+        description: "Failed to delete template. Please try again later.",
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
+
+  const handleEdit = React.useCallback((templateId: string) => {
+    router.push(`/templates/${templateId}/edit`);
+  }, [router]);
+
+  const handleSearch = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
+
+  const handleCategoryChange = React.useCallback((value: string) => {
+    setSelectedCategory(value === "all" ? null : value);
+  }, []);
 
   if (loading) {
-    return <div>Loading templates...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[200px]" role="status">
+        <div className="text-muted-foreground">Loading templates...</div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Templates</h2>
-        <Button onClick={() => router.push("/templates/new")}>
+        <Button 
+          onClick={() => router.push("/templates/new")}
+          aria-label="Create new template"
+        >
           <Plus className="h-4 w-4 mr-2" />
           New Template
         </Button>
@@ -112,13 +136,14 @@ export function TemplateList({ onSelect }: TemplateListProps) {
           <Input
             placeholder="Search templates..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearch}
             className="pl-9"
+            aria-label="Search templates"
           />
         </div>
         <Select
           value={selectedCategory || "all"}
-          onValueChange={(value: string) => setSelectedCategory(value === "all" ? null : value)}
+          onValueChange={handleCategoryChange}
         >
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="All Categories" />
@@ -136,58 +161,23 @@ export function TemplateList({ onSelect }: TemplateListProps) {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredTemplates.map((template) => (
-          <div
+          <TemplateCard
             key={template.id}
-            className="border rounded-lg p-4 space-y-4 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <h3 className="font-semibold">{template.title}</h3>
-                <p className="text-sm text-muted-foreground">{template.description}</p>
-                <span className="inline-block px-2 py-1 text-xs rounded-full bg-secondary">
-                  {template.category}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => router.push(`/templates/${template.id}/edit`)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDelete(template.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-muted-foreground">
-                {template.fields.length} fields
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onSelect?.(template)}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Use Template
-              </Button>
-            </div>
-          </div>
+            template={template}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onSelect={onSelect}
+          />
         ))}
       </div>
 
       {filteredTemplates.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="text-center py-8 text-muted-foreground" role="status">
           No templates found
         </div>
       )}
     </div>
   );
-}
+};
+
+export { TemplateList };

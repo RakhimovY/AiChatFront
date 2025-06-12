@@ -32,6 +32,12 @@ const toastVariants = cva(
         default: "border bg-background text-foreground",
         destructive:
           "destructive group border-destructive bg-destructive text-destructive-foreground",
+        success:
+          "success group border-green-500 bg-green-500 text-green-50",
+        warning:
+          "warning group border-yellow-500 bg-yellow-500 text-yellow-50",
+        info:
+          "info group border-blue-500 bg-blue-500 text-blue-50",
       },
     },
     defaultVariants: {
@@ -40,18 +46,92 @@ const toastVariants = cva(
   }
 )
 
+export interface ToastProps
+  extends React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root>,
+    VariantProps<typeof toastVariants> {
+  error?: string;
+  label?: string;
+  helperText?: string;
+  containerClassName?: string;
+  id?: string;
+  icon?: React.ReactNode;
+  duration?: number;
+  onClose?: () => void;
+}
+
 const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
-  VariantProps<typeof toastVariants>
->(({ className, variant, ...props }, ref) => {
+  ToastProps
+>(({ 
+  className, 
+  variant, 
+  error,
+  label,
+  helperText,
+  containerClassName,
+  id,
+  icon,
+  duration,
+  onClose,
+  children,
+  ...props 
+}, ref) => {
+  const toastId = id || React.useId();
+  const errorId = `${toastId}-error`;
+  const helperId = `${toastId}-helper`;
+
   return (
-    <ToastPrimitives.Root
-      ref={ref}
-      className={cn(toastVariants({ variant }), className)}
-      {...props}
-    />
-  )
+    <div className={cn("space-y-2", containerClassName)}>
+      {label && (
+        <label
+          htmlFor={toastId}
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          {label}
+        </label>
+      )}
+      <ToastPrimitives.Root
+        ref={ref}
+        id={toastId}
+        className={cn(
+          toastVariants({ variant }),
+          error && "border-destructive focus:ring-destructive",
+          className
+        )}
+        aria-invalid={error ? "true" : "false"}
+        aria-describedby={cn(
+          error && errorId,
+          helperText && helperId
+        )}
+        duration={duration}
+        onOpenChange={(open) => {
+          if (!open && onClose) {
+            onClose();
+          }
+        }}
+        {...props}
+      >
+        {icon && <span className="mr-2">{icon}</span>}
+        {children}
+      </ToastPrimitives.Root>
+      {error && (
+        <p
+          id={errorId}
+          className="text-sm font-medium text-destructive"
+        >
+          {error}
+        </p>
+      )}
+      {helperText && !error && (
+        <p
+          id={helperId}
+          className="text-sm text-muted-foreground"
+        >
+          {helperText}
+        </p>
+      )}
+    </div>
+  );
 })
 Toast.displayName = ToastPrimitives.Root.displayName
 
@@ -62,7 +142,7 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
+      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive group-[.success]:border-green-500/40 group-[.success]:hover:border-green-500/30 group-[.success]:hover:bg-green-500 group-[.success]:hover:text-green-50 group-[.success]:focus:ring-green-500 group-[.warning]:border-yellow-500/40 group-[.warning]:hover:border-yellow-500/30 group-[.warning]:hover:bg-yellow-500 group-[.warning]:hover:text-yellow-50 group-[.warning]:focus:ring-yellow-500 group-[.info]:border-blue-500/40 group-[.info]:hover:border-blue-500/30 group-[.info]:hover:bg-blue-500 group-[.info]:hover:text-blue-50 group-[.info]:focus:ring-blue-500",
       className
     )}
     {...props}
@@ -77,10 +157,11 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
+      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600 group-[.success]:text-green-300 group-[.success]:hover:text-green-50 group-[.success]:focus:ring-green-400 group-[.success]:focus:ring-offset-green-600 group-[.warning]:text-yellow-300 group-[.warning]:hover:text-yellow-50 group-[.warning]:focus:ring-yellow-400 group-[.warning]:focus:ring-offset-yellow-600 group-[.info]:text-blue-300 group-[.info]:hover:text-blue-50 group-[.info]:focus:ring-blue-400 group-[.info]:focus:ring-offset-blue-600",
       className
     )}
     toast-close=""
+    aria-label="Close toast"
     {...props}
   >
     <X className="h-4 w-4" />
@@ -111,8 +192,6 @@ const ToastDescription = React.forwardRef<
   />
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
-
-type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 

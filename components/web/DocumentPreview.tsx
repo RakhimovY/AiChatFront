@@ -1,47 +1,67 @@
 "use client";
 
 import * as React from "react";
-import { Template, DocumentValues } from "@/types/document";
+import { Template, DocumentValues, Field } from "@/types/document";
 import { cn } from "@/lib/utils";
 
-interface DocumentPreviewProps {
+type DocumentPreviewProps = {
   template: Template;
   values: DocumentValues;
   className?: string;
-}
+};
 
-export default function DocumentPreview({
+type FieldType = "text" | "date" | "checkbox" | "number";
+
+const formatFieldValue = (value: unknown, fieldType: FieldType): string => {
+  if (value === null || value === undefined) return "";
+  
+  try {
+    switch (fieldType) {
+      case "date":
+        return new Date(value as string).toLocaleDateString();
+      case "checkbox":
+        return value ? "Yes" : "No";
+      case "number":
+        return Number(value).toString();
+      default:
+        return String(value);
+    }
+  } catch (error) {
+    console.error(`Error formatting field value: ${error}`);
+    return String(value);
+  }
+};
+
+const DocumentPreview = React.memo(({
   template,
   values,
   className,
-}: DocumentPreviewProps) {
+}: DocumentPreviewProps) => {
   const previewContent = React.useMemo(() => {
-    let content = template.content;
-
-    // Replace placeholders with actual values
-    Object.entries(values).forEach(([key, value]) => {
-      const field = template.fields.find(f => f.id === key);
-      if (field) {
+    try {
+      return template.fields.reduce((content, field) => {
+        const value = values[field.name];
         const placeholder = `{{${field.name}}}`;
-        let displayValue = value;
-
-        // Format value based on field type
-        if (field.type === "date" && value) {
-          displayValue = new Date(value).toLocaleDateString();
-        } else if (field.type === "checkbox") {
-          displayValue = value ? "Yes" : "No";
-        }
-
-        content = content.replace(new RegExp(placeholder, "g"), displayValue?.toString() || "");
-      }
-    });
-
-    return content;
+        const displayValue = formatFieldValue(value, field.type as FieldType);
+        return content.replace(new RegExp(placeholder, "g"), displayValue);
+      }, template.content);
+    } catch (error) {
+      console.error(`Error generating preview: ${error}`);
+      return template.content;
+    }
   }, [template, values]);
 
   return (
-    <div className={cn("prose max-w-none", className)}>
+    <div 
+      className={cn("prose max-w-none", className)}
+      role="document"
+      aria-label="Document preview"
+    >
       <div className="whitespace-pre-wrap">{previewContent}</div>
     </div>
   );
-}
+});
+
+DocumentPreview.displayName = "DocumentPreview";
+
+export default DocumentPreview;

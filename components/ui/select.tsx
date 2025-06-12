@@ -11,24 +11,71 @@ const SelectGroup = SelectPrimitive.Group
 
 const SelectValue = SelectPrimitive.Value
 
+export interface SelectTriggerProps
+  extends React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> {
+  error?: string
+  label?: string
+  helperText?: string
+  containerClassName?: string
+}
+
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-))
+  SelectTriggerProps
+>(({ className, children, error, label, helperText, containerClassName, id, ...props }, ref) => {
+  const triggerId = id || React.useId()
+  const errorId = `${triggerId}-error`
+  const helperId = `${triggerId}-helper`
+
+  return (
+    <div className={cn("space-y-2", containerClassName)}>
+      {label && (
+        <label
+          htmlFor={triggerId}
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          {label}
+        </label>
+      )}
+      <SelectPrimitive.Trigger
+        ref={ref}
+        id={triggerId}
+        className={cn(
+          "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+          error && "border-destructive focus:ring-destructive",
+          className
+        )}
+        aria-invalid={error ? "true" : "false"}
+        aria-describedby={cn(
+          error && errorId,
+          helperText && helperId
+        )}
+        {...props}
+      >
+        {children}
+        <SelectPrimitive.Icon asChild>
+          <ChevronDown className="h-4 w-4 opacity-50" />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      {error && (
+        <p
+          id={errorId}
+          className="text-sm font-medium text-destructive"
+        >
+          {error}
+        </p>
+      )}
+      {helperText && !error && (
+        <p
+          id={helperId}
+          className="text-sm text-muted-foreground"
+        >
+          {helperText}
+        </p>
+      )}
+    </div>
+  )
+})
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
 const SelectScrollUpButton = React.forwardRef<

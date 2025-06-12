@@ -2,6 +2,17 @@ import { NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const DEFAULT_HEADERS = {
+  'Content-Type': 'application/json'
+};
+
+const createResponse = (data: unknown, status: number) => 
+  new Response(JSON.stringify(data), { 
+    status,
+    headers: DEFAULT_HEADERS
+  });
+
 /**
  * Handler for GET /chat/user
  * This endpoint forwards the request to the backend API
@@ -13,20 +24,17 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.accessToken) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized: Please log in to access this resource' }),
-        { 
-          status: 401,
-          headers: { 'Content-Type': 'application/json' }
-        }
+      return createResponse(
+        { error: 'Unauthorized: Please log in to access this resource' },
+        401
       );
     }
 
     // Forward the request to the backend
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/user`, {
+    const response = await fetch(`${API_URL}/chat/user`, {
       headers: {
-        'Authorization': `Bearer ${session.accessToken}`,
-        'Content-Type': 'application/json'
+        ...DEFAULT_HEADERS,
+        'Authorization': `Bearer ${session.accessToken}`
       }
     });
 
@@ -34,23 +42,14 @@ export async function GET(req: NextRequest) {
     const data = await response.json();
 
     // Return the response from the backend
-    return new Response(
-      JSON.stringify(data),
-      { 
-        status: response.status,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+    return createResponse(data, response.status);
   } catch (error) {
     console.error('Error fetching user chats:', error);
 
     // Return an error response
-    return new Response(
-      JSON.stringify({ error: 'Failed to fetch user chats' }),
-      { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
+    return createResponse(
+      { error: 'Failed to fetch user chats' },
+      500
     );
   }
 }

@@ -1,6 +1,27 @@
 import { NextRequest } from 'next/server';
 import { withAuth, createSuccessResponse, createErrorResponse, isAuthError } from '@/lib/apiUtils';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const DEFAULT_HEADERS = {
+  'Content-Type': 'application/json'
+} as const;
+
+const handleApiResponse = async (response: Response) => {
+  if (response.status === 401) {
+    return createErrorResponse('Unauthorized', 401);
+  }
+  const data = await response.json();
+  return createSuccessResponse(data, response.status);
+};
+
+const handleApiError = (error: unknown, errorMessage: string) => {
+  console.error(errorMessage, error);
+  if (isAuthError(error)) {
+    return createErrorResponse('Unauthorized', 401);
+  }
+  return createErrorResponse(errorMessage, 500);
+};
+
 /**
  * Handler for GET /subscriptions
  * This endpoint forwards the request to the backend API
@@ -8,32 +29,15 @@ import { withAuth, createSuccessResponse, createErrorResponse, isAuthError } fro
 export async function GET(req: NextRequest) {
   return withAuth(req, async (token) => {
     try {
-      // Forward the request to the backend
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions`, {
+      const response = await fetch(`${API_URL}/subscriptions`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          ...DEFAULT_HEADERS,
+          'Authorization': `Bearer ${token}`
         }
       });
-
-      // Check if response is 401 Unauthorized
-      if (response.status === 401) {
-        return createErrorResponse('Unauthorized', 401);
-      }
-
-      // Get the response data
-      const data = await response.json();
-
-      // Return the response from the backend
-      return createSuccessResponse(data, response.status);
+      return handleApiResponse(response);
     } catch (error) {
-      console.error('Error fetching subscriptions:', error);
-
-      if (isAuthError(error)) {
-        return createErrorResponse('Unauthorized', 401);
-      }
-
-      return createErrorResponse('Failed to fetch subscriptions', 500);
+      return handleApiError(error, 'Failed to fetch subscriptions');
     }
   });
 }

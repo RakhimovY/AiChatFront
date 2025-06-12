@@ -48,9 +48,15 @@ export default function ChatList({
     }
   }, [onDeleteChat]);
 
-  const formatDate = useCallback((date: Date) => {
+  const formatDate = useCallback((date: Date | string) => {
     const now = new Date();
     const chatDate = new Date(date);
+    
+    // Check if the date is valid
+    if (isNaN(chatDate.getTime())) {
+      return '';
+    }
+    
     const diffDays = Math.floor((now.getTime() - chatDate.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) {
