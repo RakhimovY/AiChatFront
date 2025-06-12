@@ -336,3 +336,26 @@ export const kazakhstanLegalEntitySchema = z.object({
     currency: z.enum(["KZT", "USD", "EUR", "RUB"]),
   }).optional(),
 });
+
+export type KazakhstanLegalEntity = {
+  id: string;
+  name: string;
+  type: string;
+  registrationNumber: string;
+  address: string;
+  director: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type KazakhstanLegalDocument = {
+  id: string;
+  entityId: string;
+  type: string;
+  number: string;
+  issueDate: string;
+  expiryDate?: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};

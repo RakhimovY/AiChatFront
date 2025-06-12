@@ -43,19 +43,41 @@ export interface RadioField extends FieldBase {
     defaultValue?: string;
 }
 
-export type Field = TextField | TextareaField | SelectField | DateField | CheckboxField | RadioField;
+export type FieldType =
+  | 'text'
+  | 'number'
+  | 'date'
+  | 'select'
+  | 'checkbox'
+  | 'radio';
+
+export interface Field {
+  name: string;
+  label: string;
+  type: FieldType;
+  required?: boolean;
+  options?: string[];
+}
 
 // Template type definition
 export interface Template {
     id: string;
     title: string;
     description: string;
-    category: string;
+    category: TemplateCategory;
     fields: Field[];
     content: string; // Template content with placeholders
     previewImage?: string;
     createdAt: string;
     updatedAt: string;
+    version: number;
+    isActive: boolean;
+    metadata?: {
+        author?: string;
+        tags?: string[];
+        language?: string;
+        country?: string;
+    };
 }
 
 // Document type definition
@@ -68,6 +90,13 @@ export interface Document {
     createdAt: string;
     updatedAt: string;
     version: number;
+    status: "draft" | "final" | "archived";
+    metadata?: {
+        author?: string;
+        tags?: string[];
+        language?: string;
+        country?: string;
+    };
 }
 
 // Document values type
@@ -77,14 +106,15 @@ export type DocumentValues = Record<string, any>;
 export interface DocumentVersion {
     id: string;
     documentId: string;
-    version: number;
     values: DocumentValues;
     createdAt: string;
-    createdBy: string;
+    version: number;
+    author?: string;
+    comment?: string;
 }
 
 // Export format type
-export type ExportFormat = 'pdf' | 'docx';
+export type ExportFormat = 'pdf' | 'docx' | 'txt';
 
 // Document export options
 export interface DocumentExportOptions {

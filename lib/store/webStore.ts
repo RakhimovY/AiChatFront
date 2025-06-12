@@ -246,38 +246,17 @@ export const useWebStore = create<WebState>()(
         setTemplatesError(null);
 
         try {
-          // TODO: templates
-          // const response = await api.get('/web/templates');
-          // response.data
           setTemplates(templates);
-          return templates;
-        } catch (err) {
-          const errorMessage = "Не удалось загрузить шаблоны. Пожалуйста, попробуйте позже.";
-          setTemplatesError(errorMessage);
-          console.error("Error fetching templates:", err);
-          return [];
+        } catch (error) {
+          setTemplatesError(error instanceof Error ? error.message : 'Failed to fetch templates');
         } finally {
           setIsLoadingTemplates(false);
         }
       },
 
-      fetchTemplate: async (id) => {
-        const { setIsLoadingTemplates, setTemplatesError } = get();
-
-        setIsLoadingTemplates(true);
-        setTemplatesError(null);
-
-        try {
-          const response = await api.get(`/web/templates/${id}`);
-          return response.data;
-        } catch (err) {
-          const errorMessage = "Не удалось загрузить шаблон. Пожалуйста, попробуйте позже.";
-          setTemplatesError(errorMessage);
-          console.error("Error fetching template:", err);
-          return null;
-        } finally {
-          setIsLoadingTemplates(false);
-        }
+      fetchTemplate: async (id: string) => {
+        const { templates } = get();
+        return templates.find(t => t.id === id) || null;
       },
 
       fetchDocuments: async () => {
@@ -288,100 +267,54 @@ export const useWebStore = create<WebState>()(
 
         try {
           const response = await api.get('/web/documents');
-
           setDocuments(response.data);
-          return response.data;
-        } catch (err) {
-          const errorMessage = "Не удалось загрузить документы. Пожалуйста, попробуйте позже.";
-          setDocumentsError(errorMessage);
-          console.error("Error fetching documents:", err);
-          return [];
+        } catch (error) {
+          setDocumentsError(error instanceof Error ? error.message : 'Failed to fetch documents');
         } finally {
           setIsLoadingDocuments(false);
         }
       },
 
-      fetchDocument: async (id) => {
-        const { setIsLoadingDocuments, setDocumentsError } = get();
-
-        setIsLoadingDocuments(true);
-        setDocumentsError(null);
-
-        try {
-          const response = await api.get(`/web/documents/${id}`);
-          return response.data;
-        } catch (err) {
-          const errorMessage = "Не удалось загрузить документ. Пожалуйста, попробуйте позже.";
-          setDocumentsError(errorMessage);
-          console.error("Error fetching document:", err);
-          return null;
-        } finally {
-          setIsLoadingDocuments(false);
-        }
+      fetchDocument: async (id: string) => {
+        const { documents } = get();
+        return documents.find(d => d.id === id) || null;
       },
 
-      saveDocument: async (document) => {
-        const { selectedDocumentId, setDocuments, documents } = get();
+      saveDocument: async (document: Partial<Document>) => {
+        const { documents, setDocuments } = get();
 
         try {
-          const isUpdate = !!selectedDocumentId;
-          const url = isUpdate 
-            ? `/web/documents/${selectedDocumentId}` 
-            : '/web/documents';
+          const response = await api.post('/web/documents', document);
+          const newDocument = response.data;
 
-          let response;
-          if (isUpdate) {
-            response = await api.put(url, document);
-          } else {
-            response = await api.post(url, document);
-          }
-
-          const savedDocument = response.data;
-
-          // Update documents list
-          if (isUpdate) {
-            setDocuments(
-              documents.map(doc => 
-                doc.id === savedDocument.id ? savedDocument : doc
-              )
-            );
-          } else {
-            setDocuments([...documents, savedDocument]);
-          }
-
-          return savedDocument;
-        } catch (err) {
-          console.error("Error saving document:", err);
+          setDocuments([...documents, newDocument]);
+          return newDocument;
+        } catch (error) {
+          console.error('Failed to save document:', error);
           return null;
         }
       },
 
-      deleteDocument: async (id) => {
-        const { setDocuments, documents } = get();
+      deleteDocument: async (id: string) => {
+        const { documents, setDocuments } = get();
 
         try {
           await api.delete(`/web/documents/${id}`);
-
-          // Remove document from state
-          setDocuments(documents.filter(doc => doc.id !== id));
+          setDocuments(documents.filter(d => d.id !== id));
           return true;
-        } catch (err) {
-          console.error("Error deleting document:", err);
+        } catch (error) {
+          console.error('Failed to delete document:', error);
           return false;
         }
       },
     }),
     {
-      name: 'web-storage',
+      name: 'web-store',
       partialize: (state) => ({
         selectedTemplateId: state.selectedTemplateId,
         selectedDocumentId: state.selectedDocumentId,
-        form: {
-          values: state.form.values,
-          history: state.form.history,
-          historyIndex: state.form.historyIndex,
-        },
-      }),
+        form: state.form
+      })
     }
   )
 );

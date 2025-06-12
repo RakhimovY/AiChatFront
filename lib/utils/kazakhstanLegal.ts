@@ -11,23 +11,19 @@
  * - Last digit is a check digit
  */
 export function validateIIN(iin: string): boolean {
-  // Check if IIN is a 12-digit number
   if (!/^\d{12}$/.test(iin)) {
     return false;
   }
 
-  // Check the 7th digit (century and gender)
   const centuryGender = parseInt(iin.charAt(6));
   if (centuryGender < 1 || centuryGender > 6) {
     return false;
   }
 
-  // Check birth date validity
   const year = parseInt(iin.substring(0, 2));
   const month = parseInt(iin.substring(2, 4));
   const day = parseInt(iin.substring(4, 6));
 
-  // Determine full year based on the 7th digit
   let fullYear: number;
   if (centuryGender === 1 || centuryGender === 2) {
     fullYear = 1800 + year;
@@ -37,7 +33,6 @@ export function validateIIN(iin: string): boolean {
     fullYear = 2000 + year;
   }
 
-  // Check if date is valid
   const date = new Date(fullYear, month - 1, day);
   if (
     date.getFullYear() !== fullYear ||
@@ -47,7 +42,6 @@ export function validateIIN(iin: string): boolean {
     return false;
   }
 
-  // Calculate check digit
   const weights = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
   let sum = 0;
 
@@ -57,7 +51,6 @@ export function validateIIN(iin: string): boolean {
 
   const checkDigit = sum % 11;
 
-  // If check digit is 10, recalculate with different weights
   if (checkDigit === 10) {
     const weights2 = [3, 4, 5, 6, 7, 8, 9, 10, 11, 1, 2];
     sum = 0;
@@ -82,24 +75,20 @@ export function validateIIN(iin: string): boolean {
  * - Last digit is a check digit
  */
 export function validateBIN(bin: string): boolean {
-  // Check if BIN is a 12-digit number
   if (!/^\d{12}$/.test(bin)) {
     return false;
   }
 
-  // Check the 5th digit (type of entity)
   const entityType = parseInt(bin.charAt(4));
   if (entityType < 4 || entityType > 6) {
     return false;
   }
 
-  // Check the 6th digit (residency)
   const residency = parseInt(bin.charAt(5));
   if (residency !== 0 && residency !== 1) {
     return false;
   }
 
-  // Calculate check digit
   const weights = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
   let sum = 0;
 
@@ -109,7 +98,6 @@ export function validateBIN(bin: string): boolean {
 
   const checkDigit = sum % 11;
 
-  // If check digit is 10, recalculate with different weights
   if (checkDigit === 10) {
     const weights2 = [3, 4, 5, 6, 7, 8, 9, 10, 11, 1, 2];
     sum = 0;
@@ -160,7 +148,6 @@ export function generateDocumentNumber(
 ): string {
   const currentYear = new Date().getFullYear();
 
-  // Document type codes
   const documentTypeCodes: Record<string, string> = {
     'employment': 'ТД',
     'real-estate': 'КП',
@@ -172,7 +159,6 @@ export function generateDocumentNumber(
     'lawsuit': 'ИС',
   };
 
-  // Format sequential number to have at least 3 digits
   const formattedNumber = sequentialNumber.toString().padStart(3, '0');
 
   return `${documentTypeCodes[documentType]}-${currentYear}-${formattedNumber}`;
@@ -187,20 +173,17 @@ export function checkLegalCompliance(
 ): { compliant: boolean; issues: string[] } {
   const issues: string[] = [];
 
-  // Common required phrases for all legal documents in Kazakhstan
   const commonRequiredPhrases = [
     'Республика Казахстан',
     'тенге',
   ];
 
-  // Check common required phrases
   commonRequiredPhrases.forEach(phrase => {
     if (!documentContent.includes(phrase)) {
       issues.push(`Документ должен содержать фразу "${phrase}"`);
     }
   });
 
-  // Document-specific checks
   switch (documentType) {
     case 'employment':
       if (!documentContent.includes('Трудовой кодекс Республики Казахстан')) {
@@ -251,17 +234,14 @@ export function checkLegalCompliance(
       break;
 
     case 'consumer-claim':
-      if (!documentContent.includes('Закон Республики Казахстан "О защите прав потребителей"')) {
-        issues.push('Претензия должна содержать ссылку на Закон Республики Казахстан "О защите прав потребителей"');
-      }
-      if (!documentContent.includes('Комитет по защите прав потребителей')) {
-        issues.push('Претензия должна содержать упоминание Комитета по защите прав потребителей');
+      if (!documentContent.includes('Закон о защите прав потребителей')) {
+        issues.push('Претензия должна содержать ссылку на Закон о защите прав потребителей');
       }
       break;
 
     case 'lawsuit':
       if (!documentContent.includes('Гражданский процессуальный кодекс')) {
-        issues.push('Исковое заявление должно содержать ссылку на Гражданский процессуальный кодекс РК');
+        issues.push('Исковое заявление должно содержать ссылку на ГПК РК');
       }
       break;
   }
@@ -277,48 +257,20 @@ export function checkLegalCompliance(
  */
 export function transliterateKazakhToLatin(text: string): string {
   const cyrillicToLatin: Record<string, string> = {
-    'А': 'A', 'а': 'a',
-    'Ә': 'Á', 'ә': 'á',
-    'Б': 'B', 'б': 'b',
-    'В': 'V', 'в': 'v',
-    'Г': 'G', 'г': 'g',
-    'Ғ': 'Ǵ', 'ғ': 'ǵ',
-    'Д': 'D', 'д': 'd',
-    'Е': 'E', 'е': 'e',
-    'Ё': 'Io', 'ё': 'io',
-    'Ж': 'J', 'ж': 'j',
-    'З': 'Z', 'з': 'z',
-    'И': 'I', 'и': 'i',
-    'Й': 'I', 'й': 'i',
-    'К': 'K', 'к': 'k',
-    'Қ': 'Q', 'қ': 'q',
-    'Л': 'L', 'л': 'l',
-    'М': 'M', 'м': 'm',
-    'Н': 'N', 'н': 'n',
-    'Ң': 'Ń', 'ң': 'ń',
-    'О': 'O', 'о': 'o',
-    'Ө': 'Ó', 'ө': 'ó',
-    'П': 'P', 'п': 'p',
-    'Р': 'R', 'р': 'r',
-    'С': 'S', 'с': 's',
-    'Т': 'T', 'т': 't',
-    'У': 'Ý', 'у': 'ý',
-    'Ұ': 'U', 'ұ': 'u',
-    'Ү': 'Ú', 'ү': 'ú',
-    'Ф': 'F', 'ф': 'f',
-    'Х': 'H', 'х': 'h',
-    'Һ': 'H', 'һ': 'h',
-    'Ц': 'Ts', 'ц': 'ts',
-    'Ч': 'Ch', 'ч': 'ch',
-    'Ш': 'Sh', 'ш': 'sh',
-    'Щ': 'Shch', 'щ': 'shch',
-    'Ъ': '', 'ъ': '',
-    'Ы': 'Y', 'ы': 'y',
-    'І': 'I', 'і': 'i',
-    'Ь': '', 'ь': '',
-    'Э': 'E', 'э': 'e',
-    'Ю': 'Iý', 'ю': 'iý',
-    'Я': 'Ia', 'я': 'ia',
+    'а': 'a', 'ә': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'ғ': 'g',
+    'д': 'd', 'е': 'e', 'ё': 'e', 'ж': 'j', 'з': 'z', 'и': 'i',
+    'й': 'i', 'к': 'k', 'қ': 'q', 'л': 'l', 'м': 'm', 'н': 'n',
+    'ң': 'n', 'о': 'o', 'ө': 'o', 'п': 'p', 'р': 'r', 'с': 's',
+    'т': 't', 'у': 'u', 'ұ': 'u', 'ү': 'u', 'ф': 'f', 'х': 'h',
+    'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sh', 'ъ': '', 'ы': 'y',
+    'і': 'i', 'ь': '', 'э': 'e', 'ю': 'iu', 'я': 'ia',
+    'А': 'A', 'Ә': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Ғ': 'G',
+    'Д': 'D', 'Е': 'E', 'Ё': 'E', 'Ж': 'J', 'З': 'Z', 'И': 'I',
+    'Й': 'I', 'К': 'K', 'Қ': 'Q', 'Л': 'L', 'М': 'M', 'Н': 'N',
+    'Ң': 'N', 'О': 'O', 'Ө': 'O', 'П': 'P', 'Р': 'R', 'С': 'S',
+    'Т': 'T', 'У': 'U', 'Ұ': 'U', 'Ү': 'U', 'Ф': 'F', 'Х': 'H',
+    'Ц': 'TS', 'Ч': 'CH', 'Ш': 'SH', 'Щ': 'SH', 'Ъ': '', 'Ы': 'Y',
+    'І': 'I', 'Ь': '', 'Э': 'E', 'Ю': 'IU', 'Я': 'IA',
   };
 
   return text.split('').map(char => cyrillicToLatin[char] || char).join('');
@@ -333,67 +285,55 @@ export function generateTestIIN(
   birthDay: number,
   gender: 'male' | 'female'
 ): string {
-  // Validate input
-  if (birthYear < 1800 || birthYear > 2099) {
-    throw new Error('Birth year must be between 1800 and 2099');
+  if (birthYear < 1800 || birthYear > 2100) {
+    throw new Error('Invalid birth year');
   }
-
   if (birthMonth < 1 || birthMonth > 12) {
-    throw new Error('Birth month must be between 1 and 12');
+    throw new Error('Invalid birth month');
   }
-
   if (birthDay < 1 || birthDay > 31) {
-    throw new Error('Birth day must be between 1 and 31');
+    throw new Error('Invalid birth day');
   }
 
-  // Format birth date
-  const yearStr = birthYear.toString().slice(-2).padStart(2, '0');
-  const monthStr = birthMonth.toString().padStart(2, '0');
-  const dayStr = birthDay.toString().padStart(2, '0');
+  const year = birthYear.toString().slice(-2);
+  const month = birthMonth.toString().padStart(2, '0');
+  const day = birthDay.toString().padStart(2, '0');
 
-  // Determine century and gender digit
   let centuryGender: number;
-
-  if (birthYear >= 1800 && birthYear <= 1899) {
+  if (birthYear >= 1800 && birthYear < 1900) {
     centuryGender = gender === 'male' ? 1 : 2;
-  } else if (birthYear >= 1900 && birthYear <= 1999) {
+  } else if (birthYear >= 1900 && birthYear < 2000) {
     centuryGender = gender === 'male' ? 3 : 4;
   } else {
     centuryGender = gender === 'male' ? 5 : 6;
   }
 
-  // Generate random serial number
-  const serialNumber = Math.floor(1000 + Math.random() * 9000).toString();
+  const serialNumber = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  const baseNumber = `${year}${month}${day}${centuryGender}${serialNumber}`;
 
-  // Combine parts without check digit
-  const iinWithoutCheck = `${yearStr}${monthStr}${dayStr}${centuryGender}${serialNumber}`;
-
-  // Calculate check digit
   const weights = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
   let sum = 0;
 
   for (let i = 0; i < 11; i++) {
-    sum += parseInt(iinWithoutCheck.charAt(i)) * weights[i];
+    sum += parseInt(baseNumber.charAt(i)) * weights[i];
   }
 
   let checkDigit = sum % 11;
 
-  // If check digit is 10, recalculate with different weights
   if (checkDigit === 10) {
     const weights2 = [3, 4, 5, 6, 7, 8, 9, 10, 11, 1, 2];
     sum = 0;
 
     for (let i = 0; i < 11; i++) {
-      sum += parseInt(iinWithoutCheck.charAt(i)) * weights2[i];
+      sum += parseInt(baseNumber.charAt(i)) * weights2[i];
     }
 
     checkDigit = sum % 11;
-
-    // If still 10, use 0
-    if (checkDigit === 10) {
-      checkDigit = 0;
-    }
   }
 
-  return `${iinWithoutCheck}${checkDigit}`;
+  if (checkDigit === 10) {
+    checkDigit = 0;
+  }
+
+  return `${baseNumber}${checkDigit}`;
 }

@@ -1,131 +1,132 @@
-import { useState, useEffect } from "react";
-import { Send } from "lucide-react";
-import CountrySelector from "./CountrySelector";
+import { useState, useRef, useCallback } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import FileAttachment from "./FileAttachment";
+import { Button } from "@/components/ui/button";
+import { Send, Paperclip } from "lucide-react";
 import AutoResizeTextarea from "./AutoResizeTextarea";
+import FileAttachment from "./FileAttachment";
+import CountrySelector from "./CountrySelector";
 
-type ChatInputProps = {
-  input: string;
-  setInput: (input: string) => void;
-  handleSubmit: (e: React.FormEvent) => void;
+interface ChatInputProps {
+  onSendMessage: (message: string, file?: File) => void;
   isLoading: boolean;
-  disabled?: boolean;
-  selectedCountry: string | null;
-  onSelectCountry: (country: string | null) => void;
-  onFileSelect?: (file: File | null) => void;
-  maxFileSize?: number; // in bytes, default 10MB
-};
+  selectedCountry?: string;
+  onCountryChange?: (country: string | null) => void;
+}
 
-export default function ChatInput({ 
-  input, 
-  setInput, 
-  handleSubmit, 
-  isLoading, 
-  disabled = false, 
-  selectedCountry, 
-  onSelectCountry,
-  onFileSelect,
-  maxFileSize = 10 * 1024 * 1024 // Default 10MB
+export default function ChatInput({
+  onSendMessage,
+  isLoading,
+  selectedCountry,
+  onCountryChange,
 }: ChatInputProps) {
+  const [message, setMessage] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useLanguage();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // Handle keyboard shortcuts
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
       e.preventDefault();
-      handleFormSubmit(e);
-    }
-  };
+      if (message.trim() || file) {
+        onSendMessage(message.trim(), file || undefined);
+        setMessage("");
+        setFile(null);
+      }
+    },
+    [message, file, onSendMessage]
+  );
 
-  // Wrapper for handleSubmit that clears the file before submitting
-  const handleFormSubmit = (e: React.FormEvent) => {
-    // Clear the file immediately when submitting
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit(e);
+      }
+    },
+    [handleSubmit]
+  );
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      setSelectedFile(null);
-      if (onFileSelect) onFileSelect(null);
+      setFile(selectedFile);
     }
+  }, []);
 
-    // Call the original handleSubmit
-    handleSubmit(e);
-  };
+  const handleRemoveFile = useCallback(() => {
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
 
-  // Handle file selection
-  const handleFileSelect = (file: File | null) => {
-    setSelectedFile(file);
-    if (onFileSelect) onFileSelect(file);
-  };
+  const handleFileClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
 
   return (
-    <div>
-      {/* Display selected file information */}
-      {selectedFile && (
-        <div className="mb-2 p-2 bg-muted rounded-md flex items-center justify-between">
-          <div className="flex items-center space-x-2 truncate">
-            <span className="text-sm truncate">{selectedFile.name}</span>
-            <span className="text-xs text-muted-foreground">
-              ({Math.round(selectedFile.size / 1024)} KB)
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => handleFileSelect(null)}
-            className="text-muted-foreground hover:text-destructive p-1"
-            aria-label="Remove file"
-          >
-            <span className="text-sm">×</span>
-          </button>
-        </div>
-      )}
+    <form onSubmit={handleSubmit} className="border-t p-4">
+      <div className="flex flex-col gap-4">
+        {selectedCountry && onCountryChange && (
+          <CountrySelector
+            selectedCountry={selectedCountry}
+            onSelectCountry={onCountryChange}
+            disabled={isLoading}
+          />
+        )}
 
-      <form onSubmit={handleFormSubmit}>
-        <div className="relative mb-2">
-          <div className="flex flex-col w-full rounded-xl border bg-background shadow-md focus-within:ring-1 focus-within:ring-primary/50">
-            {/* Auto-resize textarea for user input */}
+        {file && (
+          <FileAttachment
+            selectedFile={file}
+            onFileSelect={handleRemoveFile}
+            disabled={isLoading}
+          />
+        )}
+
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
             <AutoResizeTextarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t.enterQuestion}
-              className="flex-1 p-3 pt-4 pb-10 bg-transparent border-0 rounded-xl focus:outline-none"
-              disabled={isLoading || disabled}
-              maxHeight={200}
+              disabled={isLoading}
+              className="min-h-[60px] max-h-[200px] resize-none"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              accept=".pdf,.doc,.docx,.txt"
+              disabled={isLoading}
             />
 
-            {/* Buttons positioned at the bottom of the input container */}
-            <div className="absolute bottom-1.5 left-2 right-2 flex justify-between items-center">
-              {/* File attachment button */}
-              <FileAttachment
-                selectedFile={selectedFile}
-                onFileSelect={handleFileSelect}
-                disabled={isLoading || disabled}
-                maxFileSize={maxFileSize}
-              />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleFileClick}
+              disabled={isLoading}
+              aria-label="Attach file"
+            >
+              <Paperclip className="h-5 w-5" />
+            </Button>
 
-              {/* Send button */}
-              <button
-                type="submit"
-                disabled={isLoading || !input.trim() || disabled}
-                className="p-1.5 rounded-full hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <Send className={`h-4 w-4 ${input.trim() ? 'text-primary' : 'text-muted-foreground'}`} />
-              </button>
-            </div>
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!message.trim() && !file || isLoading}
+              aria-label="Send message"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
           </div>
         </div>
-
-        {/* Country selector and disclaimer in a single line */}
-        <div className="flex items-center space-x-3 text-xs">
-          <CountrySelector 
-            selectedCountry={selectedCountry}
-            onSelectCountry={onSelectCountry}
-          />
-          <p className="text-muted-foreground flex-1">
-            {t.disclaimer}
-          </p>
-        </div>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }
