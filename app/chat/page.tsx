@@ -174,7 +174,7 @@ const ChatPage = () => {
             <ChatInput
               onSendMessage={handleSendMessage}
               isLoading={isLoading || (isLoadingHistory && currentChatId !== null)}
-              selectedCountry={selectedCountry || undefined}
+              selectedCountry={selectedCountry}
               onCountryChange={handleCountryChange}
             />
           </ChatInputContainer>

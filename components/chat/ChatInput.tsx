@@ -1,146 +1,114 @@
-import { useState, useRef, useCallback } from "react";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { Button } from "@/components/ui/button";
-import { Plus, Mic, SlidersHorizontal } from "lucide-react";
-import AutoResizeTextarea from "./AutoResizeTextarea";
-import FileAttachment from "./FileAttachment";
+import { useState } from "react";
+import { Send } from "lucide-react";
 import CountrySelector from "./CountrySelector";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import FileAttachment from "./FileAttachment";
+import AutoResizeTextarea from "./AutoResizeTextarea";
 
-interface ChatInputProps {
+type ChatInputProps = {
   onSendMessage: (message: string, file?: File) => void;
   isLoading: boolean;
-  selectedCountry?: string;
-  onCountryChange?: (country: string | null) => void;
-}
+  selectedCountry: string | null;
+  onCountryChange: (country: string | null) => void;
+};
 
-export default function ChatInput({
+export default function ChatInput({ 
   onSendMessage,
   isLoading,
   selectedCountry,
   onCountryChange,
 }: ChatInputProps) {
-  const [message, setMessage] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useLanguage();
+  const [input, setInput] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (message.trim() || file) {
-        onSendMessage(message.trim(), file || undefined);
-        setMessage("");
-        setFile(null);
-      }
-    },
-    [message, file, onSendMessage]
-  );
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleSubmit(e);
-      }
-    },
-    [handleSubmit]
-  );
-
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
+      handleFormSubmit(e);
     }
-  }, []);
+  };
 
-  const handleRemoveFile = useCallback(() => {
-    setFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim()) {
+      onSendMessage(input, selectedFile || undefined);
+      setInput("");
+      setSelectedFile(null);
     }
-  }, []);
+  };
 
-  const handleFileClick = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
+  const handleFileSelect = (file: File | null) => {
+    setSelectedFile(file);
+  };
+
+  const isInputValid = input.trim().length > 0;
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="flex flex-col gap-4">
-        {selectedCountry && onCountryChange && (
-          <CountrySelector
-            selectedCountry={selectedCountry}
-            onSelectCountry={onCountryChange}
-            disabled={isLoading}
-          />
-        )}
+    <div className="w-full">
+      {selectedFile && (
+        <div className="mb-2 p-2 bg-muted rounded-md flex items-center justify-between">
+          <div className="flex items-center space-x-2 truncate">
+            <span className="text-sm truncate">{selectedFile.name}</span>
+            <span className="text-xs text-muted-foreground">
+              ({Math.round(selectedFile.size / 1024)} KB)
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleFileSelect(null)}
+            className="text-muted-foreground hover:text-destructive p-1"
+            aria-label="Remove file"
+          >
+            <span className="text-sm">×</span>
+          </button>
+        </div>
+      )}
 
-        {file && (
-          <FileAttachment
-            selectedFile={file}
-            onFileSelect={handleRemoveFile}
-            disabled={isLoading}
-          />
-        )}
+      <form onSubmit={handleFormSubmit} noValidate className="w-full">
+        <div className="relative mb-2">
+          <div className="flex flex-col w-full rounded-xl border bg-background shadow-md focus-within:ring-1 focus-within:ring-primary/50">
+            <AutoResizeTextarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={t.enterQuestion}
+              className="flex-1 p-3 pt-4 pb-10 bg-transparent border-0 rounded-xl focus:outline-none"
+              disabled={isLoading}
+              maxHeight={200}
+              aria-label="Chat input"
+            />
 
-        <div className="flex flex-col w-full rounded-xl border px-4 py-3">
-          <AutoResizeTextarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={t.enterQuestion}
-            disabled={isLoading}
-            className="flex-1 min-h-[40px] max-h-[160px] resize-none border-none focus:ring-0 focus:outline-none p-0 text-gray-100 bg-transparent placeholder:text-gray-400 leading-6"
-          />
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            accept=".pdf,.doc,.docx,.txt"
-            disabled={isLoading}
-          />
-
-          <div className="flex justify-between items-center pt-2">
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={handleFileClick}
+            <div className="absolute bottom-1.5 left-2 right-2 flex justify-between items-center">
+              <FileAttachment
+                selectedFile={selectedFile}
+                onFileSelect={handleFileSelect}
                 disabled={isLoading}
-                aria-label="Add attachment or tool"
-                className="text-gray-400 hover:bg-gray-600 hover:text-gray-200 rounded-full"
-              >
-                <Plus className="h-5 w-5" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className="text-gray-400 hover:bg-gray-600 hover:text-gray-200 rounded-lg flex items-center gap-1 px-3 py-2"
-                disabled={isLoading}
-                aria-label="Tools"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                <span>{"Инструменты"}</span>
-              </Button>
-            </div>
+                maxFileSize={10 * 1024 * 1024}
+              />
 
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                size="icon"
-                disabled={isLoading}
-                aria-label="Voice input"
-                className="bg-gray-600 hover:bg-gray-500 text-gray-200 rounded-full"
+              <button
+                type="submit"
+                disabled={isLoading || !isInputValid}
+                className="p-1.5 rounded-full hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Send message"
               >
-                <Mic className="h-5 w-5" />
-              </Button>
+                <Send className={`h-4 w-4 ${isInputValid ? 'text-primary' : 'text-muted-foreground'}`} />
+              </button>
             </div>
           </div>
         </div>
-      </div>
-    </form>
+
+        <div className="flex items-center space-x-3 text-xs">
+          <CountrySelector 
+            selectedCountry={selectedCountry}
+            onSelectCountry={onCountryChange}
+          />
+          <p className="text-muted-foreground flex-1">
+            {t.disclaimer}
+          </p>
+        </div>
+      </form>
+    </div>
   );
 }
