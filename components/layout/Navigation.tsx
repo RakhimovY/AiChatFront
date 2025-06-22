@@ -144,6 +144,13 @@ export default function Navigation({ activePage }: NavigationProps) {
                   <span>{t.chat}</span>
                 </Link>
                 <Link 
+                  href="/lawyer-request" 
+                  className="text-sm px-4 py-2 rounded-md bg-accent text-accent-foreground hover:bg-accent/80 flex items-center gap-2 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Scale className="h-4 w-4" aria-hidden="true" />
+                  <span>{t.lawyerConsultation}</span>
+                </Link>
+                <Link 
                   href="/web" 
                   className="text-sm px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-2 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
@@ -248,6 +255,14 @@ export default function Navigation({ activePage }: NavigationProps) {
                   >
                     <MessageSquare className="h-4 w-4" aria-hidden="true" />
                     <span>{t.chat}</span>
+                  </Link>
+                  <Link 
+                    href="/lawyer-request" 
+                    className="text-sm px-4 py-2.5 rounded-md bg-accent text-accent-foreground hover:bg-accent/80 text-center flex items-center justify-center gap-2 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Scale className="h-4 w-4" aria-hidden="true" />
+                    <span>{t.lawyerConsultation}</span>
                   </Link>
                   <Link 
                     href="/web" 

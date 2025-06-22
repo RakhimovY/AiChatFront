@@ -149,6 +149,7 @@ export const ru = {
   about: "О сервисе",
   theme: "Тема",
   chat: "Чат",
+  lawyerConsultation: "Консультация юриста",
   openMenu: "Открыть меню",
   closeMenu: "Закрыть меню",
 
@@ -171,6 +172,9 @@ export const ru = {
   startChat: "Начать чат",
   chatDescription: "Задайте вопрос юридическому ассистенту и получите мгновенный ответ.",
   goToChat: "Перейти к чату",
+  lawyerConsultationTitle: "Консультация юриста",
+  lawyerConsultationDescription: "Запросите консультацию юриста по вашим правовым вопросам.",
+  requestConsultation: "Запросить консультацию",
   manageSubscription: "Управление подпиской",
   subscriptionDescription: "Просмотр и изменение вашего текущего тарифного плана.",
   profileSettings: "Настройки профиля",

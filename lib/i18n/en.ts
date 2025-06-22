@@ -149,6 +149,7 @@ export const en = {
   about: "About",
   theme: "Theme",
   chat: "Chat",
+  lawyerConsultation: "Lawyer Consultation",
   openMenu: "Open menu",
   closeMenu: "Close menu",
 
@@ -171,6 +172,9 @@ export const en = {
   startChat: "Start Chat",
   chatDescription: "Ask a question to the legal assistant and get an instant answer.",
   goToChat: "Go to Chat",
+  lawyerConsultationTitle: "Lawyer Consultation",
+  lawyerConsultationDescription: "Request a consultation with a lawyer for your legal issues.",
+  requestConsultation: "Request Consultation",
   manageSubscription: "Manage Subscription",
   subscriptionDescription: "View and change your current subscription plan.",
   profileSettings: "Profile Settings",

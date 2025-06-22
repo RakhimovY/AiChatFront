@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { CreditCard, HelpCircle, MessageSquare, Save } from "lucide-react";
+import { CreditCard, HelpCircle, MessageSquare, Save, Scale } from "lucide-react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
@@ -307,6 +307,27 @@ export default function AccountPage() {
                       className="text-primary hover:underline inline-flex items-center"
                     >
                       {t.goToChat || "Перейти к чату"}
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="border rounded-lg p-6 flex flex-col h-full">
+                  <div>
+                    <Scale className="h-8 w-8 text-primary mb-4" />
+                    <h2 className="text-xl font-semibold mb-2">
+                      {t.lawyerConsultationTitle || "Консультация юриста"}
+                    </h2>
+                    <p className="text-muted-foreground mb-4">
+                      {t.lawyerConsultationDescription ||
+                        "Запросите консультацию юриста по вашим правовым вопросам."}
+                    </p>
+                  </div>
+                  <div className="mt-auto pt-2">
+                    <Link
+                      href="/lawyer-request"
+                      className="text-primary hover:underline inline-flex items-center"
+                    >
+                      {t.requestConsultation || "Запросить консультацию"}
                     </Link>
                   </div>
                 </div>
